@@ -1,5 +1,5 @@
 @version("1.0.0")
-@namespace("mailrecord")
+@namespace("com.uebercomputing.mailrecord")
 protocol MailRecordProtocol {
   record MailRecord {
     string uuid;
