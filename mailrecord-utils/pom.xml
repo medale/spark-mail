@@ -21,6 +21,10 @@
 			<artifactId>commons-io</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>joda-time</groupId>
+			<artifactId>joda-time</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>com.uebercomputing</groupId>
 			<artifactId>mailrecord</artifactId>
 			<version>${project.version}</version>
@@ -41,9 +45,29 @@
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<!-- Uses scalatest instead -->
+					<skipTests>true</skipTests>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.scalatest</groupId>
+				<artifactId>scalatest-maven-plugin</artifactId>
+				<configuration>
+					<reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+					<junitxml>.</junitxml>
+					<filereports>TestSuite.txt</filereports>
+				</configuration>
+				<executions>
+					<execution>
+						<id>test</id>
+						<goals>
+							<goal>test</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
-	
 </project>

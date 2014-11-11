@@ -19,13 +19,28 @@ object MessageParser {
   val endOfHeaderMarker = ""
   val space = " "
 
+  private val emptyKeyRE = """(.*?):[\s]*""".r
   private val keyValueRE = """(.*?): (.*)""".r
+  private val mailAddressHeaders = List(To,Cc,Bcc)
 
-  def apply(src: Source): Map[String, AnyRef] = {
+  /**
+   * Returns parsed mail message as key/value pairs. mailAddressHeaders are
+   * potentially comma-separated mail addresses (if more than one addressee).
+   */
+  def apply(src: Source): Map[String, String] = {
     val lines = src.getLines
-    Map.empty
+    parseRaw(lines)
   }
 
+  /**
+   * Returns a map containing parsed message headers using the original header
+   * used in mail message. For example, the line "Subject: Test" would create
+   * a key "Subject" and a value of "Test".
+   *
+   * Some headers may take up multiple lines. We create one line key/value pairs
+   * by replacing the newline with a space. A blank line denotes the end of the
+   * header section and all subsequent lines are stored under the key "Body".
+   */
   def parseRaw(lines: Iterator[String]): Map[String, String] = {
 
     def parseBody(lines: Iterator[String], messageParts: Map[String, String]): Map[String, String] = {
@@ -33,6 +48,7 @@ object MessageParser {
       messageParts.updated(Body, body)
     }
 
+    //scalariform makes lines too long for scalastyle!
     // format: OFF
     def parseRawHelper(lines: Iterator[String], messageParts: Map[String, String], lastKey: Option[String]):
       Map[String, String] = {
@@ -43,8 +59,11 @@ object MessageParser {
           case endOfHeader if line == endOfHeaderMarker => parseBody(lines, messageParts)
           case keyValueRE(key, value) => {
             val lastKey = Some(key)
-            val isBody = false
             parseRawHelper(lines, messageParts.updated(key, value), lastKey)
+          }
+          case emptyKeyRE(key) => {
+            val lastKey = Some(key)
+            parseRawHelper(lines, messageParts, lastKey)
           }
           case multiLineHeader => {
             lastKey match {
