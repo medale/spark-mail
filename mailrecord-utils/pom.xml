@@ -16,14 +16,24 @@
 			<groupId>org.apache.avro</groupId>
 			<artifactId>avro</artifactId>
 		</dependency>
-<dependency>
-                        <groupId>commons-io</groupId>
-                        <artifactId>commons-io</artifactId>
-                </dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>com.uebercomputing</groupId>
 			<artifactId>mailrecord</artifactId>
-                        <version>${project.version}</version>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.scalatest</groupId>
+			<artifactId>scalatest_${scala.binary.version}</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
@@ -35,5 +45,5 @@
 			</plugin>
 		</plugins>
 	</build>
-
+	
 </project>
