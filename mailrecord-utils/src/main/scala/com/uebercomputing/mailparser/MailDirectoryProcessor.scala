@@ -3,13 +3,14 @@ package com.uebercomputing.mailparser
 import java.io.File
 import java.io.FileInputStream
 
+import org.apache.logging.log4j.LogManager
+
 import resource.managed
 import scala.io.Source
 
-abstract class MailDirectoryProcessor(userNamesToProcess: List[String],
-                                      mailDirectoryStr: String) extends MessageProcessor {
+abstract class MailDirectoryProcessor(mailDirectory: File, userNamesToProcess: List[String] = Nil) extends MessageProcessor {
 
-  private var mailDirectory = new File(mailDirectoryStr)
+  private val Logger = LogManager.getLogger(classOf[MailDirectoryProcessor])
 
   def processMailDirectory(): Int = {
     var mailMessagesProcessedCount = 0
@@ -63,12 +64,13 @@ abstract class MailDirectoryProcessor(userNamesToProcess: List[String],
             process(fileSystemMetadata, Source.fromInputStream(mailIn))
             processedCount += 1
             if (processedCount % 100 == 0) {
-              System.out.print(".")
+              print(".")
             }
           } catch {
             case e: Exception =>
               // scalastyle:off
               val msg = s"Unable to process ${mailDirectory.getAbsolutePath()}/${userName}/${folderName}/${fileName} due to $e"
+              Logger.warn(msg)
               // scalastyle:on
               throw new ParseException(msg)
           }

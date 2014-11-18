@@ -16,8 +16,9 @@ object MessageParser {
   val Subject = "Subject"
   val Body = "Body"
 
-  val endOfHeaderMarker = ""
-  val space = " "
+  val EndOfHeaderMarker = ""
+  val Space = " "
+  val EmptyString = ""
 
   private val emptyKeyRE = """(.*?):[\s]*""".r
   private val keyValueRE = """(.*?): (.*)""".r
@@ -44,7 +45,7 @@ object MessageParser {
   def parseRaw(lines: Iterator[String]): Map[String, String] = {
 
     def parseBody(lines: Iterator[String], messageParts: Map[String, String]): Map[String, String] = {
-      val body = lines.mkString(space)
+      val body = lines.mkString(Space)
       messageParts.updated(Body, body)
     }
 
@@ -56,20 +57,21 @@ object MessageParser {
       if (lines.hasNext) {
         val line = lines.next().trim()
         line match {
-          case endOfHeader if line == endOfHeaderMarker => parseBody(lines, messageParts)
+          case endOfHeader if line == EndOfHeaderMarker => parseBody(lines, messageParts)
           case keyValueRE(key, value) => {
             val lastKey = Some(key)
             parseRawHelper(lines, messageParts.updated(key, value), lastKey)
           }
           case emptyKeyRE(key) => {
             val lastKey = Some(key)
-            parseRawHelper(lines, messageParts, lastKey)
+            val value = EmptyString
+            parseRawHelper(lines, messageParts.updated(key, value), lastKey)
           }
           case multiLineHeader => {
             lastKey match {
               case Some(key) => {
                 val previousValue = messageParts(key)
-                val newValue = previousValue + space + line
+                val newValue = previousValue + Space + line
                 val isBody = false
                 parseRawHelper(lines, messageParts.updated(key, newValue), lastKey)
               }

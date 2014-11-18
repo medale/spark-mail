@@ -1,10 +1,13 @@
 package com.uebercomputing.mailparser
 
 import com.uebercomputing.test.UnitTest
+import org.apache.commons.io.IOUtils
 import scala.io.Source
 import scala.util.control.NonFatal
 
 class MessageParserTest extends UnitTest {
+
+  val TestFileWithLongTo = "/enron/maildir/kean-s/deleted_items/338."
 
   test("parseRaw for multiline Subject") {
     val subject = """Subject: RE: Alliant Energy - IES Utilities dispute re: Poi 2870 - Cherokee
@@ -17,9 +20,9 @@ class MessageParserTest extends UnitTest {
     }
   }
 
-  test("parseRaw for header with empty value should return empty map") {
+  test("parseRaw for header with empty value should return empty string value") {
     val message = "X-cc:"
-    assertResult(Map.empty) {
+    assertResult(Map("X-cc" -> "")) {
       val lines = Source.fromString(message).getLines()
       MessageParser.parseRaw(lines)
     }
@@ -66,6 +69,8 @@ class MessageParserTest extends UnitTest {
       "Content-Transfer-Encoding" -> "7bit",
       "X-From" -> "Sebesta, Chris </O=ENRON/OU=NA/CN=RECIPIENTS/CN=CSEBEST2>",
       "X-To" -> "Zadow, Raetta </O=ENRON/OU=NA/CN=RECIPIENTS/CN=Rzadow>, Blair, Lynn </O=ENRON/OU=NA/CN=RECIPIENTS/CN=Lblair>, Washington, Kathy </O=ENRON/OU=NA/CN=RECIPIENTS/CN=Kwashin>, Fancler, Dan </O=ENRON/OU=NA/CN=RECIPIENTS/CN=Dfancle>",
+      "X-cc" -> "",
+      "X-bcc" -> "",
       "X-Folder" -> """\LBLAIR (Non-Privileged)\Blair, Lynn\Acctg - Customer Issues on Billing""",
       "X-Origin" -> "Blair-L",
       "X-FileName" -> "LBLAIR (Non-Privileged).pst",
@@ -101,6 +106,21 @@ class MessageParserTest extends UnitTest {
     assert(actual("Body").startsWith("The following"))
     assert(actual("X-FileName") === "klay (Non-Privileged).pst")
     assert(actual("To") === "babbio@verizon.com, j58391@aol.com, ghh@telcordia.com, kenneth.lay@enron.com, slitvack@deweyballantine.com, kjewett@kpcb.com, lsalhany@lifefx.com")
-    assert(actual.size === 14)
+    assert(actual.size === 16)
   }
+
+  test("process failing email with long 'To' section") {
+    val in = getClass().getResourceAsStream(TestFileWithLongTo)
+    val msg = IOUtils.toString(in)
+    val mailIn = Source.fromString(msg)
+    val map = MessageParser(mailIn)
+    val expectedRaw = "/o=enron/ou=na/cn=recipients/cn=notesaddr/cn=f21d9b15-25189ad0-8625653f-482bf6@enron.com, " +
+      "lynnette.barnes@enron.com, london.brown@enron.com, " +
+      "janet.butler@enron.com, guillermo.canovas@enron.com, " +
+      "stella.chan@enron.com, shelley.corman@enron.com"
+    val to = map("To")
+    assert(to.split(",").map(_.trim).toSet === expectedRaw.split(",").map(_.trim).toSet)
+    IOUtils.closeQuietly(in)
+  }
+
 }
