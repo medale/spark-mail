@@ -25,7 +25,7 @@ abstract class MailDirectoryProcessor(mailDirectory: File, userNamesToProcess: L
     val userDirectories = mailDirectory.listFiles()
     for (userDirectory <- userDirectories) {
       if (isReadableDirectory(userDirectory)) {
-        mailMessagesProcessedCount += processUserDirectory(userDirectory)
+        mailMessagesProcessedCount = processUserDirectory(userDirectory, mailMessagesProcessedCount)
       } else {
         val errMsg = s"Mail directory layout (${userDirectory} violates assumption: " +
           "Mail directory should contain only user directories."
@@ -35,21 +35,21 @@ abstract class MailDirectoryProcessor(mailDirectory: File, userNamesToProcess: L
     mailMessagesProcessedCount
   }
 
-  def processUserDirectory(userDirectory: File): Int =
+  def processUserDirectory(userDirectory: File, processedCountSoFar: Int): Int =
     {
-      var processedCount = 0
+      var processedCount = processedCountSoFar
       if (userNamesToProcess == Nil || isUserDirectoryToBeProcessed(userDirectory)) {
         val userName = userDirectory.getName()
         val folders = userDirectory.listFiles()
         for (folder <- folders) {
           if (isReadableDirectory(folder)) {
             val parentFolderName = None
-            processedCount += processFolder(userName, parentFolderName,
-              folder)
+            processedCount = processFolder(userName, parentFolderName,
+              folder, processedCount)
           }
         }
       }
-      return processedCount
+      processedCount
     }
 
   def isUserDirectoryToBeProcessed(userDirectory: File): Boolean = {
@@ -58,37 +58,44 @@ abstract class MailDirectoryProcessor(mailDirectory: File, userNamesToProcess: L
   }
 
   def processFolder(userName: String, parentFolderName: Option[String],
-                    folder: File): Int = {
+                    folder: File, processCountSoFar: Int): Int = {
     val folderName = getFolderName(parentFolderName, folder)
-    var processedCount = 0
+    var processedCount = processCountSoFar
     val mailsOrSubdirs = folder.listFiles()
     for (mailOrSubdir <- mailsOrSubdirs) {
       if (mailOrSubdir.isFile()) {
-        val fileName = mailOrSubdir.getName()
-        for (mailIn <- managed(new FileInputStream(mailOrSubdir))) {
-          try {
-            val fileSystemMetadata = FileSystemMetadata(userName, folderName,
-              fileName)
-            //uses implicit member codec UTF-8
-            process(fileSystemMetadata, Source.fromInputStream(mailIn))
-            processedCount += 1
-            if (processedCount % 100 == 0) {
-              print(".")
-            }
-          } catch {
-            case e: Exception =>
-              // scalastyle:off
-              val msg = s"Unable to process ${mailDirectory.getAbsolutePath()}/${userName}/${folderName}/${fileName} due to $e"
-              Logger.warn(msg)
-              // scalastyle:on
-              throw new ParseException(msg)
-          }
-        }
+        processedCount = processFile(userName, folderName, mailOrSubdir, processedCount)
       } else {
-        processedCount += processFolder(userName, Some(folderName), mailOrSubdir)
+        processedCount = processFolder(userName, Some(folderName), mailOrSubdir, processedCount)
+      }
+      if (processedCount % 10000 == 0) {
+        println()
+        println(s"Processed count now: $processedCount")
+      } else if (processedCount % 100 == 0) {
+        print(".")
       }
     }
-    return processedCount
+    processedCount
+  }
+
+  def processFile(userName: String, folderName: String, mailFile: File, processedCount: Int): Int = {
+    val fileName = mailFile.getName()
+    for (mailIn <- managed(new FileInputStream(mailFile))) {
+      try {
+        val fileSystemMetadata = FileSystemMetadata(userName, folderName,
+          fileName)
+        //uses implicit member codec UTF-8
+        process(fileSystemMetadata, Source.fromInputStream(mailIn))
+      } catch {
+        case e: Exception =>
+          // scalastyle:off
+          val msg = s"Unable to process ${mailDirectory.getAbsolutePath()}/${userName}/${folderName}/${fileName} due to $e"
+          Logger.warn(msg)
+          // scalastyle:on
+          throw new ParseException(msg)
+      }
+    }
+    processedCount + 1
   }
 
   def getFolderName(parentFolderNameOpt: Option[String], folder: File): String = {

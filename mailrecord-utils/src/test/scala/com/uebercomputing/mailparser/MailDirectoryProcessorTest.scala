@@ -30,7 +30,7 @@ class MailDirectoryProcessorTest extends UnitTest {
     val userDir = new File(mailDirPath, "neal-s")
     val dirProc = new MailDirectoryProcessor(
       mailDirPath, Nil) with InMemoryMailMessageProcessor
-    val actualProcessedCount = dirProc.processUserDirectory(userDir)
+    val actualProcessedCount = dirProc.processUserDirectory(userDir, 0)
     assert(actualProcessedCount === 6)
   }
 
