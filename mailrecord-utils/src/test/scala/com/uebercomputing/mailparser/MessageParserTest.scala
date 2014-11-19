@@ -1,6 +1,7 @@
 package com.uebercomputing.mailparser
 
 import com.uebercomputing.test.UnitTest
+import java.io.FileInputStream
 import org.apache.commons.io.IOUtils
 import scala.io.Source
 import scala.util.control.NonFatal
@@ -120,6 +121,17 @@ class MessageParserTest extends UnitTest {
       "stella.chan@enron.com, shelley.corman@enron.com"
     val to = map("To")
     assert(to.split(",").map(_.trim).toSet === expectedRaw.split(",").map(_.trim).toSet)
+    IOUtils.closeQuietly(in)
+  }
+
+  ignore("process 163") {
+    //fixed by implicit utf-8 codec - add specific test!
+    //TODO
+    val in = new FileInputStream("/opt/rpm1/enron/enron_mail_20110402/maildir/kean-s/california___working_group/163.")
+    val msg = IOUtils.toString(in)
+    val mailIn = Source.fromString(msg)
+    val map = MessageParser(mailIn)
+    println(map)
     IOUtils.closeQuietly(in)
   }
 

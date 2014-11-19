@@ -7,10 +7,18 @@ import org.apache.logging.log4j.LogManager
 
 import resource.managed
 import scala.io.Source
+import java.nio.charset.CodingErrorAction
+import scala.io.Codec
 
 abstract class MailDirectoryProcessor(mailDirectory: File, userNamesToProcess: List[String] = Nil) extends MessageProcessor {
 
   private val Logger = LogManager.getLogger(classOf[MailDirectoryProcessor])
+
+  //Source.fromInputStream has implicit codec argument
+  //See http://stackoverflow.com/questions/13625024/how-to-read-a-text-file-with-mixed-encodings-in-scala-or-java
+  implicit val codec = Codec("UTF-8")
+  codec.onMalformedInput(CodingErrorAction.REPLACE)
+  codec.onUnmappableCharacter(CodingErrorAction.REPLACE)
 
   def processMailDirectory(): Int = {
     var mailMessagesProcessedCount = 0
@@ -61,6 +69,7 @@ abstract class MailDirectoryProcessor(mailDirectory: File, userNamesToProcess: L
           try {
             val fileSystemMetadata = FileSystemMetadata(userName, folderName,
               fileName)
+            //uses implicit member codec UTF-8
             process(fileSystemMetadata, Source.fromInputStream(mailIn))
             processedCount += 1
             if (processedCount % 100 == 0) {
