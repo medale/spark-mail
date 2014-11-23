@@ -25,6 +25,7 @@
 	<modules>
 		<module>mailrecord</module>
 		<module>mailrecord-utils</module>
+		<module>analytics</module>
 	</modules>
 
 	<properties>

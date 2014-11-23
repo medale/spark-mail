@@ -9,11 +9,24 @@ import scala.annotation.tailrec
 
 /**
  * Invoke:
- * --mailDir /opt/rpm1/enron/enron_mail_20110402/maildir --avroOutput /opt/rpm1/enron/enron_mail_20110402/mail.avro
+ * --mailDir /opt/rpm1/enron/enron_mail_20110402/maildir
+ * --avroOutput /opt/rpm1/enron/enron_mail_20110402/mail.avro
+ *
+ * Create test avro file:
+ * --mailDir src/test/resources/enron/maildir
+ * --avroOutput enron-small.avro
+ * --overwrite true
  */
 object Main {
 
-  case class Config(mailDir: File = new File("."), users: List[String] = List(), avroOutput: File = new File("mail.avro"))
+  val MailDirArg = "--mailDir"
+  val AvroOutputArg = "--avroOutput"
+  val OverwriteArg = "--overwrite"
+
+  case class Config(mailDir: File = new File("."),
+                    users: List[String] = List(),
+                    avroOutput: File = new File("mail.avro"),
+                    overwrite: Boolean = false)
 
   def main(args: Array[String]): Unit = {
     val p = parser()
@@ -71,12 +84,23 @@ object Main {
 
       opt[String]("avroOutput") optional () action { (x, config) =>
         config.copy(avroOutput = new File(x))
-      } validate { x =>
-        val f = new File(x)
-        if (!f.exists()) success
-        else failure("Option --avroOutput file must not exist!")
-      } text ("avroOutput is String with relative or absolute location of new avro output file (file must not exist).")
+      } text ("avroOutput is String with relative or absolute location of new avro output file.")
 
+      opt[Boolean]("overwrite") optional () action { (x, config) =>
+        config.copy(overwrite = x)
+      } text ("explicit --overwrite true is needed to overwrite existing avro file.")
+
+      checkConfig { config =>
+        if (!config.overwrite) {
+          if (config.avroOutput.exists()) {
+            failure("avroOutput file must not exist! Use explicit --overwrite true option to overwrite existing file.")
+          } else {
+            success
+          }
+        } else {
+          success
+        }
+      }
     }
   }
 }
