@@ -4,9 +4,13 @@
 
 # Talk Overview
 
-# Speaker Bio
+# Speaker Background
 
-# Code
+# Combinator functions on Scala collections
+* map, flatMap, filter
+
+# Spark RDD
+* Resilient Distributed Dataset
 ```scala
 val lines = sc.textFile("test.txt")
 val wc = lines.map(...

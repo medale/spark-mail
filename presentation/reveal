@@ -1,0 +1,1 @@
+pandoc -t revealjs -s SparkMailPresentation.md -o index.html
