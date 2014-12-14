@@ -1,1 +1,1 @@
-pandoc -t revealjs -s SparkMailPresentation.md -o index.html
+pandoc -t revealjs --biblio ApacheSpark.bib -s SparkMailPresentation.md -o index.html

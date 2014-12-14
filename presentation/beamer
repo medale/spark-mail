@@ -1,1 +1,1 @@
-pandoc -t beamer SparkMailPresentation.md -o SparkMailPresentation.pdf
+pandoc -t beamer --latex-engine=xelatex --biblio ApacheSpark.bib SparkMailPresentation.md -o SparkMailPresentation.pdf
