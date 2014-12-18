@@ -1,0 +1,15 @@
+@version("1.0.0")
+@namespace("com.uebercomputing.mailrecord")
+protocol BinaryMailRecordProtocol {
+  record BinaryMailRecord {
+    string uuid;
+    string from;
+    union{array<string>,null} to = null;
+    union{array<string>,null} cc = null;
+    union{array<string>,null} bcc = null;
+    long dateUtcEpoch;
+    string subject;
+    union{map<string>,null} mailFields = null;
+    bytes body;
+  }
+} 

@@ -17,6 +17,20 @@
 			<artifactId>avro</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.apache.avro</groupId>
+			<artifactId>avro-mapred</artifactId>
+			<classifier>${avro.mapred.classifier}</classifier>
+		</dependency>
+		<dependency>
+			<groupId>com.twitter</groupId>
+			<artifactId>chill-avro_2.10</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-core_${scala.binary.version}</artifactId>
+			<version>1.1.0</version>
+		</dependency>
+		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 		</dependency>

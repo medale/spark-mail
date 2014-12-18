@@ -123,6 +123,11 @@
 				</exclusions>
 			</dependency>
 			<dependency>
+				<groupId>com.twitter</groupId>
+				<artifactId>chill-avro_2.10</artifactId>
+				<version>0.5.1</version>
+			</dependency>
+			<dependency>
 				<groupId>commons-io</groupId>
 				<artifactId>commons-io</artifactId>
 				<version>2.4</version>
