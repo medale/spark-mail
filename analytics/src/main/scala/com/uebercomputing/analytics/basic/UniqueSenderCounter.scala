@@ -12,7 +12,7 @@ import com.uebercomputing.analytics.util.MailMasterOptionParser
 import org.apache.avro.mapreduce.AvroJob
 
 /**
- * Run with two args (these are also defaults:)
+ * Run with two args:
  * --avroMailFile /opt/rpm1/enron/enron_mail_20110402/mail.avro --master local[4]
  */
 object UniqueSenderCounter extends MailMasterOptionParser {

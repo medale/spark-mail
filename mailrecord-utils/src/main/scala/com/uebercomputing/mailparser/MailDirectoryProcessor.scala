@@ -2,6 +2,9 @@ package com.uebercomputing.mailparser
 
 import java.io.File
 import java.io.FileInputStream
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 
 import org.apache.logging.log4j.LogManager
 
@@ -10,7 +13,9 @@ import scala.io.Source
 import java.nio.charset.CodingErrorAction
 import scala.io.Codec
 
-abstract class MailDirectoryProcessor(mailDirectory: File, userNamesToProcess: List[String] = Nil) extends MessageProcessor {
+import com.uebercomputing.io.PathUtils
+
+abstract class MailDirectoryProcessor(mailDirectory: Path, userNamesToProcess: List[String] = Nil) extends MessageProcessor {
 
   private val Logger = LogManager.getLogger(classOf[MailDirectoryProcessor])
 
@@ -22,7 +27,7 @@ abstract class MailDirectoryProcessor(mailDirectory: File, userNamesToProcess: L
 
   def processMailDirectory(): Int = {
     var mailMessagesProcessedCount = 0
-    val userDirectories = mailDirectory.listFiles()
+    val userDirectories = PathUtils.listChildPaths(mailDirectory)
     for (userDirectory <- userDirectories) {
       if (isReadableDirectory(userDirectory)) {
         mailMessagesProcessedCount = processUserDirectory(userDirectory, mailMessagesProcessedCount)
@@ -35,12 +40,12 @@ abstract class MailDirectoryProcessor(mailDirectory: File, userNamesToProcess: L
     mailMessagesProcessedCount
   }
 
-  def processUserDirectory(userDirectory: File, processedCountSoFar: Int): Int =
+  def processUserDirectory(userDirectory: Path, processedCountSoFar: Int): Int =
     {
       var processedCount = processedCountSoFar
       if (userNamesToProcess == Nil || isUserDirectoryToBeProcessed(userDirectory)) {
-        val userName = userDirectory.getName()
-        val folders = userDirectory.listFiles()
+        val userName = userDirectory.getFileName().toString()
+        val folders = PathUtils.listChildPaths(userDirectory)
         for (folder <- folders) {
           if (isReadableDirectory(folder)) {
             val parentFolderName = None
@@ -52,18 +57,18 @@ abstract class MailDirectoryProcessor(mailDirectory: File, userNamesToProcess: L
       processedCount
     }
 
-  def isUserDirectoryToBeProcessed(userDirectory: File): Boolean = {
-    val userName = userDirectory.getName()
+  def isUserDirectoryToBeProcessed(userDirectory: Path): Boolean = {
+    val userName = userDirectory.getFileName().toString()
     userNamesToProcess.contains(userName)
   }
 
   def processFolder(userName: String, parentFolderName: Option[String],
-                    folder: File, processCountSoFar: Int): Int = {
+                    folder: Path, processCountSoFar: Int): Int = {
     val folderName = getFolderName(parentFolderName, folder)
     var processedCount = processCountSoFar
-    val mailsOrSubdirs = folder.listFiles()
+    val mailsOrSubdirs = PathUtils.listChildPaths(folder)
     for (mailOrSubdir <- mailsOrSubdirs) {
-      if (mailOrSubdir.isFile()) {
+      if (Files.isRegularFile(mailOrSubdir)) {
         processedCount = processFile(userName, folderName, mailOrSubdir, processedCount)
       } else {
         processedCount = processFolder(userName, Some(folderName), mailOrSubdir, processedCount)
@@ -78,9 +83,9 @@ abstract class MailDirectoryProcessor(mailDirectory: File, userNamesToProcess: L
     processedCount
   }
 
-  def processFile(userName: String, folderName: String, mailFile: File, processedCount: Int): Int = {
-    val fileName = mailFile.getName()
-    for (mailIn <- managed(new FileInputStream(mailFile))) {
+  def processFile(userName: String, folderName: String, mailFile: Path, processedCount: Int): Int = {
+    val fileName = mailFile.getFileName().toString()
+    for (mailIn <- managed(Files.newInputStream(mailFile))) {
       try {
         val fileSystemMetadata = FileSystemMetadata(userName, folderName,
           fileName)
@@ -89,7 +94,7 @@ abstract class MailDirectoryProcessor(mailDirectory: File, userNamesToProcess: L
       } catch {
         case e: Exception =>
           // scalastyle:off
-          val msg = s"Unable to process ${mailDirectory.getAbsolutePath()}/${userName}/${folderName}/${fileName} due to $e"
+          val msg = s"Unable to process ${mailDirectory.toAbsolutePath().toString()}/${userName}/${folderName}/${fileName} due to $e"
           Logger.warn(msg)
           // scalastyle:on
           throw new ParseException(msg)
@@ -98,14 +103,14 @@ abstract class MailDirectoryProcessor(mailDirectory: File, userNamesToProcess: L
     processedCount + 1
   }
 
-  def getFolderName(parentFolderNameOpt: Option[String], folder: File): String = {
+  def getFolderName(parentFolderNameOpt: Option[String], folder: Path): String = {
     parentFolderNameOpt match {
-      case Some(parentFolder) => s"${parentFolder}/${folder.getName()}"
-      case None               => folder.getName()
+      case Some(parentFolder) => s"${parentFolder}/${folder.getFileName().toString()}"
+      case None               => folder.getFileName().toString()
     }
   }
 
-  def isReadableDirectory(potentialDir: File): Boolean = {
-    return potentialDir.isDirectory() && potentialDir.canRead()
+  def isReadableDirectory(potentialDir: Path): Boolean = {
+    return Files.isDirectory(potentialDir) && Files.isReadable(potentialDir)
   }
 }

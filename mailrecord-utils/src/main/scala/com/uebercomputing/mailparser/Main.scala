@@ -2,10 +2,16 @@ package com.uebercomputing.mailparser
 
 import java.io.File
 import java.io.FileOutputStream
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.nio.file.attribute.AttributeView
 
 import resource._
-
 import scala.annotation.tailrec
+import java.nio.file.Files
+
+import com.uebercomputing.io.PathUtils
 
 /**
  * Invoke:
@@ -23,7 +29,7 @@ object Main {
   val AvroOutputArg = "--avroOutput"
   val OverwriteArg = "--overwrite"
 
-  case class Config(mailDir: File = new File("."),
+  case class Config(mailDir: Path = Paths.get("."),
                     users: List[String] = List(),
                     avroOutput: File = new File("mail.avro"),
                     overwrite: Boolean = false)
@@ -33,7 +39,7 @@ object Main {
     // parser.parse returns Option[C]
     p.parse(args, Config()) map { config =>
       val mailDirProcessor = new MailDirectoryProcessor(config.mailDir, config.users) with AvroMessageProcessor
-      println(s"Counting total number of mail messages in ${config.mailDir.getAbsolutePath}")
+      println(s"Counting total number of mail messages in ${config.mailDir.toAbsolutePath}")
       val totalMessageCount = getTotalMessageCount(config.mailDir)
       println(s"Getting ready to process $totalMessageCount mail messages")
       for (out <- managed(new FileOutputStream(config.avroOutput))) {
@@ -45,24 +51,29 @@ object Main {
     }
   }
 
-  def getTotalMessageCount(mailDir: File): Int = {
+  def getTotalMessageCount(mailDir: Path): Int = {
 
-    @tailrec def countHelper(files: List[File], count: Int): Int = {
+    @tailrec def countHelper(files: List[Path], count: Int): Int = {
       files match {
         case Nil => count
         case x :: xs => {
-          if (x.isFile() && x.canRead()) countHelper(xs, count + 1)
-          else if (x.isDirectory() && x.canRead()) {
-            val newFiles = x.listFiles().toList
-            countHelper(xs ++ newFiles, count)
+          if (Files.isReadable(x)) {
+            if (Files.isRegularFile(x)) countHelper(xs, count + 1)
+            else if (Files.isDirectory(x)) {
+              val newFiles = PathUtils.listChildPaths(x)
+              countHelper(xs ++ newFiles, count)
+            } else {
+              countHelper(xs, count)
+            }
           } else {
             countHelper(xs, count)
           }
         }
       }
     }
-    val filesArray = mailDir.listFiles()
-    countHelper(filesArray.toList, 0)
+
+    val files = PathUtils.listChildPaths(mailDir)
+    countHelper(files, 0)
   }
 
   def parser(): scopt.OptionParser[Config] = {
@@ -71,10 +82,10 @@ object Main {
       head("scopt", "3.x")
 
       opt[String]("mailDir") optional () action { (mailDirArg, config) =>
-        config.copy(mailDir = new File(mailDirArg))
+        config.copy(mailDir = Paths.get(mailDirArg))
       } validate { x =>
-        val f = new File(x)
-        if (f.exists() && f.canRead() && f.isDirectory()) success
+        val path = Paths.get(x)
+        if (Files.exists(path) && Files.isReadable(path) && Files.isDirectory(path)) success
         else failure("Option --mailDir must be readable directory")
       } text ("mailDir is String with relative or absolute location of mail dir.")
 
