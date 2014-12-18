@@ -9,6 +9,7 @@ import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
 import com.uebercomputing.mailrecord.MailRecord
 import com.uebercomputing.analytics.util.MailMasterOptionParser
+import org.apache.avro.mapreduce.AvroJob
 
 /**
  * Run with two args (these are also defaults:)
@@ -23,13 +24,20 @@ object UniqueSenderCounter extends MailMasterOptionParser {
       val sparkConf = new SparkConf().setAppName("Unique Senders").setMaster(config.master)
       val sc = new SparkContext(sparkConf)
 
-      val conf = new Job()
-      FileInputFormat.setInputPaths(conf, config.avroMailFile)
+      val job = new Job()
+      AvroJob.setInputKeySchema(job, MailRecord.getClassSchema)
 
-      val recordsKeyValues = sc.newAPIHadoopRDD(conf.getConfiguration,
+      //FileInputFormat.setInputPaths(job, config.avroMailFile)
+      //      val recordsKeyValues = sc.newAPIHadoopRDD(job.getConfiguration,
+      //        classOf[AvroKeyInputFormat[MailRecord]],
+      //        classOf[AvroKey[MailRecord]],
+      //        classOf[NullWritable])
+
+      val recordsKeyValues = sc.newAPIHadoopFile(config.avroMailFile,
         classOf[AvroKeyInputFormat[MailRecord]],
         classOf[AvroKey[MailRecord]],
-        classOf[NullWritable])
+        classOf[NullWritable],
+        job.getConfiguration)
 
       val allFroms = recordsKeyValues.map {
         recordKeyValueTuple =>
