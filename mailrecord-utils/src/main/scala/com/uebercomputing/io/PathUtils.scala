@@ -28,7 +28,7 @@ object PathUtils {
           childPaths += iter.next()
         }
         dirStream.close()
-      case Failure(ex) => Logger.warn(s"Unable to list files for ${parentPath} due to ${ex.getMessage}")
+      case Failure(ex) => Logger.warn(s"Unable to list files for ${parentPath} due to ${ex}")
     }
     childPaths.toList
   }
