@@ -14,8 +14,7 @@ source code out from command line git appeared to work.
 The original code used the File classes listFiles() to do directory listings.
 This also suffered from the problem that at least some versions of Windows
 report files of the form FILE_NAME. (i.e. ending with dot) as just FILE_NAME
-(no dot at the end). Attempting to fix this
-[using java.nio.file APIs instead](https://github.com/medale/spark-mail/issues/4).
+(no dot at the end). Fixed by [using java.nio.file APIs instead](https://github.com/medale/spark-mail/issues/4).
 
 
 # Obtaining/preparing the Enron dataset

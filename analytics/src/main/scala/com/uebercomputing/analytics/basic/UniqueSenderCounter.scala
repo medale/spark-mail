@@ -24,7 +24,7 @@ object UniqueSenderCounter extends MailMasterOptionParser {
       val sparkConf = new SparkConf().setAppName("Unique Senders").setMaster(config.master)
       val sc = new SparkContext(sparkConf)
 
-      val job = new Job()
+      val job = Job.getInstance()
       AvroJob.setInputKeySchema(job, MailRecord.getClassSchema)
 
       //FileInputFormat.setInputPaths(job, config.avroMailFile)
