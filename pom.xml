@@ -26,6 +26,7 @@
 		<module>mailrecord</module>
 		<module>mailrecord-utils</module>
 		<module>analytics</module>
+		<module>pst-utils</module>
 	</modules>
 
 	<properties>
@@ -126,6 +127,11 @@
 				<groupId>com.twitter</groupId>
 				<artifactId>chill-avro_2.10</artifactId>
 				<version>0.5.1</version>
+			</dependency>
+			<dependency>
+				<groupId>com.pff</groupId>
+				<artifactId>java-libpst</artifactId>
+				<version>0.8.1</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-io</groupId>
