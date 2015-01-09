@@ -16,6 +16,13 @@ import org.apache.avro.file.DataFileWriter
 import org.apache.avro.file.CodecFactory
 import java.nio.file.Paths
 import java.nio.file.StandardOpenOption
+import org.apache.spark.SparkConf
+import org.apache.spark.SparkContext
+import org.apache.hadoop.mapreduce.Job
+import org.apache.avro.mapreduce.AvroJob
+import org.apache.avro.mapreduce.AvroKeyInputFormat
+import org.apache.avro.mapred.AvroKey
+import org.apache.hadoop.io.NullWritable
 
 @RunWith(classOf[JUnitRunner])
 class BinaryMailRecordRegistratorTest extends fixture.FunSuite {
@@ -44,6 +51,33 @@ class BinaryMailRecordRegistratorTest extends fixture.FunSuite {
 
   //TODO: complete
   test("Show that Spark default Java serialization fails") { fixture =>
+    println(fixture.outPath)
+    val sparkConf = new SparkConf().setAppName("Buffers").setMaster("local[4]")
+    val sc = new SparkContext(sparkConf)
+
+    val job = Job.getInstance()
+    AvroJob.setInputKeySchema(job, BinaryMailRecord.getClassSchema)
+
+    val recordsKeyValues = sc.newAPIHadoopFile(fixture.outPath.toString(),
+      classOf[AvroKeyInputFormat[BinaryMailRecord]],
+      classOf[AvroKey[BinaryMailRecord]],
+      classOf[NullWritable],
+      job.getConfiguration)
+
+    val allMessages = recordsKeyValues.map {
+      recordKeyValueTuple =>
+        val mailRecord = recordKeyValueTuple._1.datum()
+        mailRecord.getMessage
+    }
+    val msgStrings = allMessages.map { buffer =>
+      val b = new Array[Byte](buffer.remaining())
+      buffer.get(b)
+      new String(b, java.nio.charset.StandardCharsets.UTF_8)
+    }
+    println("Yodel")
+    val strings = msgStrings.collect()
+    println(strings.mkString)
+    println(msgStrings.count())
     assert(true === true)
   }
 

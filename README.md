@@ -5,17 +5,24 @@ Tutorial on parsing Enron email to Avro and then explore the email set using Spa
 
 # Note to Windows Users
 The Enron email dataset used (see below) contains files that end with a dot
-(e.g. enron_mail_20110402/maildir/lay-k/inbox/1.). The unit tests use actual
-emails from this dataset and those files also end with a dot
-(e.g. mailrecord-utils/src/test/resources/enron/maildir/lay-k/inbox/568.).
-This seems to cause problems for using Git from Eclipse. Checking the
-source code out from command line git appeared to work.
+(e.g. enron_mail_20110402/maildir/lay-k/inbox/1.).
 
-The original code used the File classes listFiles() to do directory listings.
+The unit tests used actual emails from this dataset. This caused problems for
+using Git from Eclipse. Checking the source code out from command line git
+appeared to work.
+
+However, the original code used the File classes listFiles() to do directory listings.
 This also suffered from the problem that at least some versions of Windows
 report files of the form FILE_NAME. (i.e. ending with dot) as just FILE_NAME
-(no dot at the end). Fixed by [using java.nio.file APIs instead](https://github.com/medale/spark-mail/issues/4).
+(no dot at the end). The unit tests failed on Windows. An attempt to fix this
+by [using java.nio.file APIs instead](https://github.com/medale/spark-mail/issues/4)
+also did not work.
 
+## Workaround:
+Renamed the test files with a .txt extension. That fixes the unit tests.
+However, to process the actual files in the Enron dataset (see below) we need
+to rename each file with a .txt extension. Note: Don't use dots as the end of
+a file name!!!
 
 # Obtaining/preparing the Enron dataset
 
