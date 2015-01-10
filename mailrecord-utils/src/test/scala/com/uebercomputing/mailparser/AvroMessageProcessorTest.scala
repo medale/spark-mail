@@ -30,7 +30,7 @@ class AvroMessageProcessorTest extends FunSuite {
 
   case class AvroFileTestInfo(val fileSystem: FileSystem, val avroFilePath: Path, val out: FSDataOutputStream)
 
-  val TestFileUrl = "/enron/maildir/neal-s/all_documents/99."
+  val TestFileUrl = "/enron/maildir/neal-s/all_documents/99.txt"
 
   private var tempFile: java.nio.file.Path = _
 

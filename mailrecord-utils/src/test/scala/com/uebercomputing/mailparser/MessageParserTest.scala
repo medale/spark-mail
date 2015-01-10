@@ -8,7 +8,7 @@ import scala.util.control.NonFatal
 
 class MessageParserTest extends UnitTest {
 
-  val TestFileWithLongTo = "/enron/maildir/kean-s/deleted_items/338."
+  val TestFileWithLongTo = "/enron/maildir/kean-s/deleted_items/338.txt"
 
   test("parseRaw for multiline Subject") {
     val subject = """Subject: RE: Alliant Energy - IES Utilities dispute re: Poi 2870 - Cherokee
@@ -90,7 +90,7 @@ class MessageParserTest extends UnitTest {
   }
 
   test("parse actual mail message from file") {
-    val msgUrl = "/enron/maildir/lay-k/inbox/898."
+    val msgUrl = "/enron/maildir/lay-k/inbox/898.txt"
     var msgStream = getClass().getResourceAsStream(msgUrl)
     var msgSource: Option[Source] = None
     var actual: Map[String, String] = Map.empty
@@ -127,7 +127,7 @@ class MessageParserTest extends UnitTest {
   ignore("process 163") {
     //fixed by implicit utf-8 codec - add specific test!
     //TODO
-    val in = new FileInputStream("/opt/rpm1/enron/enron_mail_20110402/maildir/kean-s/california___working_group/163.")
+    val in = new FileInputStream("/opt/rpm1/enron/enron_mail_20110402/maildir/kean-s/california___working_group/163.txt")
     val msg = IOUtils.toString(in)
     val mailIn = Source.fromString(msg)
     val map = MessageParser(mailIn)
