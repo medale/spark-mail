@@ -340,11 +340,6 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-shade-plugin</artifactId>
 					<version>2.3</version>
-					<configuration>
-						<shadedArtifactAttached>true</shadedArtifactAttached>
-						<!-- <transformers> <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"> 
-							<mainClass>com.uebercomputing...</mainClass> </transformer> </transformers> -->
-					</configuration>
 					<executions>
 						<execution>
 							<id>shade</id>
@@ -354,6 +349,23 @@
 							</goals>
 						</execution>
 					</executions>
+					<configuration>
+						<shadedArtifactAttached>true</shadedArtifactAttached>
+						<!-- <transformers> <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"> 
+							<mainClass>com.uebercomputing...</mainClass> </transformer> </transformers> -->
+						<!-- http://stackoverflow.com/questions/8302022/maven-shade-jar-throw-exception -->
+						<filters>
+							<filter>
+								<!-- Avoid security exception for signed jars -->
+								<artifact>*:*</artifact>
+								<excludes>
+									<exclude>META-INF/*.SF</exclude>
+									<exclude>META-INF/*.RSA</exclude>
+									<exclude>META-INF/*.INF</exclude>
+								</excludes>
+							</filter>
+						</filters>
+					</configuration>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -429,15 +441,6 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-shade-plugin</artifactId>
-						<configuration>
-							<artifactSet>
-								<excludes>
-                                    <exclude>META-INF/*.SF</exclude>
-                                    <exclude>META-INF/*.DSA</exclude>
-                                    <exclude>META-INF/*.RSA</exclude>
-								</excludes>
-							</artifactSet>
-						</configuration>
 					</plugin>
 				</plugins>
 			</build>

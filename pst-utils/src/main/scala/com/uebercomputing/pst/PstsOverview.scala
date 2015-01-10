@@ -1,24 +1,18 @@
 package com.uebercomputing.pst
 
-import com.pff.PSTFolder
+import java.io.File
+import java.util.Date
+
+import scala.collection.JavaConverters.asScalaBufferConverter
+
 import com.pff.PSTFile
 import com.pff.PSTFolder
 import com.pff.PSTMessage
 
-import collection.JavaConverters._
-
-import java.io.File
-import java.lang.reflect.Method
-import java.lang.reflect.Type
-import java.util.ArrayList
-import java.util.List
-import java.util.Vector
-import com.pff.PSTFile
-import com.pff.PSTFolder
-import com.pff.PSTMessage
-import java.io.File
-import java.io.FileFilter
-
+/**
+ * Run:
+ * java -classpath target/pst-utils-0.9.0-SNAPSHOT-shaded.jar com.uebercomputing.pst.PstOverview /opt/rpm1/jebbush > overview.txt
+ */
 object PstOverview {
 
   val DefaultPstHome = "/opt/rpm1/jebbush"
@@ -30,6 +24,8 @@ object PstOverview {
       val baseDir = new File(pstHome)
       val pstPaths = baseDir.listFiles(new PstFileFilter())
       var grandTotal = 0
+      val startTime = new Date()
+      println(s"Start time: ${startTime}")
       pstPaths.foreach { pstPath =>
         currPstPath = pstPath.getName
         val pstFile = new PSTFile(pstPath)
@@ -39,6 +35,10 @@ object PstOverview {
         println(s"\n\nTotal for file $pstPath was $totalForFolder")
       }
       println(s"Grand total number of emails was $grandTotal")
+      val stopTime = new Date()
+      println(s"Stop time: ${stopTime}")
+      val runtimeSecs = (stopTime.getTime - startTime.getTime) / 1000
+      println(s"Ran for ${runtimeSecs}")
     } catch {
       case e: Throwable => sys.error(s"Unable to process $currPstPath due to $e")
     }
