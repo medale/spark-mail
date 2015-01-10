@@ -12,10 +12,10 @@
 	<name>pst-utils</name>
 
 	<dependencies>
-			<dependency>
-				<groupId>com.pff</groupId>
-				<artifactId>java-libpst</artifactId>
-			</dependency>
+		<dependency>
+			<groupId>com.pff</groupId>
+			<artifactId>java-libpst</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.avro</groupId>
 			<artifactId>avro</artifactId>
@@ -104,6 +104,15 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-shade-plugin</artifactId>
+						<configuration>
+							<artifactSet>
+								<excludes>
+									<exclude>META-INF/*.SF</exclude>
+									<exclude>META-INF/*.DSA</exclude>
+									<exclude>META-INF/*.RSA</exclude>
+								</excludes>
+							</artifactSet>
+						</configuration>
 					</plugin>
 					<plugin>
 						<groupId>org.scalatest</groupId>

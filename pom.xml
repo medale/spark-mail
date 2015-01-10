@@ -429,6 +429,15 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-shade-plugin</artifactId>
+						<configuration>
+							<artifactSet>
+								<excludes>
+                                    <exclude>META-INF/*.SF</exclude>
+                                    <exclude>META-INF/*.DSA</exclude>
+                                    <exclude>META-INF/*.RSA</exclude>
+								</excludes>
+							</artifactSet>
+						</configuration>
 					</plugin>
 				</plugins>
 			</build>
