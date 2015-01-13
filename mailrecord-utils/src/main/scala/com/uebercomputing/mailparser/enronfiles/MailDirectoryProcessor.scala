@@ -1,16 +1,16 @@
-package com.uebercomputing.mailparser
+package com.uebercomputing.mailparser.enronfiles
 
-import java.io.FileInputStream
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
-import org.apache.logging.log4j.LogManager
-import resource.managed
+
 import scala.io.Source
-import java.nio.charset.CodingErrorAction
-import scala.io.Codec
+
+import org.apache.logging.log4j.LogManager
+
 import com.uebercomputing.io.PathUtils
 import com.uebercomputing.io.Utf8Codec
+
+import resource.managed
 
 abstract class MailDirectoryProcessor(mailDirectory: Path, userNamesToProcess: List[String] = Nil) extends MessageProcessor {
 

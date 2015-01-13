@@ -1,4 +1,4 @@
-package com.uebercomputing.mailparser
+package com.uebercomputing.mailparser.enronfiles
 
 import com.uebercomputing.mailrecord.MailRecord
 import com.uebercomputing.mailrecord.MailRecordWriter

@@ -2,7 +2,7 @@ package com.uebercomputing.test
 
 import java.io.File
 
-import com.uebercomputing.mailparser.Main
+import com.uebercomputing.mailparser.enronfiles.Main
 
 /**
  * Trait provides functionality to create a temporary mail file based on

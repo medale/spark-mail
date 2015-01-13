@@ -1,4 +1,4 @@
-package com.uebercomputing.mailparser
+package com.uebercomputing.mailparser.enronfiles
 
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter

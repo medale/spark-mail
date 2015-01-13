@@ -1,10 +1,13 @@
-package com.uebercomputing.mailparser
+package com.uebercomputing.mailparser.enronfiles
+
+import java.nio.file.Paths
+
+import scala.io.Source
+
+import org.junit.runner.RunWith
 
 import com.uebercomputing.mailrecord.MailRecord
 import com.uebercomputing.test.UnitTest
-import java.io.File
-import java.nio.file.Paths
-import scala.io.Source
 
 class MailDirectoryProcessorTest extends UnitTest {
 

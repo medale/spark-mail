@@ -1,10 +1,14 @@
-package com.uebercomputing.mailparser
+package com.uebercomputing.mailparser.enronfiles
 
-import com.uebercomputing.test.UnitTest
 import java.io.FileInputStream
-import org.apache.commons.io.IOUtils
+
 import scala.io.Source
 import scala.util.control.NonFatal
+
+import org.apache.commons.io.IOUtils
+import org.junit.runner.RunWith
+
+import com.uebercomputing.test.UnitTest
 
 class MessageParserTest extends UnitTest {
 

@@ -1,4 +1,4 @@
-package com.uebercomputing.mailparser
+package com.uebercomputing.mailparser.enronfiles
 
 import scala.io.Source
 

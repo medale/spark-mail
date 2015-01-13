@@ -1,17 +1,16 @@
-package com.uebercomputing.mailparser
+package com.uebercomputing.mailparser.enronfiles
 
 import java.io.File
 import java.io.FileOutputStream
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.nio.file.attribute.AttributeView
 
-import resource._
 import scala.annotation.tailrec
-import java.nio.file.Files
 
 import com.uebercomputing.io.PathUtils
+
+import resource.managed
 
 /**
  * Invoke:

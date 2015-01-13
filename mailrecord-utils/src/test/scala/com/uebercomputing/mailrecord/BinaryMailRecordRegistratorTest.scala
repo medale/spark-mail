@@ -1,28 +1,27 @@
 package com.uebercomputing.mailrecord
 
-import org.scalatest.fixture
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
-import java.nio.file.Path
-import com.uebercomputing.io.PathUtils
-import resource.managed
-import scala.io.Source
-import com.uebercomputing.io.Utf8Codec
-import com.uebercomputing.mailparser.MessageParser
-import java.nio.file.Files
 import java.nio.ByteBuffer
-import org.apache.avro.specific.SpecificDatumWriter
-import org.apache.avro.file.DataFileWriter
-import org.apache.avro.file.CodecFactory
+import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
-import java.nio.file.StandardOpenOption
-import org.apache.spark.SparkConf
-import org.apache.spark.SparkContext
-import org.apache.hadoop.mapreduce.Job
+
+import org.apache.avro.file.CodecFactory
+import org.apache.avro.file.DataFileWriter
+import org.apache.avro.mapred.AvroKey
 import org.apache.avro.mapreduce.AvroJob
 import org.apache.avro.mapreduce.AvroKeyInputFormat
-import org.apache.avro.mapred.AvroKey
+import org.apache.avro.specific.SpecificDatumWriter
 import org.apache.hadoop.io.NullWritable
+import org.apache.hadoop.mapreduce.Job
+import org.apache.spark.SparkConf
+import org.apache.spark.SparkContext
+import org.junit.runner.RunWith
+import org.scalatest.fixture
+import org.scalatest.junit.JUnitRunner
+
+import com.uebercomputing.io.PathUtils
+
+import resource.managed
 
 @RunWith(classOf[JUnitRunner])
 class BinaryMailRecordRegistratorTest extends fixture.FunSuite {
