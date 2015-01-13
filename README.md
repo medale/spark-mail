@@ -92,3 +92,10 @@ with all the corresponding MailRecord Avro records.
 
 # Spark Analytics
 See spark-mail/analytics module source and test (in progress...)
+
+# Enron Email As PST
+* http://info.nuix.com/Enron.html
+
+Note: Used pst file of bill_rapp.zip downloaded from nuix.com for testing.
+
+# Jeb Bush Governorship Emails
