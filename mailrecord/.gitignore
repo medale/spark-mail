@@ -1,3 +1,4 @@
+src/main/java/com/uebercomputing/mailrecord/Attachment.java
 src/main/java/com/uebercomputing/mailrecord/MailRecord.java
 src/main/java/com/uebercomputing/mailrecord/MailRecordProtocol.java
 src/main/java/com/uebercomputing/mailrecord/BinaryMailRecord.java

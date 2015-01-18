@@ -68,16 +68,23 @@ will use the following [MailRecord format in Avro IDL](https://github.com/medale
 @version("1.0.0")
 @namespace("com.uebercomputing.mailrecord")
 protocol MailRecordProtocol {
+  
+  record Attachment {
+    string mimeType;
+    bytes data;
+  }
+
   record MailRecord {
     string uuid;
     string from;
-    union{array<string>,null} to = null;
-    union{array<string>,null} cc = null;
-    union{array<string>,null} bcc = null;
+    union{null, array<string>} to = null;
+    union{null, array<string>} cc = null;
+    union{null, array<string>} bcc = null;
     long dateUtcEpoch;
     string subject;
-    union{map<string>,null} mailFields = null;
+    union{null, map<string>} mailFields = null;
     string body;
+    union{null, array<Attachment>} attachments = null;
   }
 }
 ```

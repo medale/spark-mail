@@ -1,6 +1,14 @@
 @version("1.0.0")
 @namespace("com.uebercomputing.mailrecord")
 protocol MailRecordProtocol {
+
+  record Attachment {
+    string fileName;
+    int size;
+    string mimeType;
+    bytes data;
+  }
+  
   record MailRecord {
     string uuid;
     string from;
@@ -11,5 +19,6 @@ protocol MailRecordProtocol {
     string subject;
     union{null, map<string>} mailFields = null;
     string body;
+    union{null, array<Attachment>} attachments = null;
   }
 } 
