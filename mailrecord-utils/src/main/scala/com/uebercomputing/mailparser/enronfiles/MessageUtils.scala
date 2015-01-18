@@ -21,7 +21,7 @@ object MessageUtils {
     }
   }
 
-  def parseCommaSeparated(commaSeparated: String): java.util.List[CharSequence] = {
-    commaSeparated.split(",").toList.map(_.asInstanceOf[CharSequence]).asJava
+  def parseCommaSeparated(commaSeparated: String): java.util.List[String] = {
+    commaSeparated.split(",").toList.asJava
   }
 }

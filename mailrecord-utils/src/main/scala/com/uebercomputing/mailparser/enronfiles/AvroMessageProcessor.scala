@@ -25,7 +25,7 @@ trait AvroMessageProcessor extends MessageProcessor {
   private var recordWriter: MailRecordWriter = _
   private val mailRecordBuilder = MailRecord.newBuilder()
 
-  mailRecordBuilder.setMailFields(new java.util.HashMap[CharSequence, CharSequence])
+  mailRecordBuilder.setMailFields(new java.util.HashMap[String, String])
   var recordsAppendedCount = 0
 
   def open(out: OutputStream): Unit = {
