@@ -13,7 +13,10 @@ import org.apache.log4j.Logger
 import com.pff.PSTRecipient
 
 object PstEmailToMapProcessor {
-  val MsgIdKey = "Message-ID"
+
+  val ParentFolderSeparator = "/"
+
+  val UuidKey = "Uuid"
   val DateKey = "Date"
   val FromKey = "From"
   val ToKey = "To"
@@ -32,9 +35,9 @@ object PstEmailToMapProcessor {
   /**
    * Can include String, List[String], Date
    */
-  def process(uuid: String, email: PSTMessage, originalPstPath: String, parentFolders: java.util.List[String]): mutable.Map[String, AnyRef] = {
+  def process(uuid: String, email: PSTMessage, originalPstPath: String, parentFolders: String): mutable.Map[String, AnyRef] = {
     val map = mutable.Map[String, AnyRef]()
-    map(MsgIdKey) = uuid
+    map(UuidKey) = uuid
     map(FromKey) = email.getSenderEmailAddress.trim()
     map(DateKey) = email.getMessageDeliveryTime //Date object
     map(SubjectKey) = email.getSubject.trim() //String
@@ -72,17 +75,16 @@ object PstEmailToMapProcessor {
     var attachmentStream: InputStream = null
     try {
       attachmentStream = pstAttachment.getFileInputStream
-      val byteBuffer = readToByteBuffer(attachmentStream)
-      val attachmentSize = pstAttachment.getAttachSize
+      val (byteBuffer, attachmentSize) = readToByteBuffer(attachmentStream)
       val fileName = {
-        val longFileName = pstAttachment.getLongFilename
+        val longFileName = pstAttachment.getLongFilename.trim()
         if (longFileName.isEmpty()) {
-          pstAttachment.getFilename
+          pstAttachment.getFilename.trim()
         } else {
           longFileName
         }
       }
-      val mimeType = pstAttachment.getMimeTag
+      val mimeType = pstAttachment.getMimeTag.trim()
       val attachment = new Attachment()
       attachment.setFileName(fileName)
       attachment.setSize(attachmentSize)
@@ -94,11 +96,12 @@ object PstEmailToMapProcessor {
     }
   }
 
-  def readToByteBuffer(attachmentIn: InputStream): ByteBuffer = {
+  def readToByteBuffer(attachmentIn: InputStream): (ByteBuffer, Int) = {
     val pstLibInternalBlockSize = 8176
     val byteOut = new ByteArrayOutputStream(pstLibInternalBlockSize)
-    IOUtils.copy(attachmentIn, byteOut)
-    ByteBuffer.wrap(byteOut.toByteArray())
+    val bytesCopied = IOUtils.copy(attachmentIn, byteOut)
+    val byteBuffer = ByteBuffer.wrap(byteOut.toByteArray())
+    (byteBuffer, bytesCopied)
   }
 
   def addRecipients(email: PSTMessage, map: mutable.Map[String, AnyRef]): Unit = {
