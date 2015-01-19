@@ -10,13 +10,18 @@ import com.pff.PSTObject
 trait EmailProvider {
 
   val TestFilePath = "src/test/resources/psts/enron1.pst"
-  val ParentFolders = List("Personal folders", "Top of Personal Folders", "Deleted Items", "rapp-b", "Rapp, Bill (Non-Privileged)", "Rapp, Bill", "Inbox").mkString(PstEmailToMapProcessor.ParentFolderSeparator)
+  val ParentFolders = List("Personal folders", "Top of Personal Folders", "Deleted Items", "rapp-b", "Rapp, Bill (Non-Privileged)", "Rapp, Bill", "Inbox").mkString(PstConstants.ParentFolderSeparator)
+
+  def getPstFile(): PSTFile = {
+    val pstFile = new PSTFile(TestFilePath)
+    pstFile
+  }
 
   /**
    * Returns PSTMessage email based on param descriptor index from TestFilePath.
    */
   def getEmail(descriptorIndex: Long): PSTMessage = {
-    val pstFile = new PSTFile(TestFilePath)
+    val pstFile = getPstFile()
     val pstObj = PSTObject.detectAndLoadPSTObject(pstFile, descriptorIndex)
     pstObj match {
       case msg: PSTMessage => msg
@@ -36,7 +41,7 @@ trait EmailProvider {
    * |  |  |  |  |  |  |- Inbox 56
    */
   def getInboxFolder(): PSTFolder = {
-    val pstFile = new PSTFile(TestFilePath)
+    val pstFile = getPstFile()
     val rootFolder = pstFile.getRootFolder
     val rootfolders = rootFolder.getSubFolders.asScala
     val topOfPersonalFolder = rootfolders(0)

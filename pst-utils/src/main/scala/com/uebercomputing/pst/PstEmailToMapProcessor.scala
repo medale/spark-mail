@@ -14,8 +14,6 @@ import com.pff.PSTRecipient
 
 object PstEmailToMapProcessor {
 
-  val ParentFolderSeparator = "/"
-
   val UuidKey = "Uuid"
   val DateKey = "Date"
   val FromKey = "From"
