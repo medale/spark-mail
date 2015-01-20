@@ -193,7 +193,8 @@ class MailRecordByDateWriterTest extends UnitTest with MailRecordProvider {
   }
 
   def getTempDirStr(): String = {
-    val dirPath = Paths.get("/tmp")
+    val systemTemp = System.getProperty("java.io.tmpdir")
+    val dirPath = Paths.get(systemTemp)
     val prefix = "mailrecords"
     val tempDir = Files.createTempDirectory(dirPath, prefix)
     tempDir.toString()

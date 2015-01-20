@@ -23,7 +23,9 @@ class PstFileToAvroProcessorTest extends UnitTest with EmailProvider {
   }
 
   def getTempDirStr(): String = {
-    val dirPath = Paths.get("/tmp")
+    val systemTemp = System.getProperty("java.io.tmpdir")
+    println(systemTemp)
+    val dirPath = Paths.get(systemTemp)
     val prefix = "completePst"
     val tempDir = Files.createTempDirectory(dirPath, prefix)
     tempDir.toString()
