@@ -80,7 +80,7 @@ class PstEmailToMapProcessorTest extends UnitTest with EmailProvider {
     assert(attachment.getData.remaining === 254464)
   }
 
-  test("PrintAll") {
+  ignore("PrintAll in Inbox") {
     val inboxFolder = getInboxFolder()
     val count = inboxFolder.getContentCount
     for (i <- 0 until count) {

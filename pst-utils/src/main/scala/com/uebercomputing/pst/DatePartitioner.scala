@@ -4,7 +4,12 @@ import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 
 sealed trait DatePartitionType {
+
+  /**
+   * Abstract method implemented in DatePartitionType case objects.
+   */
   def getDatePartition(date: DateTime): List[String]
+
   def format(number: Int, length: Int): String = {
     val formatString = "%0" + length + "d"
     formatString.format(number)

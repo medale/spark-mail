@@ -13,7 +13,7 @@ import org.apache.commons.io.IOUtils
 // scalastyle:off
 class MailRecordWriter extends Closeable {
 
-  private var mailRecordWriter: DataFileWriter[MailRecord] = null
+  private var mailRecordWriter: DataFileWriter[MailRecord] = _
 
   def open(out: OutputStream): Unit = {
     val datumWriter = new SpecificDatumWriter[MailRecord](classOf[MailRecord])
