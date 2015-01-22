@@ -114,6 +114,10 @@ object PstEmailToMapProcessor {
         case PSTRecipient.MAPI_TO  => tos.add(emailAdx)
         case PSTRecipient.MAPI_CC  => ccs.add(emailAdx)
         case PSTRecipient.MAPI_BCC => bccs.add(emailAdx)
+        case default => {
+          LOGGER.error(s"Unknown recipient type $default. Storing recipients in To field.")
+          tos.add(emailAdx)
+        }
       }
     }
     if (tos.size() > 0) {
