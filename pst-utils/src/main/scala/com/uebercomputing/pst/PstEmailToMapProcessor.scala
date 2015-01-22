@@ -59,7 +59,7 @@ object PstEmailToMapProcessor {
           attachmentList.add(attachment)
         } catch {
           case e: Exception => {
-            LOGGER.warn(s"Unable to process file attachment due to $e - discarding ${email.getInternetMessageId} attachment ${i}")
+            LOGGER.warn(s"Unable to process file attachment ${i} in ${email.getDescriptorNodeId} in ${map(OriginalPstPathKey)} due to ${e}")
           }
         }
       }
@@ -69,9 +69,9 @@ object PstEmailToMapProcessor {
 
   //http://rjohnsondev.github.io/java-libpst/apidocs/com/pff/PSTAttachment.html
   def getAttachment(email: PSTMessage, attachmentIndex: Int): Attachment = {
-    val pstAttachment = email.getAttachment(attachmentIndex)
     var attachmentStream: InputStream = null
     try {
+      val pstAttachment = email.getAttachment(attachmentIndex)
       attachmentStream = pstAttachment.getFileInputStream
       val (byteBuffer, attachmentSize) = readToByteBuffer(attachmentStream)
       val fileName = {
@@ -108,16 +108,20 @@ object PstEmailToMapProcessor {
     val ccs = new java.util.ArrayList[String]()
     val bccs = new java.util.ArrayList[String]()
     for (i <- 0 until recipientsCount) {
-      val recipient = email.getRecipient(i)
-      val emailAdx = recipient.getSmtpAddress
-      recipient.getRecipientType match {
-        case PSTRecipient.MAPI_TO  => tos.add(emailAdx)
-        case PSTRecipient.MAPI_CC  => ccs.add(emailAdx)
-        case PSTRecipient.MAPI_BCC => bccs.add(emailAdx)
-        case default => {
-          LOGGER.error(s"Unknown recipient type $default. Storing recipients in To field.")
-          tos.add(emailAdx)
+      try {
+        val recipient = email.getRecipient(i)
+        val emailAdx = recipient.getSmtpAddress
+        recipient.getRecipientType match {
+          case PSTRecipient.MAPI_TO  => tos.add(emailAdx)
+          case PSTRecipient.MAPI_CC  => ccs.add(emailAdx)
+          case PSTRecipient.MAPI_BCC => bccs.add(emailAdx)
+          case default => {
+            LOGGER.warn(s"Unknown recipient type $default. Storing recipients in To field.")
+            tos.add(emailAdx)
+          }
         }
+      } catch {
+        case e: Exception => LOGGER.warn(s"Unable to get recipient ${i} in ${email.getDescriptorNodeId} in ${map(OriginalPstPathKey)} due to ${e}")
       }
     }
     if (tos.size() > 0) {
