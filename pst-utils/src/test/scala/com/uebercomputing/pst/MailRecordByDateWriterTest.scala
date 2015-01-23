@@ -57,7 +57,7 @@ class MailRecordByDateWriterTest extends UnitTest with MailRecordProvider {
    */
   test("byMonthPartition") {
     val hadoopConf = getLocalHadoopConf()
-    val datePartitionType = DatePartitionType.PartitionByMonth
+    val datePartitionType = PartitionByMonth
     val rootPath = getTempDirStr
     val byDateWriter = new MailRecordByDateWriter(hadoopConf, datePartitionType, rootPath, TestPstFile)
     val descriptorIndices = List(2097604, 2097636, 2099236, 2099332)
@@ -101,7 +101,7 @@ class MailRecordByDateWriterTest extends UnitTest with MailRecordProvider {
    */
   test("byDayPartition") {
     val hadoopConf = getLocalHadoopConf()
-    val datePartitionType = DatePartitionType.PartitionByDay
+    val datePartitionType = PartitionByDay
     val rootPath = getTempDirStr
     val byDateWriter = new MailRecordByDateWriter(hadoopConf, datePartitionType, rootPath, TestPstFile)
     val descriptorIndices = List(2097604, 2097636, 2099236, 2099332)
@@ -148,7 +148,7 @@ class MailRecordByDateWriterTest extends UnitTest with MailRecordProvider {
    */
   test("byYearPartition") {
     val hadoopConf = getLocalHadoopConf()
-    val datePartitionType = DatePartitionType.PartitionByYear
+    val datePartitionType = PartitionByYear
     val rootPath = getTempDirStr
     val byDateWriter = new MailRecordByDateWriter(hadoopConf, datePartitionType, rootPath, TestPstFile)
     val descriptorIndices = List(2097604, 2097636, 2099236, 2099332)

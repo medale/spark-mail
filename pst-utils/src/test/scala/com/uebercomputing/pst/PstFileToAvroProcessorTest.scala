@@ -11,21 +11,14 @@ class PstFileToAvroProcessorTest extends UnitTest with EmailProvider {
     val rootPath = getTempDirStr()
     val hadoopConf = getLocalHadoopConf()
     val pstFile = getPstFile()
-    val datePartitionType = DatePartitionType.PartitionByDay
+    val datePartitionType = PartitionByDay
     val mailRecordByDateWriter = new MailRecordByDateWriter(hadoopConf, datePartitionType, rootPath, TestFilePath)
     PstFileToAvroProcessor.processPstFile(mailRecordByDateWriter, pstFile, TestFilePath)
     mailRecordByDateWriter.closeAllWriters()
   }
 
-  test("Odd date") {
-    val email = getEmail(2110756)
-    println(email.getMessageDeliveryTime)
-  }
-
   def getTempDirStr(): String = {
-    val systemTemp = System.getProperty("java.io.tmpdir")
-    println(systemTemp)
-    val dirPath = Paths.get(systemTemp)
+    val dirPath = Paths.get(PstConstants.TempDir)
     val prefix = "completePst"
     val tempDir = Files.createTempDirectory(dirPath, prefix)
     tempDir.toString()

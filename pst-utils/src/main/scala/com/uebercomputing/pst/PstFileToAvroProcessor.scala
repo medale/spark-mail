@@ -1,12 +1,14 @@
 package com.uebercomputing.pst
 
+import java.util.UUID
+
+import scala.collection.JavaConverters.asScalaBufferConverter
+
+import org.apache.log4j.Logger
+
 import com.pff.PSTFile
 import com.pff.PSTFolder
-import scala.collection.JavaConverters._
 import com.pff.PSTMessage
-import org.apache.log4j.Logger
-import com.uebercomputing.mailrecord.MailRecordWriter
-import java.util.UUID
 
 object PstFileToAvroProcessor {
 

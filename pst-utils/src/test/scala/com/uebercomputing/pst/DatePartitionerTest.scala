@@ -5,7 +5,7 @@ import com.uebercomputing.test.UnitTest
 class DatePartitionerTest extends UnitTest {
 
   test("by day partition") {
-    val partitionType = DatePartitionType.PartitionByDay
+    val partitionType = PartitionByDay
     val utcOffsetInMillis: Long = 0
     val expectedParts = List("1970", "01", "01")
     val parts = DatePartitioner.getDatePartion(partitionType, utcOffsetInMillis)
@@ -13,7 +13,7 @@ class DatePartitionerTest extends UnitTest {
   }
 
   test("by month partition") {
-    val partitionType = DatePartitionType.PartitionByMonth
+    val partitionType = PartitionByMonth
     val utcOffsetInMillis = 0
     val expectedParts = List("1970", "01")
     val parts = DatePartitioner.getDatePartion(partitionType, utcOffsetInMillis)
@@ -21,7 +21,7 @@ class DatePartitionerTest extends UnitTest {
   }
 
   test("by year partition") {
-    val partitionType = DatePartitionType.PartitionByYear
+    val partitionType = PartitionByYear
     val utcOffsetInMillis = 0
     val expectedParts = List("1970")
     val parts = DatePartitioner.getDatePartion(partitionType, utcOffsetInMillis)

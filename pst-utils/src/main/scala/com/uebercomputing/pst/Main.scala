@@ -10,10 +10,11 @@ import com.uebercomputing.time.DateUtils
 
 /**
  * Invoke command line from spark-mail:
- * java -classpath pst-utils/target/pst-utils-0.9.0-SNAPSHOT-shaded.jar com.uebercomputing.pst.Main --pstDir /opt/rpm1/jebbush --avroOutDir /opt/rpm1/jebbush/avro
+ * java -classpath pst-utils/target/pst-utils-0.9.0-SNAPSHOT-shaded.jar com.uebercomputing.pst.Main --pstDir /opt/rpm1/jebbush --avroOutDir /opt/rpm1/jebbush/avro-monthly --rollup monthly > msg.txt 2>&1
  *
  * --pstDir /opt/rpm1/jebbush
  * --avroOutDir /opt/rpm1/jebbush/avro
+ * --rollup monthly
  *
  * Create small set of test avro files:
  * --pstDir src/test/resources/psts/enron1.pst
@@ -22,13 +23,9 @@ import com.uebercomputing.time.DateUtils
  */
 object Main {
 
-  val PstDirArg = "--pstDir"
-  val AvroOutDirArg = "--avroOutDir"
-  val HadoopConfFileArg = "--hadoopConfFile"
-  val OverwriteArg = "--overwrite"
-
   case class Config(pstDir: String = ".",
                     avroOutDir: String = PstConstants.TempDir + "/avro",
+                    rollup: DatePartitionType = PartitionByMonth,
                     hadoopConfFileOpt: Option[String] = None,
                     overwrite: Boolean = false)
 
@@ -47,11 +44,15 @@ object Main {
         case None => getLocalHadoopConf()
       }
       val rootPath = config.avroOutDir
+      val datePartitionType = config.rollup
+      println(s"Using ${datePartitionType.getClass} rollup...")
+      println(s"Input dir is ${config.pstDir}")
+      println(s"Output dir is ${config.avroOutDir}")
+      println(s"""File system is ${hadoopConf.get("fs.defaultFS")}""")
       for (pstFileLoc <- pstFiles) {
         val pstStartTime = new DateTime()
         val pstAbsolutePath = pstFileLoc.getAbsolutePath
         val pstFile = new PSTFile(pstFileLoc)
-        val datePartitionType = DatePartitionType.PartitionByDay
         val mailRecordByDateWriter = new MailRecordByDateWriter(hadoopConf, datePartitionType, rootPath, pstAbsolutePath)
         PstFileToAvroProcessor.processPstFile(mailRecordByDateWriter, pstFile, pstAbsolutePath)
         mailRecordByDateWriter.closeAllWriters()
@@ -96,6 +97,20 @@ object Main {
       opt[String]("avroOutDir") optional () action { (avroOutDirArg, config) =>
         config.copy(avroOutDir = avroOutDirArg)
       } text ("avroOutDir is String with relative or absolute location of root directory for avro output files.")
+
+      opt[String]("rollup") optional () action { (rollupArg, config) =>
+        {
+          val rollupType = rollupArg match {
+            case "daily"   => PartitionByDay
+            case "monthly" => PartitionByMonth
+            case "yearly"  => PartitionByYear
+          }
+          config.copy(rollup = rollupType)
+        }
+      } validate { rollupArg =>
+        if (List("daily", "monthly", "yearly").contains(rollupArg)) success
+        else failure("Option --rollup must be either daily, monthly or yearly (default: monthly)")
+      } text ("rollup can be daily, monthly or yearly (default: monthly) and determines how emails are binned into Avro files by the email's date.")
 
       opt[String]("hadoopConfFile") optional () action { (hadoopConfFileArg, config) =>
         config.copy(hadoopConfFileOpt = Some(hadoopConfFileArg))
