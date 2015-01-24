@@ -1,7 +1,0 @@
-@version("1.0.0")
-@namespace("com.uebercomputing.mailrecord")
-protocol BinaryMailRecordProtocol {
-  record BinaryMailRecord {
-    bytes message;
-  }
-} 

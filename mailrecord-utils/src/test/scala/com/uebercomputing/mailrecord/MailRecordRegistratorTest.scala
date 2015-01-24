@@ -19,12 +19,13 @@ import org.junit.runner.RunWith
 import org.scalatest.fixture
 import org.scalatest.junit.JUnitRunner
 
+import scala.collection.JavaConverters._
 import com.uebercomputing.io.PathUtils
 
 import resource.managed
 
 @RunWith(classOf[JUnitRunner])
-class BinaryMailRecordRegistratorTest extends fixture.FunSuite {
+class MailRecordRegistratorTest extends fixture.FunSuite {
 
   val layInbox = "src/test/resources/enron/maildir/lay-k/inbox"
 
@@ -39,7 +40,7 @@ class BinaryMailRecordRegistratorTest extends fixture.FunSuite {
     val outPath = Files.createTempFile(prefix, suffix)
 
     try {
-      writeBinaryMailRecords(mailFolder, outPath)
+      writeMailRecords(mailFolder, outPath)
       val fixture = FixtureParam(outPath)
       //calls each test method with fixture
       withFixture(test.toNoArgTest(fixture))
@@ -48,57 +49,56 @@ class BinaryMailRecordRegistratorTest extends fixture.FunSuite {
     }
   }
 
-  //TODO: complete
-  test("Show that Spark default Java serialization fails") { fixture =>
+  //TODO: TEST will not fail locally - no serialization!
+  ignore("Show that Spark default Java serialization fails") { fixture =>
     println(fixture.outPath)
     val sparkConf = new SparkConf().setAppName("Buffers").setMaster("local[4]")
     val sc = new SparkContext(sparkConf)
 
     val job = Job.getInstance()
-    AvroJob.setInputKeySchema(job, BinaryMailRecord.getClassSchema)
+    AvroJob.setInputKeySchema(job, MailRecord.getClassSchema)
 
     val recordsKeyValues = sc.newAPIHadoopFile(fixture.outPath.toString(),
-      classOf[AvroKeyInputFormat[BinaryMailRecord]],
-      classOf[AvroKey[BinaryMailRecord]],
+      classOf[AvroKeyInputFormat[MailRecord]],
+      classOf[AvroKey[MailRecord]],
       classOf[NullWritable],
       job.getConfiguration)
 
-    val allMessages = recordsKeyValues.map {
+    val attachmentData = recordsKeyValues.flatMap {
       recordKeyValueTuple =>
         val mailRecord = recordKeyValueTuple._1.datum()
-        mailRecord.getMessage
+        val byteBufferList = mailRecord.getAttachments.asScala.map {
+          attachment =>
+            attachment.getData
+        }
+        byteBufferList
     }
-    val msgStrings = allMessages.map { buffer =>
-      val b = new Array[Byte](buffer.remaining())
-      buffer.get(b)
-      new String(b, java.nio.charset.StandardCharsets.UTF_8)
-    }
-    println("Yodel")
-    val strings = msgStrings.collect()
-    println(strings.mkString)
-    println(msgStrings.count())
-    assert(true === true)
   }
 
-  def writeBinaryMailRecords(mailFolder: Path, outPath: Path): Unit = {
-    val recordBuilder = BinaryMailRecord.newBuilder()
-    for (mailRecordWriter <- managed(getBinaryMailRecordWriter(outPath))) {
+  //TODO:
+  def writeMailRecords(mailFolder: Path, outPath: Path): Unit = {
+    val recordBuilder = MailRecord.newBuilder()
+    for (mailRecordWriter <- managed(getMailRecordWriter(outPath))) {
       val mailPaths = PathUtils.listChildPaths(mailFolder)
       for (mailPath <- mailPaths) {
         val byteArray = Files.readAllBytes(mailPath)
         val msgBuffer = ByteBuffer.wrap(byteArray)
-        recordBuilder.setMessage(msgBuffer)
+        val attachment = new Attachment()
+        val attachments = new java.util.ArrayList[Attachment]()
+        attachment.setData(msgBuffer)
+        attachments.add(attachment)
+        recordBuilder.setAttachments(attachments)
         mailRecordWriter.append(recordBuilder.build())
         println(s"Wrote $mailPath")
       }
     }
   }
 
-  def getBinaryMailRecordWriter(outPath: Path): DataFileWriter[BinaryMailRecord] = {
+  def getMailRecordWriter(outPath: Path): DataFileWriter[MailRecord] = {
     val out = Files.newOutputStream(outPath)
-    val datumWriter = new SpecificDatumWriter[BinaryMailRecord](classOf[BinaryMailRecord])
-    val mailRecordWriter = new DataFileWriter[BinaryMailRecord](datumWriter)
+    val datumWriter = new SpecificDatumWriter[MailRecord](classOf[MailRecord])
+    val mailRecordWriter = new DataFileWriter[MailRecord](datumWriter)
     mailRecordWriter.setCodec(CodecFactory.snappyCodec())
-    mailRecordWriter.create(BinaryMailRecord.getClassSchema(), out)
+    mailRecordWriter.create(MailRecord.getClassSchema(), out)
   }
 }

@@ -14,6 +14,7 @@ When we try to parallelize PST processing, each original PST file will likely be
 ### Roll-up by Day
 
 ```
+cd spark-mail
 java -classpath pst-utils/target/pst-utils-0.9.0-SNAPSHOT-shaded.jar com.uebercomputing.pst.Main --pstDir /opt/rpm1/jebbush --avroOutDir /opt/rpm1/jebbush/avro-daily --rollup daily > msg.txt 2>&1
 ```
 
@@ -27,6 +28,7 @@ Results: Over 9000 avro files sizes 4K - just under 60MB. Too many small files.
 ### Roll-up by Month
 
 ```
+cd spark-mail
 java -classpath pst-utils/target/pst-utils-0.9.0-SNAPSHOT-shaded.jar com.uebercomputing.pst.Main --pstDir /opt/rpm1/jebbush --avroOutDir /opt/rpm1/jebbush/avro-monthly --rollup monthly > msg.txt 2>&1
 ```
 
@@ -40,6 +42,7 @@ Results: 452 files. Smallest still 4K but largest over 320MB (will be split in b
 ### Roll-up by Year
 
 ```
+cd spark-mail
 java -classpath pst-utils/target/pst-utils-0.9.0-SNAPSHOT-shaded.jar com.uebercomputing.pst.Main --pstDir /opt/rpm1/jebbush --avroOutDir /opt/rpm1/jebbush/avro-yearly --rollup yearly  > msg.txt 2>&1
 ```
 
