@@ -99,7 +99,7 @@ https://s3.amazonaws.com/ab21jebmail/Email_Office/200507-12JulDec.pst
 https://s3.amazonaws.com/ab21jebmail/Email_Office/200601-06JanJun.pst
 https://s3.amazonaws.com/ab21jebmail/Email_Office/200607-12JulDec.pst
 
-See [[PST Processing Page|PstProcessing.md]] for next steps.
+See [PST Processing Page](PstProcessing.md) for next steps.
 
 # Enron Email Dataset
 
