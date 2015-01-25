@@ -9,8 +9,9 @@ import org.apache.spark.SparkConf
  */
 object MailRecordSparkConfFactory {
 
-  val appNameKey = "app.name"
-  val masterKey = "master"
+  //keys from actual SparkConf.scala file setMaster/setAppName methods
+  val AppNameKey = "spark.app.name"
+  val MasterKey = "spark.master"
   val SerializerKey = "spark.serializer"
   val KryoSerializer = "org.apache.spark.serializer.KryoSerializer"
 
@@ -22,10 +23,11 @@ object MailRecordSparkConfFactory {
 
   def apply(props: Map[String, String]): SparkConf = {
     val conf = new SparkConf()
-    props.get(appNameKey).foreach { name => conf.setAppName(name) }
-    props.get(masterKey).foreach { master => conf.setMaster(master) }
+    for ((key, value) <- props) {
+      conf.set(key, value)
+    }
     conf.set(SerializerKey, KryoSerializer)
-    conf.set(KryoRegistratorKey, "com.uebercomputing.mailrecord.MailRecordRegistrator")
+    conf.set(KryoRegistratorKey, "com.uebercomputing.mailrecord.MailRecordRegistrar")
     conf.set(KryoBufferSizeMBKey, MailRecordBufferSize)
     conf
   }
