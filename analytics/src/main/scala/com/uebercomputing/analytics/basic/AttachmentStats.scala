@@ -1,9 +1,10 @@
 package com.uebercomputing.analytics.basic
 
 import org.apache.log4j.Logger
+import org.apache.spark.SparkContext.numericRDDToDoubleRDDFunctions
+import com.uebercomputing.mailrecord.Implicits.mailRecordToMailRecordOps
 import com.uebercomputing.mailrecord.MailRecordAnalytic
 import com.uebercomputing.mailrecord.ExecutionTimer
-
 /**
  * Run with two args:
  *
@@ -16,7 +17,7 @@ import com.uebercomputing.mailrecord.ExecutionTimer
  * JebBush (1999)
  * --avroMailInput /opt/rpm1/jebbush/avro-monthly/1999 --master local[4]
  */
-object UniqueSenderCounter extends MailRecordAnalytic with ExecutionTimer {
+object AttachmentStats extends MailRecordAnalytic with ExecutionTimer {
 
   val LOGGER = Logger.getLogger(UniqueSenderCounter.getClass)
 
@@ -25,12 +26,15 @@ object UniqueSenderCounter extends MailRecordAnalytic with ExecutionTimer {
     val appName = "UniqueSenderCounter"
     val additionalSparkProps = Map[String, String]()
     val analyticInput = getAnalyticInput(appName, args, additionalSparkProps, LOGGER)
-    val allFroms = analyticInput.mailRecordRdd.map { mailRecord =>
-      mailRecord.getFrom()
+    val attachmentCountsRdd = analyticInput.mailRecordRdd.map { mailRecord =>
+      val attachmentsOpt = mailRecord.getAttachmentsOpt()
+      attachmentsOpt match {
+        case Some(attachments) => attachments.size
+        case None              => 0
+      }
     }
-    val allFromsCount = allFroms.count()
-    val uniqueFromsCount = allFroms.distinct().count()
-    println(s"All froms were $allFromsCount, unique froms were $uniqueFromsCount")
+    val stats = attachmentCountsRdd.stats()
+    println(s"Attachment stats: ${stats}")
     stopTimer()
     val prefixMsg = s"Executed over ${analyticInput.config.avroMailInput} in: "
     logTotalTime(prefixMsg, LOGGER)

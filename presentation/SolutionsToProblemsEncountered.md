@@ -124,3 +124,22 @@ val attachments = attachValue.asInstanceOf[java.util.List[Attachment]].asScala
 for (attachment <- attachments) {
   ...
 ```
+
+## Want to use pair RDD functions (e.g. reduceByKey) or double RDD functions like sum()
+
+Symptom: We have an RDD of 2 tuples (pairs), let's call it pairRdd, but cannot call pairRdd.reduceByKey
+
+Cause: Need implicit conversion from RDD to PairRDDFunctions
+
+Solution (generalized - brings in all available implicit conversions):
+
+```
+import org.apache.spark.SparkContext._
+...
+```
+
+Solution (specific):
+```
+org.apache.spark.SparkContext.rddToPairRDDFunctions
+```
+

@@ -15,8 +15,8 @@ import org.apache.spark.SerializableWritable
  * Invoke command line from spark-mail:
  * java -classpath pst-utils/target/pst-utils-0.9.0-SNAPSHOT-shaded.jar com.uebercomputing.pst.SparkEtl --pstDir /opt/rpm1/jebbush --avroOutDir /opt/rpm1/jebbush/spark-avro-monthly --rollup monthly > msg-spark.txt 2>&1
  *
- * Note: this code assumes that .pst files are read from a local directory. If running in cluster that directory might
- * be a shared NFS drive.
+ * Note: this code assumes that .pst files are read from a local directory. If running in cluster that directory needs to
+ * be a shared NFS drive. com.pff.PSTFile object only supports local input via String/File constructor.
  */
 object SparkEtl {
 
@@ -37,12 +37,12 @@ object SparkEtl {
     p.parse(args, Config()) map { config =>
       val appName = "SparkEtl"
       val keyVals = if (config.masterOpt.isDefined) {
-        List(MailRecordSparkConfFactory.AppNameKey -> appName, MailRecordSparkConfFactory.MasterKey -> config.masterOpt.get)
+        List(MailRecordSparkConfFactory.MasterKey -> config.masterOpt.get)
       } else {
-        List(MailRecordSparkConfFactory.AppNameKey -> appName)
+        Nil
       }
       val props = Map[String, String](keyVals: _*)
-      val sparkConf = MailRecordSparkConfFactory(props)
+      val sparkConf = MailRecordSparkConfFactory(appName, props)
       val sc = new SparkContext(sparkConf)
 
       val pstDir = new File(config.pstDir)
@@ -60,6 +60,8 @@ object SparkEtl {
 
       val rootPath = config.avroOutDir
       val datePartitionType = config.rollup
+
+      println(s"Running with config $config")
 
       val filesRdd = sc.parallelize(pstFiles)
       filesRdd.foreach { pstFileLoc =>
