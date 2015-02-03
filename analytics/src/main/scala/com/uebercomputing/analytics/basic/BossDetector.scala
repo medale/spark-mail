@@ -15,7 +15,7 @@ import com.uebercomputing.mailrecord.MailRecordOps
  *
  * --avroMailInput AVRO_FILE --master local[*]
  */
-object BossDetector extends MailRecordAnalytic {
+object BossDetector {
   val LOGGER = Logger.getLogger(BossDetector.getClass)
 
   // how many should we see
@@ -24,7 +24,7 @@ object BossDetector extends MailRecordAnalytic {
   def main(args: Array[String]) {
     val appName = "BossDetector"
     val additionalSparkProps = Map[String, String]()
-    val analyticInput = getAnalyticInput(appName, args, additionalSparkProps, LOGGER)
+    val analyticInput = MailRecordAnalytic.getAnalyticInput(appName, args, additionalSparkProps, LOGGER)
 
     val addressTuples = analyticInput.mailRecordRdd.flatMap { mailRecord =>
       val mro: MailRecordOps = mailRecord
@@ -61,7 +61,7 @@ object BossDetector extends MailRecordAnalytic {
 object BossScore extends Serializable {
 
   val zero = 0.01
-  
+
   /**
    * Takes a map of field counts (TO, FROM, CC) and computes the boss score.
    *

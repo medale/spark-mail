@@ -3,6 +3,9 @@ package com.uebercomputing.analytics.basic
 import org.apache.log4j.Logger
 import com.uebercomputing.mailrecord.MailRecordAnalytic
 import com.uebercomputing.mailrecord.ExecutionTimer
+import org.apache.spark.SparkContext.numericRDDToDoubleRDDFunctions
+import org.apache.spark.SparkContext._
+import com.uebercomputing.mailrecord.Implicits._
 
 /**
  * Run with two args:
@@ -16,24 +19,58 @@ import com.uebercomputing.mailrecord.ExecutionTimer
  * JebBush (1999)
  * --avroMailInput /opt/rpm1/jebbush/avro-monthly/1999 --master local[4]
  */
-object UniqueSenderCounter extends MailRecordAnalytic with ExecutionTimer {
+object EmailAdxStats extends ExecutionTimer {
 
-  val LOGGER = Logger.getLogger(UniqueSenderCounter.getClass)
+  val LOGGER = Logger.getLogger(EmailAdxStats.getClass)
+
+  val To = "To"
+  val From = "From"
+  val Cc = "Cc"
+  val Bcc = "Bcc"
 
   def main(args: Array[String]): Unit = {
     startTimer()
-    val appName = "UniqueSenderCounter"
+    val appName = "EmailAdxStats"
     val additionalSparkProps = Map[String, String]()
-    val analyticInput = getAnalyticInput(appName, args, additionalSparkProps, LOGGER)
-    val allFroms = analyticInput.mailRecordRdd.map { mailRecord =>
-      mailRecord.getFrom()
+    val analyticInput = MailRecordAnalytic.getAnalyticInput(appName, args, additionalSparkProps, LOGGER)
+
+    val emailAdxPairRdd = analyticInput.mailRecordRdd.flatMap { mailRecord =>
+      val to = mailRecord.getToOpt().getOrElse(Nil)
+      val cc = mailRecord.getCcOpt().getOrElse(Nil)
+      val bcc = mailRecord.getBccOpt().getOrElse(Nil)
+      val adxLists = List((To, to), (Cc, cc), (Bcc, bcc))
+
+      val typeEmailAdxTuples = adxLists.flatMap {
+        typeAdxTuple =>
+          val (adxType, adx) = typeAdxTuple
+          getAdxTuples(adxType, adx)
+      }
+      (From, mailRecord.getFrom()) :: typeEmailAdxTuples
     }
-    val allFromsCount = allFroms.count()
-    val uniqueFromsCount = allFroms.distinct().count()
-    println(s"All froms were $allFromsCount, unique froms were $uniqueFromsCount")
+
+    //show how this is cached in UI (http://localhost:4040/storage)
+    emailAdxPairRdd.cache()
+
+    println(s"Total emails in RDD: ${analyticInput.mailRecordRdd.count()}")
+
+    val uniqueAdxRdd = emailAdxPairRdd.values.distinct()
+    uniqueAdxRdd.saveAsTextFile("uniqueAdx")
+
+    val uniqueFroms = emailAdxPairRdd.filter { typeAdxTuple =>
+      val (adxType, adx) = typeAdxTuple
+      adxType == From
+    }.values.distinct(4)
+    uniqueFroms.saveAsTextFile("uniqueFroms")
+
     stopTimer()
     val prefixMsg = s"Executed over ${analyticInput.config.avroMailInput} in: "
     logTotalTime(prefixMsg, LOGGER)
+  }
+
+  def getAdxTuples(adxType: String, adx: List[String]): List[(String, String)] = {
+    adx.map { addr =>
+      (adxType, addr)
+    }
   }
 
 }

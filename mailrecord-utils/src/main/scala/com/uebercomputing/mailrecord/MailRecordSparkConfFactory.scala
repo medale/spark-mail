@@ -32,7 +32,7 @@ object MailRecordSparkConfFactory {
       conf.set(key, value)
     }
     conf.set(SerializerKey, KryoSerializer)
-    conf.set(KryoRegistratorKey, "com.uebercomputing.mailrecord.MailRecordRegistrar")
+    conf.set(KryoRegistratorKey, "com.uebercomputing.mailrecord.MailRecordRegistrator")
     conf.set(KryoBufferSizeMBKey, MailRecordBufferSize)
     conf.set(KryoBufferSizeMaxMBKey, MailRecordBufferSizeMax)
     conf

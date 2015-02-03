@@ -11,10 +11,10 @@ import org.apache.hadoop.fs.Path
 
 case class AnalyticInput(val sc: SparkContext, val mailRecordRdd: RDD[MailRecord], config: Config) {}
 
-trait MailRecordAnalytic extends CommandLineOptionsParser {
+object MailRecordAnalytic {
 
   def getAnalyticInput(appName: String, args: Array[String], additionalSparkProps: Map[String, String], logger: Logger): AnalyticInput = {
-    val configOpt = getConfigOpt(args)
+    val configOpt = CommandLineOptionsParser.getConfigOpt(args)
     configOpt match {
       case Some(config) => {
         val sparkConf = MailRecordSparkConfFactory(appName, additionalSparkProps)
@@ -62,7 +62,7 @@ trait MailRecordAnalytic extends CommandLineOptionsParser {
         conf.addResource(hadoopConfPath)
         conf
       }
-      case None => getLocalHadoopConf()
+      case None => CommandLineOptionsParser.getLocalHadoopConf()
     }
     val job = Job.getInstance(hadoopConf)
     val path = new Path(config.avroMailInput)

@@ -2,9 +2,11 @@ package com.uebercomputing.analytics.basic
 
 import org.apache.log4j.Logger
 import org.apache.spark.SparkContext.numericRDDToDoubleRDDFunctions
+
+import com.uebercomputing.mailrecord.ExecutionTimer
 import com.uebercomputing.mailrecord.Implicits.mailRecordToMailRecordOps
 import com.uebercomputing.mailrecord.MailRecordAnalytic
-import com.uebercomputing.mailrecord.ExecutionTimer
+
 /**
  * Run with two args:
  *
@@ -17,20 +19,20 @@ import com.uebercomputing.mailrecord.ExecutionTimer
  * JebBush (1999)
  * --avroMailInput /opt/rpm1/jebbush/avro-monthly/1999 --master local[4]
  */
-object AttachmentStats extends MailRecordAnalytic with ExecutionTimer {
+object AttachmentStats extends ExecutionTimer {
 
-  val LOGGER = Logger.getLogger(UniqueSenderCounter.getClass)
+  val LOGGER = Logger.getLogger(AttachmentStats.getClass)
 
   def main(args: Array[String]): Unit = {
     startTimer()
     val appName = "UniqueSenderCounter"
     val additionalSparkProps = Map[String, String]()
-    val analyticInput = getAnalyticInput(appName, args, additionalSparkProps, LOGGER)
-    val attachmentCountsRdd = analyticInput.mailRecordRdd.map { mailRecord =>
+    val analyticInput = MailRecordAnalytic.getAnalyticInput(appName, args, additionalSparkProps, LOGGER)
+    val attachmentCountsRdd = analyticInput.mailRecordRdd.flatMap { mailRecord =>
       val attachmentsOpt = mailRecord.getAttachmentsOpt()
       attachmentsOpt match {
-        case Some(attachments) => attachments.size
-        case None              => 0
+        case Some(attachments) => Some(attachments.size)
+        case None              => None
       }
     }
     val stats = attachmentCountsRdd.stats()

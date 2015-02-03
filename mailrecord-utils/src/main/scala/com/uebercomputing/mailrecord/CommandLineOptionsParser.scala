@@ -7,7 +7,7 @@ case class Config(avroMailInput: String = "/opt/rpm1/enron/enron_mail_20110402/m
                   masterOpt: Option[String] = None,
                   hadoopConfPathOpt: Option[String] = None) {}
 
-trait CommandLineOptionsParser {
+object CommandLineOptionsParser {
 
   def getConfigOpt(args: Array[String]): Option[Config] = {
     val p = parser()
