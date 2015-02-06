@@ -21,32 +21,11 @@ submitted via https://github.com/apache/spark/pull/4315.
 The fix for 1.2.x is shown here:
 https://github.com/medale/spark/compare/apache:v1.2.1-rc2...medale:avro-hadoop2-v1.2.1-rc2
 
-### Hack shortcut - Replacing avro-mapred-1.7.5 with avro-mapred-1.7.6-hadoop2
-If you don't want to build Spark from scratch you could just replace the
-bad avro-mapred-1.7.5 with avro-mapred-1.7.6-hadoop2 if the Java
-JDK with jar is installed:
-
-* Download avro-mapred-1.7.6-hadoop2 from http://repo1.maven.org/maven2/org/apache/avro/avro-mapred/1.7.6/avro-mapred-1.7.6-hadoop2.jar
-
-The following assumes $SPARK_HOME is the root of the Spark distro
-```
-cd $SPARK_HOME
-mkdir temp
-cp lib/spark-assembly-*jar temp/
-cp ~/Downloads/avro-mapred-1.7.6-hadoop2.jar temp/
-cd temp
-jar xf spark-assembly-*jar
-jar xf avro-mapred-1.7.6-hadoop2.jar
-rm avro-mapred-1.7.6-hadoop2.jar
-rm spark-assembly*jar
-jar cf spark-assembly-avro.jar *
-cd ..
-rm spark-assembly*.jar
-mv temp/spark-assembly-avro.jar .
-rm -Rf temp
-```
+See CreatingAvroMapred2Spark.md for instructions on how to build a Spark 1.2.1
+with the fix.
 
 ## Start Local Spark Shell with Kryo and mailrecord uber jar
+
 ```
 cd spark-mail
 spark-shell --master local[4] --driver-memory 4G --executor-memory 4G \
@@ -73,5 +52,20 @@ val mailRecordRdd = MailRecordAnalytic.getMailRecordRdd(sc, config)
 
 Ctrl-D
 
+val froms = mailRecordRdd.map{record => record.getFrom}
+froms.take(10)
+...
+<Lots of Spark output>
+...
+res0: Array[String] = Array(Susan.Pareigis@awi.state.fl.us, ...
 
 ```
+
+### Some "analytics"
+2000 presidential election
+
+```
+val bodies = mailRecordRdd.map{record => record.getBody}
+val election = bodies.filter{body => body.contains("recount") && body.contains("dimpled chad")}
+election.count
+val out = election.collect()
