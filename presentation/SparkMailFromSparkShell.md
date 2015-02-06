@@ -24,10 +24,22 @@ https://github.com/medale/spark/compare/apache:v1.2.1-rc2...medale:avro-hadoop2-
 See CreatingAvroMapred2Spark.md for instructions on how to build a Spark 1.2.1
 with the fix.
 
+## Download and Compile Spark Mail code
+
+```
+git clone https://github.com/medale/spark-mail.git
+cd spark-mail
+# for the impatient:
+mvn -DskipTests clean install
+# run the tests
+mvn clean install
+```
+
 ## Start Local Spark Shell with Kryo and mailrecord uber jar
 
 ```
-cd spark-mail
+# Assumes you are in the spark-mail root folder for the --jars jar path
+
 spark-shell --master local[4] --driver-memory 4G --executor-memory 4G \
 --conf spark.serializer=org.apache.spark.serializer.KryoSerializer \
 --conf spark.kryo.registrator=com.uebercomputing.mailrecord.MailRecordRegistrator \
