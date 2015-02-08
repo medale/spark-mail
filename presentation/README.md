@@ -22,6 +22,9 @@ Or just run:
 Or just run:
     > ./reveal
 
+## Miscellaneous
+--no-tex-ligatures - prevent Pandoc from converting -- into em-dash
+
 ## Resources
 * [John McFarlane's Pandoc User Guide](http://johnmacfarlane.net/pandoc/README)
 * [Stackoverflow on reveal.js location](http://stackoverflow.com/questions/21423952/self-contained-reveal-js-file-without-relative-reveal-js-folder-using-pandoc)

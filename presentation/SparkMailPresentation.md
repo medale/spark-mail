@@ -259,4 +259,66 @@ public class MailRecord extends
 }
 ```
 
+# Apache Spark execution environments
+* Local, standalone process (can be started command line or Eclipse)
+* Spark Standalone Cluster (master/workers - http://spark.apache.org/docs/1.2.0/spark-standalone.html)
+* Mesos resource manager http://spark.apache.org/docs/1.2.0/running-on-mesos.html
+* Hadoop YARN resource manager http://spark.apache.org/docs/1.2.0/running-on-yarn.html
+
+# Running Spark
+* Command line interactive shell environment (spark-shell)
+* Submit job (spark-submit)
+
+Both methods can be used in all execution environments.
+
+# Some Spark command arguments
+```
+spark-shell --help
+```
+* --master MASTER - e.g. yarn or local.
+* --driver-memory  MEM - Memory for driver (e.g. 1000M, 2G) (Default: 512M)
+* --executor-memory MEM - Memory per executor (e.g. 1000M, 2G) (Default: 1G).
+* --jars JARS - Comma-separated list of local jars for driver and executor classpaths.
+* --conf PROP=VALUE Arbitrary Spark configuration property.
+* --properties-file FILE  Path for extra properties. If not specified, conf/spark-defaults.conf.
+
+# Spark Serialization
+* Default - Java Serialization (java.io.ObjectOutputStream). Classes must
+implement java.io.Serializable
+* Better: Kryo "significantly faster and more compact than Java serialization (often as much as 10x)"
+
+# com.uebercomputing.mailrecord.MailRecordRegistrator
+```scala
+import org.apache.spark.serializer.KryoRegistrator
+import com.esotericsoftware.kryo.Kryo
+import com.twitter.chill.avro.AvroSerializer
+
+//Uses Twitter's chill-avro library.
+class MailRecordRegistrator extends KryoRegistrator {
+
+  def registerClasses(kryo: Kryo): Unit = {
+    kryo.register(classOf[MailRecord],
+      AvroSerializer.
+      SpecificRecordBinarySerializer[MailRecord])
+  }
+}
+```
+# Spark Kryo Configurations
+* spark.serializer - org.apache.spark.serializer.KryoSerializer
+* spark.kryo.registrator
+* spark.kryoserializer.buffer.mb
+* spark.kryoserializer.buffer.max.mb
+
+# Kryo configurations
+
+From command line:
+```
+--conf spark.serializer=\
+org.apache.spark.serializer.KryoSerializer \
+--conf spark.kryo.registrator=\
+com.uebercomputing.mailrecord.MailRecordRegistrator \
+--conf spark.kryoserializer.buffer.mb=128 \
+--conf spark.kryoserializer.buffer.max.mb=512 \
+```
+
 # References {.allowframebreaks}
