@@ -7,9 +7,9 @@ object Combinators {
   val words = List("when", "shall", "we", "three", "meet", "again")
   val lengths = words.map(computeLength)
   
-  val l2 = words.map((w: String) => w.length)
-  val l3 = words.map(w => w.length)
-  val l4 = words.map(_.length)
+  val list2 = words.map((w: String) => w.length)
+  val list3 = words.map(w => w.length)
+  val list4 = words.map(_.length)
   
   val macbeth = """|When shall we three meet again?
  		 |In thunder, lightning, or in rain?""".stripMargin
@@ -21,6 +21,8 @@ object Combinators {
   
   val macWords: Array[String] = macLines.flatMap{line => line.split("""\W+""")}
   
-  val stopWords = List("in","it","let","no","the","too")
-  val withoutStopWords = macWords.filter(word => !stopWords.contains(word))
+  val macWordsLower = macWords.map{_.toLowerCase}
+  
+  val stopWords = List("in","it","let","no","or","the")
+  val withoutStopWords = macWordsLower.filter(word => !stopWords.contains(word))
 }
