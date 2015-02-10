@@ -48,6 +48,14 @@ spark-shell --master local[4] --driver-memory 4G --executor-memory 4G \
 --jars mailrecord-utils/target/mailrecord-utils-0.9.0-SNAPSHOT-shaded.jar
 ```
 
+Or
+
+```
+spark-shell --master local[4] --driver-memory 4G --executor-memory 4G \
+--jars mailrecord-utils/target/mailrecord-utils-0.9.0-SNAPSHOT-shaded.jar
+--properties-file mailrecord-utils/mailrecord.conf
+```
+
 ## Start email exploration
 
 ```
