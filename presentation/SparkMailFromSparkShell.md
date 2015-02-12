@@ -52,7 +52,7 @@ Or
 
 ```
 spark-shell --master local[4] --driver-memory 4G --executor-memory 4G \
---jars mailrecord-utils/target/mailrecord-utils-0.9.0-SNAPSHOT-shaded.jar
+--jars mailrecord-utils/target/mailrecord-utils-0.9.0-SNAPSHOT-shaded.jar \
 --properties-file mailrecord-utils/mailrecord.conf
 ```
 
@@ -66,13 +66,13 @@ scala> :paste
 import com.uebercomputing.mailrecord._
 import com.uebercomputing.mailrecord.Implicits.mailRecordToMailRecordOps
 
-val args = Array("--avroMailInput", "/opt/rpm1/jebbush/avro-monthly")
+val args = Array("--avroMailInput", "/opt/rpm1/jebbush/avro-monthly/2000")
 val config = CommandLineOptionsParser.getConfigOpt(args).get
-val mailRecordRdd = MailRecordAnalytic.getMailRecordRdd(sc, config)
+val recordsRdd = MailRecordAnalytic.getMailRecordRdd(sc, config)
 
 Ctrl-D
 
-val froms = mailRecordRdd.map{record => record.getFrom}
+val froms = recordsRdd.map{record => record.getFrom}
 froms.take(10)
 ...
 <Lots of Spark output>
@@ -85,7 +85,7 @@ res0: Array[String] = Array(Susan.Pareigis@awi.state.fl.us, ...
 2000 presidential election
 
 ```
-val bodies = mailRecordRdd.map{record => record.getBody}
+val bodies = recordsRdd.map{record => record.getBody}
 val election = bodies.filter{body => body.contains("recount") && body.contains("dimpled chad")}
 election.count
 val out = election.collect()

@@ -41,7 +41,7 @@ under Creative Commons Attribution-NonCommercial 4.0 International License
 
 # Combinator functions on Scala collections
 
-* Examples: map, flatMap, filter
+* Examples: map, flatMap, filter, reduce, fold
 * Background - Combinatory logic, higher-order functions...
 
 # Combinatory Logic
@@ -81,7 +81,7 @@ val list2 = words.map((w: String) => w.length)
 val list3 = words.map(w => w.length)
 
 
-//use positionally match argument
+//use positionally matched argument
 val list4 = words.map(_.length)
 ```
 
@@ -89,6 +89,8 @@ val list4 = words.map(_.length)
 
 See [immutable List ScalaDoc](http://www.scala-lang.org/api/2.10.4/index.html#scala.collection.immutable.List)
 ```scala
+List[+A]
+...
 final def map[B](f: (A) => B): List[B]
 ```
 * Builds a new collection by applying a function to all elements of this list.
@@ -101,6 +103,8 @@ final def map[B](f: (A) => B): List[B]
 
 * ScalaDoc:
 ```scala
+List[+A]
+...
 def flatMap[B](f: (A) =>
            GenTraversableOnce[B]): List[B]
 ```
@@ -135,6 +139,8 @@ val macWords: Array[String] =
 
 # filter
 ```scala
+List[+A]
+...
 def filter(p: (A) => Boolean): List[A]
 ```
 * selects all elements of this list which satisfy a predicate.
@@ -154,10 +160,75 @@ val withoutStopWords =
 //       lightning, rain)
 ```
 
+# reduce
+```scala
+List[+A]
+...
+def reduce[A1 >: A](op: (A1, A1) => A1): A1
+```
+* Creates one cumulative value using the specified associative binary operator.
+* A1 - A type parameter for the binary operator, a supertype (super or same) of A.
+(List is covariant +A)
+* op - A binary operator that must be associative.
+* returns - The result of applying op between all the elements if the list is nonempty.
+Result is same type as (or supertype of) list type.
+* UnsupportedOperationException if this list is empty.
+
+# reduce Example
+```scala
+//beware of overflow if using default Int!
+val numberOfAttachments: List[Long] =
+  List(0, 3, 4, 1, 5)
+val totalAttachments =
+  numberOfAttachments.reduce((x, y) => x + y)
+//Order unspecified/non-deterministic, but one
+//execution could be:
+//0 + 3 = 3, 3 + 4 = 7,
+//7 + 1 = 8, 8 + 5 = 13
+
+val emptyList: List[Long] = Nil
+//UnsupportedOperationException
+emptyList.reduce((x, y) => x + y)
+```
+
+# fold
+```scala
+List[+A]
+...
+def fold[A1 >: A](z: A1)(op: (A1, A1) => A1): A1
+```
+* Very similar to reduce but takes start value z (a neutral value, e.g.
+  0 for addition, 1 for multiplication, Nil for list concatenation)
+* returns start value z for empty list
+* Note: See also foldLeft/Right (return completely different type)
+```scala
+ foldLeft[B](z: B)(f: (B, A) ⇒ B): B
+```
+
+# fold Example
+```scala
+val numbers = List(1, 4, 5, 7, 8, 11)
+val evenCount = numbers.fold(0) { (count, currVal) =>
+  println(s"Count: $count, value: $currVal")
+  if (currVal % 2 == 0) {
+    count + 1
+  } else {
+    count
+  }
+}
+Count: 0, value: 1
+Count: 0, value: 4
+Count: 1, value: 5
+Count: 1, value: 7
+Count: 1, value: 8
+Count: 2, value: 11
+evenCount: Int = 2
+```
+
 # So what does this have to do with Apache Spark?
 * Resilient Distributed Dataset ([RDD](https://spark.apache.org/docs/1.2.0/api/scala/#org.apache.spark.rdd.RDD))
 * "immutable, partitioned collection of elements that can be operated on in parallel"
-* map, flatMap, filter...
+* map, flatMap, filter, reduce, fold...
 
 # com.uebercomputing.analytics.basic.BasicRddFunctions
 ```scala
@@ -238,7 +309,11 @@ record Attachment {
 
 # com.uebercomputing.mailrecord.MailRecord
 * Avro Maven plugin translates schema into Java source code
-* MailRecord.avdl -> com.uebercomputing.mailrecord.MailRecord
+* spark-mail/mailrecord
+    * src/main/avro/
+        * com/uebercomputing/mailrecord/MailRecord.avdl ->
+    * src/main/java
+        * com/uebercomputing/mailrecord/MailRecord.java
 
 # MailRecord.java
 ```java
@@ -258,6 +333,12 @@ public class MailRecord extends
    }
 }
 ```
+
+# Converting emails to Avro
+* See spark-mail/README.md
+* spark-mail/PstProcessing.md
+
+for details on how to go from Enron/PST files to Avro.
 
 # Apache Spark execution environments
 * Local, standalone process (can be started command line or Eclipse)
@@ -284,7 +365,13 @@ spark-shell --help
 
 # Spark Serialization
 * Default - Java Serialization (java.io.ObjectOutputStream). Classes must
-implement java.io.Serializable
+implement java.io.Serializable otherwise:
+```
+java.io.NotSerializableException:
+  ...
+	at java.io.ObjectOutputStream.writeObject0
+  (ObjectOutputStream.java:1183)
+```
 * Better: Kryo "significantly faster and more compact than Java serialization (often as much as 10x)"
 
 # com.uebercomputing.mailrecord.MailRecordRegistrator
@@ -319,6 +406,51 @@ org.apache.spark.serializer.KryoSerializer \
 com.uebercomputing.mailrecord.MailRecordRegistrator \
 --conf spark.kryoserializer.buffer.mb=128 \
 --conf spark.kryoserializer.buffer.max.mb=512 \
+```
+
+# Kryo configuration properties file
+spark-mail/mailrecord-utils/mailrecord.conf
+
+```
+spark.serializer=org...serializer.KryoSerializer
+spark.kryo.registrator=com...MailRecordRegistrator
+spark.kryoserializer.buffer.mb=128
+spark.kryoserializer.buffer.max.mb=512
+```
+
+# Starting Spark interactive exploration
+From spark-mail directory:
+```
+spark-shell --master local[4] --driver-memory 4G \
+--executor-memory 4G \
+--jars mailrecord-utils/target/mailrecord-*-shaded.jar \
+--properties-file mailrecord-utils/mailrecord.conf
+```
+
+# Getting an RDD of MailRecords
+With spark-mail utilities:
+```
+import com.uebercomputing.mailrecord._
+import com.uebercomputing.mailrecord.Implicits._
+
+val args =
+  Array("--avroMailInput",
+        "/opt/rpm1/jebbush/avro-monthly/2000")
+val config =
+  CommandLineOptionsParser.getConfigOpt(args).get
+val recordsRdd =
+  MailRecordAnalytic.getMailRecordRdd(sc, config)
+```
+
+# Under the Hood
+SparkContext - newAPIHadoopRDD
+
+```scala
+val mailRecordAvroRdd =
+  sc.newAPIHadoopRDD(job.getConfiguration,
+  classOf[MailRecordInputFormat],
+  classOf[AvroKey[MailRecord]],
+  classOf[FileSplit])
 ```
 
 # References {.allowframebreaks}
