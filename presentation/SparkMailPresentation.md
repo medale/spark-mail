@@ -442,8 +442,9 @@ val recordsRdd =
   MailRecordAnalytic.getMailRecordRdd(sc, config)
 ```
 
-# Under the Hood
-SparkContext - newAPIHadoopRDD
+# Under the Hood - newAPIHadoopRDD in SparkContext
+
+com.uebercomputing.mailrecord.MailRecordAnalytic.scala
 
 ```scala
 val mailRecordAvroRdd =
