@@ -225,10 +225,45 @@ Count: 2, value: 11
 evenCount: Int = 2
 ```
 
+# aggregate
+```
+List[+A]
+...
+def aggregate[B](z: B)(seqop: (B, A) => B,
+                       combop: (B, B) => B): B
+```
+* More general than fold or reduce. Can return different result type.
+* Apply seqop function to each partition of data.
+* Then apply combop function to combine all the results of seqop.
+* On a normal immutable list this is just a foldLeft with seqop (but on
+  a parallelized list both operations are called).
+
+# aggregate Example
+```scala
+val wordsAll = List("when", "shall", "we", "three",
+  "meet", "again", "in", "thunder", "lightning",
+  "or", "in", "rain")
+
+val lengthDistro = wordsAll.aggregate(Map[Int, Int]())(
+  seqop = (distMap, currWord) =>
+  {
+    val length = currWord.length()
+    val newCount = distMap.getOrElse(length, 0) + 1
+    val newKv = (length, newCount)
+    distMap + newKv
+  },
+  combop = (distMap1, distMap2) => {
+    distMap1 ++ distMap2.map {
+      case (k, v) =>
+      (k, v + distMap1.getOrElse(k, 0))
+    }
+  })
+```
+
 # So what does this have to do with Apache Spark?
 * Resilient Distributed Dataset ([RDD](https://spark.apache.org/docs/1.2.0/api/scala/#org.apache.spark.rdd.RDD))
 * "immutable, partitioned collection of elements that can be operated on in parallel"
-* map, flatMap, filter, reduce, fold...
+* map, flatMap, filter, reduce, fold, aggregate...
 
 # com.uebercomputing.analytics.basic.BasicRddFunctions
 ```scala
@@ -260,8 +295,7 @@ println(s"There were ${wordsRdd.count()} words.")
 
 * Jeb Bush Governorship PST files
 
-    * 54 Bush PST files range in size from 26MB to 1.9GB
-    * cannot be split so the workload per file would be skewed
+    * PII information - did not use this dataset
 
 * Don't want our analytic code to worry about parsing
 

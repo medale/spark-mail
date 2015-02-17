@@ -5,6 +5,8 @@ import org.joda.time.DateTimeZone
 
 sealed trait DatePartitionType {
 
+  val NoDatePartitionName = "all"
+
   /**
    * Abstract method implemented in DatePartitionType case objects.
    */
@@ -36,6 +38,10 @@ case object PartitionByYear extends DatePartitionType {
     val year = date.getYear
     List(format(year, 4))
   }
+}
+
+case object NoDatePartition extends DatePartitionType {
+  def getDatePartition(date: DateTime): List[String] = List(NoDatePartitionName)
 }
 
 object DatePartitioner {

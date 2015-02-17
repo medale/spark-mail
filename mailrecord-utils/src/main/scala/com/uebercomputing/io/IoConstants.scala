@@ -1,6 +1,6 @@
-package com.uebercomputing.pst
+package com.uebercomputing.io
 
-object PstConstants {
+object IoConstants {
 
   val TempDir = System.getProperty("java.io.tmpdir")
   val ParentFolderSeparator = "/"

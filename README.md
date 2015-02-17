@@ -5,12 +5,12 @@ spark-mail
 The Spark Mail project contains code for a tutorial on how to use Apache Spark to analyze email data. That data comes from two different sources:
 
 1. The Enron Email dataset from Carnegie Mellon University (file-based)
-1. Public domain emails released by Jeb Bush from his time as Florida governor (PST files)
+1. We had planned on using public domain emails released by [Jeb Bush from his time as Florida governor PST files](http://www.jebemails.com/email/search). However, these data sets were retracted due to [PII](http://en.wikipedia.org/wiki/Personally_identifiable_information) concerns like [Jeb Bush Releases Personal Data(http://thinkprogress.org/election/2015/02/10/3621569/oops-jeb-bush-releases-personal-data-publishing-emails-interest-transparency/).
 
 Tutorial on parsing Enron email to Avro and then explore the email set using Spark.
 
 # ETL (Extract Transform Load)
-Both original datasets do not lend themselves to scalable processing. The Enron file set has over 500,000 files. Especially, when processing them with the Hadoop default FileInputFormat we would create over 500,000 input splits. The 54 Bush PST files range in size from 26MB to 1.9GB and cannot be split so the workload per file would be skewed. Furthermore, we don't want our analytic code to have to deal with the parsing.
+Both original datasets do not lend themselves to scalable processing. The Enron file set has over 500,000 files. Especially, when processing them with the Hadoop default FileInputFormat we would create over 500,000 input splits. Furthermore, we don't want our analytic code to have to deal with the parsing.
 
 Therefore we parse the input once and aggregate the emails into the following [MailRecord format in Avro IDL](https://github.com/medale/spark-mail/blob/master/mailrecord/src/main/avro/com/uebercomputing/mailrecord/MailRecord.avdl):
 
@@ -44,60 +44,7 @@ protocol MailRecordProtocol {
 ## Background:
 On December 13, 2014, [the Washington Post reported](http://www.washingtonpost.com/blogs/post-politics/wp/2014/12/13/jeb-bush-to-write-e-book-and-release-250000-e-mails/) that former Florida governor Jeb Bush plans to release over 250,000 emails from his time as Florida governor.
 
-The American Bridge PAC had [requested the emails via public records request](http://americanbridgepac.org/happy-holidays-here-are-thousands-of-jeb-bushs-emails/) and listed the links below at http://americanbridgepac.org/jeb-bushs-gubernatorial-email-archive/. So instead of Enron email we decided to see what we could do with this PST-based email set.
-
-Note: Maximum of 4 simultaneous downloads from web browser
-https://s3.amazonaws.com/ab21jebmail/Email/Governor/2004b_Jul-Dec_GovernF.pst
-https://s3.amazonaws.com/ab21jebmail/Email/Governor/2005a_Jan-Apr_GovernF.pst
-https://s3.amazonaws.com/ab21jebmail/Email/Governor/2005a_Jan-Mar_GovernFShiavo.pst
-https://s3.amazonaws.com/ab21jebmail/Email/Governor/2005b_Mar-April_GovernFShiavo.pst
-https://s3.amazonaws.com/ab21jebmail/Email/Governor/2005b_May-Jul_GovernF.pst
-https://s3.amazonaws.com/ab21jebmail/Email/Governor/2005c_Aug-Oct_GovernF.pst
-https://s3.amazonaws.com/ab21jebmail/Email/Governor/2005d_Nov-Dec_GovernF.pst
-https://s3.amazonaws.com/ab21jebmail/Email/Governor/2006a_Jan-Mar_GovernF.pst
-https://s3.amazonaws.com/ab21jebmail/Email/Governor/2006b_Apr-Jun_GovernF.pst
-https://s3.amazonaws.com/ab21jebmail/Email/Governor/2006c_Jul-Sept_GovernF.pst
-https://s3.amazonaws.com/ab21jebmail/Email/Governor/2006d_Oct-Dec_GovernF.pst
-https://s3.amazonaws.com/ab21jebmail/Email/Governor/GovernF1999.pst
-https://s3.amazonaws.com/ab21jebmail/Email/Governor/GovernF2000Jan-Jun.pst
-https://s3.amazonaws.com/ab21jebmail/Email/Governor/GovernFJan-MAr2003.pst
-https://s3.amazonaws.com/ab21jebmail/Email/Governor/GovernFNRN20040430.pst
-https://s3.amazonaws.com/ab21jebmail/Email/Governor/GovernfLargeEmails02-03.pst
-https://s3.amazonaws.com/ab21jebmail/Email/Governor/OrganizedCampaigns20040514.7z
-https://s3.amazonaws.com/ab21jebmail/Email/Governor/OrganizedCampaigns20040514.pst
-https://s3.amazonaws.com/ab21jebmail/Email/Governor/governf2002oct-dec1.pst
-https://s3.amazonaws.com/ab21jebmail/Email/Governor/governf2002oct-dec2.pst
-https://s3.amazonaws.com/ab21jebmail/Email/Governor/governfJan2Jun2001.pst
-https://s3.amazonaws.com/ab21jebmail/Email_Office/1999.pst
-https://s3.amazonaws.com/ab21jebmail/Email_Office/2000.pst
-https://s3.amazonaws.com/ab21jebmail/Email_Office/2001.pst
-https://s3.amazonaws.com/ab21jebmail/Email_Office/2002.pst
-https://s3.amazonaws.com/ab21jebmail/Email_Office/2002+New/05+May+2002+Public.pst
-https://s3.amazonaws.com/ab21jebmail/Email_Office/2002+New/06+June+2002+Public.pst
-https://s3.amazonaws.com/ab21jebmail/Email_Office/2002+New/07+July+2002+Public.pst
-https://s3.amazonaws.com/ab21jebmail/Email_Office/2002+New/08+August+2002+Public.pst
-https://s3.amazonaws.com/ab21jebmail/Email_Office/2002+New/10+October+2002+Public.pst
-https://s3.amazonaws.com/ab21jebmail/Email_Office/2002+New/12+December+2002+Public.pst
-https://s3.amazonaws.com/ab21jebmail/Email_Office/2003.pst
-https://s3.amazonaws.com/ab21jebmail/Email_Office/2003+New/01+January+2003+Public+2.pst
-https://s3.amazonaws.com/ab21jebmail/Email_Office/2003+New/02+February+2003+Public+2.pst
-https://s3.amazonaws.com/ab21jebmail/Email_Office/2003+New/03+March+2003+Public+2.pst
-https://s3.amazonaws.com/ab21jebmail/Email_Office/2003+New/04+April+2003+Public+2.pst
-https://s3.amazonaws.com/ab21jebmail/Email_Office/2003+New/05+May+2003+Public+2.pst
-https://s3.amazonaws.com/ab21jebmail/Email_Office/2003+New/06+June+2003+Public+2.pst
-https://s3.amazonaws.com/ab21jebmail/Email_Office/2003+New/07+July+2003+Public+2.pst
-https://s3.amazonaws.com/ab21jebmail/Email_Office/2003+New/08+August+2003+Public+2.pst
-https://s3.amazonaws.com/ab21jebmail/Email_Office/2003+New/09+September+2003+Public+2.pst
-https://s3.amazonaws.com/ab21jebmail/Email_Office/2003+New/10+October+2003+Public+2.pst
-https://s3.amazonaws.com/ab21jebmail/Email_Office/2003+New/11+November+2003+Public+2.pst
-https://s3.amazonaws.com/ab21jebmail/Email_Office/2003+New/12+December+2003+Public+2.pst
-https://s3.amazonaws.com/ab21jebmail/Email_Office/2003+New/~07+July+2003.pst.tmp
-https://s3.amazonaws.com/ab21jebmail/Email_Office/200401-06JanJun.pst
-https://s3.amazonaws.com/ab21jebmail/Email_Office/200407-12JulDec.pst
-https://s3.amazonaws.com/ab21jebmail/Email_Office/200501-06JanJun.pst
-https://s3.amazonaws.com/ab21jebmail/Email_Office/200507-12JulDec.pst
-https://s3.amazonaws.com/ab21jebmail/Email_Office/200601-06JanJun.pst
-https://s3.amazonaws.com/ab21jebmail/Email_Office/200607-12JulDec.pst
+The American Bridge PAC had [requested the emails via public records request](http://americanbridgepac.org/happy-holidays-here-are-thousands-of-jeb-bushs-emails/) and listed the links below at http://americanbridgepac.org/jeb-bushs-gubernatorial-email-archive/. [Jeb Bush's website had the raw PST files also](http://www.jebemails.com/email/search). However due to PII and malware concerns, the raw PST files were retracted.
 
 See [PST Processing Page](PstProcessing.md) for next steps.
 

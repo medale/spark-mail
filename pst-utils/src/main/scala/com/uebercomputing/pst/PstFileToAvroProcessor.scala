@@ -9,6 +9,7 @@ import org.apache.log4j.Logger
 import com.pff.PSTFile
 import com.pff.PSTFolder
 import com.pff.PSTMessage
+import com.uebercomputing.io.IoConstants
 
 object PstFileToAvroProcessor {
 
@@ -50,7 +51,7 @@ object PstFileToAvroProcessor {
   }
 
   def getChildHierarchy(folderHierarchy: String, childFolderName: String): String = {
-    folderHierarchy + PstConstants.ParentFolderSeparator + childFolderName
+    folderHierarchy + IoConstants.ParentFolderSeparator + childFolderName
   }
 
   def processFolderContent(pstMetadata: PstMetadata, metrics: Metrics): Unit = {

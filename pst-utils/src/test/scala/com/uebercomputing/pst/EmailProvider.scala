@@ -1,16 +1,17 @@
 package com.uebercomputing.pst
 
+import scala.collection.JavaConverters.asScalaBufferConverter
+
 import com.pff.PSTFile
 import com.pff.PSTFolder
-import java.util.Arrays
-import scala.collection.JavaConverters._
 import com.pff.PSTMessage
 import com.pff.PSTObject
+import com.uebercomputing.io.IoConstants
 
 trait EmailProvider {
 
   val TestFilePath = "src/test/resources/psts/enron1.pst"
-  val ParentFolders = List("Personal folders", "Top of Personal Folders", "Deleted Items", "rapp-b", "Rapp, Bill (Non-Privileged)", "Rapp, Bill", "Inbox").mkString(PstConstants.ParentFolderSeparator)
+  val ParentFolders = List("Personal folders", "Top of Personal Folders", "Deleted Items", "rapp-b", "Rapp, Bill (Non-Privileged)", "Rapp, Bill", "Inbox").mkString(IoConstants.ParentFolderSeparator)
 
   def getPstFile(): PSTFile = {
     val pstFile = new PSTFile(TestFilePath)

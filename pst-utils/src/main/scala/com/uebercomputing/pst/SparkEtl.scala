@@ -1,15 +1,19 @@
 package com.uebercomputing.pst
 
-import com.uebercomputing.mailrecord.MailRecordSparkConfFactory
-import org.apache.spark.SparkContext
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
+
 import org.apache.hadoop.conf.Configuration
-import org.joda.time.DateTime
-import com.pff.PSTFile
-import com.uebercomputing.time.DateUtils
 import org.apache.spark.SerializableWritable
+import org.apache.spark.SparkContext
+import org.joda.time.DateTime
+
+import com.pff.PSTFile
+import com.uebercomputing.io.FileExtensionFilter
+import com.uebercomputing.io.IoConstants
+import com.uebercomputing.mailrecord.MailRecordSparkConfFactory
+import com.uebercomputing.time.DateUtils
 
 /**
  * Invoke command line from spark-mail:
@@ -25,7 +29,7 @@ object SparkEtl {
    */
   case class Config(masterOpt: Option[String] = None,
                     pstDir: String = ".",
-                    avroOutDir: String = PstConstants.TempDir + "/avro",
+                    avroOutDir: String = IoConstants.TempDir + "/avro",
                     rollup: DatePartitionType = PartitionByMonth,
                     hadoopConfFileOpt: Option[String] = None,
                     overwrite: Boolean = false)
@@ -81,7 +85,7 @@ object SparkEtl {
   }
 
   def getPstFiles(pstDir: File): List[File] = {
-    val pstFilter = new PstFileFilter()
+    val pstFilter = new FileExtensionFilter(".pst", ".PST")
     pstDir.listFiles(pstFilter).toList
   }
 

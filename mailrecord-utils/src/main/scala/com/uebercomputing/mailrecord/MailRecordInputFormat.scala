@@ -1,18 +1,16 @@
 package com.uebercomputing.mailrecord
 
-import org.apache.avro.mapreduce.AvroKeyInputFormat
-import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
-import org.apache.avro.mapred.AvroKey
-import org.apache.hadoop.io.Text
-import org.apache.hadoop.mapreduce.InputSplit
-import org.apache.hadoop.mapreduce.TaskAttemptContext
-import org.apache.hadoop.mapreduce.RecordReader
 import org.apache.avro.Schema
-import org.apache.log4j.Logger
+import org.apache.avro.mapred.AvroKey
 import org.apache.avro.mapreduce.AvroRecordReaderBase
-import org.apache.hadoop.mapreduce.lib.input.FileSplit
-import org.apache.hadoop.mapreduce.Job
 import org.apache.hadoop.fs.Path
+import org.apache.hadoop.mapreduce.InputSplit
+import org.apache.hadoop.mapreduce.Job
+import org.apache.hadoop.mapreduce.RecordReader
+import org.apache.hadoop.mapreduce.TaskAttemptContext
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
+import org.apache.hadoop.mapreduce.lib.input.FileSplit
+import org.apache.log4j.Logger
 
 object MailRecordInputFormat {
 

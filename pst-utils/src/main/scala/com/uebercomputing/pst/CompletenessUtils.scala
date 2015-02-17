@@ -2,6 +2,7 @@ package com.uebercomputing.pst
 
 import java.io.File
 import scala.io.Source
+import com.uebercomputing.io.FileExtensionFilter
 
 /**
  * Utility just to make sure we downloaded all pst files. Expects one argument, the name of the
@@ -34,7 +35,7 @@ object CompletenessUtils {
   def main(args: Array[String]): Unit = {
     val mailDirStr = args(0)
     val mailDir = new File(mailDirStr)
-    val pstPaths = mailDir.listFiles(new PstFileFilter()).map { f => f.getName() }.toSet
+    val pstPaths = mailDir.listFiles(new FileExtensionFilter(".pst", ".PST")).map { f => f.getName() }.toSet
     val urls = readPstUrls()
     val fileNames = getFileNamesFromUrls(urls)
     println(fileNames.diff(pstPaths).mkString("\n"))

@@ -3,12 +3,13 @@ package com.uebercomputing.pst
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
-
 import org.apache.hadoop.conf.Configuration
 import org.joda.time.DateTime
-
 import com.pff.PSTFile
+import com.uebercomputing.io.FileExtensionFilter
+import com.uebercomputing.io.FileUtils
 import com.uebercomputing.time.DateUtils
+import com.uebercomputing.io.IoConstants
 
 /**
  * Invoke command line from spark-mail:
@@ -22,14 +23,17 @@ import com.uebercomputing.time.DateUtils
  * --pstDir src/test/resources/psts/enron1.pst
  * --avroOutDir (don't specify - uses /tmp/avro)
  * --overwrite true
+ * --rollup none
  */
 object Main {
 
   case class Config(pstDir: String = ".",
-                    avroOutDir: String = PstConstants.TempDir + "/avro",
+                    avroOutDir: String = IoConstants.TempDir + "/avro",
                     rollup: DatePartitionType = PartitionByMonth,
                     hadoopConfFileOpt: Option[String] = None,
                     overwrite: Boolean = false)
+
+  val PstFilter = new FileExtensionFilter(".pst", ".PST")
 
   def main(args: Array[String]): Unit = {
     val startTime = new DateTime()
@@ -37,6 +41,7 @@ object Main {
     // parser.parse returns Option[C]
     p.parse(args, Config()) map { config =>
       val pstFiles = getPstFiles(new File(config.pstDir))
+      println(s"Processing: ${pstFiles.mkString(",")}")
       val hadoopConf = config.hadoopConfFileOpt match {
         case Some(confFilePath) => {
           val conf = new Configuration()
@@ -67,16 +72,15 @@ object Main {
     println(s"Total runtime: ${DateUtils.getTimeDifferenceToSeconds(startTime, endTime)}")
   }
 
+  def getPstFiles(pstDir: File): List[File] = {
+    FileUtils.getMatchingFilesRecursively(pstDir, PstFilter)
+  }
+
   def getLocalHadoopConf(): Configuration = {
     val conf = new Configuration
     conf.set("fs.defaultFS", "file:///")
     conf.set("mapreduce.framework.name", "local")
     conf
-  }
-
-  def getPstFiles(pstDir: File): List[File] = {
-    val pstFilter = new PstFileFilter()
-    pstDir.listFiles(pstFilter).toList
   }
 
   def parser(): scopt.OptionParser[Config] = {
@@ -106,11 +110,12 @@ object Main {
             case "daily"   => PartitionByDay
             case "monthly" => PartitionByMonth
             case "yearly"  => PartitionByYear
+            case "none"    => NoDatePartition
           }
           config.copy(rollup = rollupType)
         }
       } validate { rollupArg =>
-        if (List("daily", "monthly", "yearly").contains(rollupArg)) success
+        if (List("daily", "monthly", "yearly", "none").contains(rollupArg)) success
         else failure("Option --rollup must be either daily, monthly or yearly (default: monthly)")
       } text ("rollup can be daily, monthly or yearly (default: monthly) and determines how emails are binned into Avro files by the email's date.")
 

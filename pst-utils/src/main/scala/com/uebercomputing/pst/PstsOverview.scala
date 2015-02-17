@@ -8,6 +8,7 @@ import scala.collection.JavaConverters.asScalaBufferConverter
 import com.pff.PSTFile
 import com.pff.PSTFolder
 import com.pff.PSTMessage
+import com.uebercomputing.io.FileExtensionFilter
 
 /**
  * Run:
@@ -24,7 +25,7 @@ object PstOverview {
     try {
       val pstHome = if (args.length > 0) args(0) else DefaultPstHome
       val baseDir = new File(pstHome)
-      val pstPaths = baseDir.listFiles(new PstFileFilter())
+      val pstPaths = baseDir.listFiles(new FileExtensionFilter(".pst", ".PST"))
       var grandTotal = 0
       val startTime = new Date()
       println(s"Start time: ${startTime}")

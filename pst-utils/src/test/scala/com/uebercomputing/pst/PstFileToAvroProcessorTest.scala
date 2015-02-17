@@ -4,6 +4,7 @@ import com.uebercomputing.test.UnitTest
 import java.nio.file.Paths
 import java.nio.file.Files
 import org.apache.hadoop.conf.Configuration
+import com.uebercomputing.io.IoConstants
 
 class PstFileToAvroProcessorTest extends UnitTest with EmailProvider {
 
@@ -18,7 +19,7 @@ class PstFileToAvroProcessorTest extends UnitTest with EmailProvider {
   }
 
   def getTempDirStr(): String = {
-    val dirPath = Paths.get(PstConstants.TempDir)
+    val dirPath = Paths.get(IoConstants.TempDir)
     val prefix = "completePst"
     val tempDir = Files.createTempDirectory(dirPath, prefix)
     tempDir.toString()
