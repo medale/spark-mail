@@ -6,7 +6,13 @@ import java.nio.file.Paths
 import com.uebercomputing.io.FileExtensionFilter
 import com.uebercomputing.io.FileUtils
 import java.io.File
+import resource.managed
+import java.io.FileOutputStream
+import java.io.FileInputStream
 
+/**
+ * java -cp mailrecord-utils/target/mailrecord-utils-*-shaded.jar com.uebercomputing.mailrecord.MailRecordsCoalescer --avroRootDir /tmp/avro --combinedOutputFile /tmp/enron-all.avro
+ */
 object MailRecordsCoalescer {
 
   case class Config(avroRootDir: String = ".",
@@ -16,10 +22,34 @@ object MailRecordsCoalescer {
 
   def main(args: Array[String]): Unit = {
     val p = parser()
-    // parser.parse returns Option[C]
+    // parser.parse returns Option[Config]
     p.parse(args, Config()) map { config =>
       val avroFiles = FileUtils.getMatchingFilesRecursively(new File(config.avroRootDir), AvroFileFilter)
-      //TODO append all avro files to combinedOutputFile
+      println(s"Processing ${avroFiles.size} files from ${config.avroRootDir}...")
+      val mailRecordWriter = new MailRecordWriter
+      for (out <- managed(new FileOutputStream(config.combinedOutputFile))) {
+        mailRecordWriter.open(out)
+        for (avroFile <- avroFiles) {
+          println(s"\nProcessing ${avroFile.getAbsolutePath}...")
+          appendFile(mailRecordWriter, avroFile)
+        }
+        mailRecordWriter.close()
+      }
+    }
+  }
+
+  def appendFile(mailRecordWriter: MailRecordWriter, avroFile: File): Unit = {
+    for (in <- managed(new FileInputStream(avroFile))) {
+      val mailRecordReader = new MailRecordReader
+      mailRecordReader.open(in)
+      var count = 0
+      while (mailRecordReader.hasNext()) {
+        if (count % 10 == 0) print(".")
+        count += 1
+        val mailRecord = mailRecordReader.next()
+        mailRecordWriter.append(mailRecord)
+      }
+      mailRecordReader.close()
     }
   }
 
