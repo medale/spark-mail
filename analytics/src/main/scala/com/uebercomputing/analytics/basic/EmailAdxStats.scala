@@ -57,7 +57,7 @@ object EmailAdxStats extends ExecutionTimer {
   def getEmailAdxStats(analyticInput: AnalyticInput): Unit = {
     startTimer()
 
-    val emailAdxPairRdd = analyticInput.mailRecordRdd.flatMap { mailRecord =>
+    val emailAdxPairRdd = analyticInput.mailRecordsRdd.flatMap { mailRecord =>
       val to = mailRecord.getToOpt().getOrElse(Nil)
       val cc = mailRecord.getCcOpt().getOrElse(Nil)
       val bcc = mailRecord.getBccOpt().getOrElse(Nil)
@@ -74,7 +74,7 @@ object EmailAdxStats extends ExecutionTimer {
     //show how this is cached in UI (http://localhost:4040/storage)
     emailAdxPairRdd.cache()
 
-    println(s"Total emails in RDD: ${analyticInput.mailRecordRdd.count()}")
+    println(s"Total emails in RDD: ${analyticInput.mailRecordsRdd.count()}")
 
     val uniqueAdxRdd = emailAdxPairRdd.values.distinct()
     uniqueAdxRdd.saveAsTextFile("uniqueAdx")
@@ -84,6 +84,8 @@ object EmailAdxStats extends ExecutionTimer {
       adxType == From
     }.values.distinct(4)
     uniqueFroms.saveAsTextFile("uniqueFroms")
+
+    analyticInput.sc.stop()
 
     stopTimer()
     val prefixMsg = s"Executed over ${analyticInput.config.avroMailInput} in: "

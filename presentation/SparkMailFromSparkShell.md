@@ -63,12 +63,14 @@ various spark-shell startup messages...
 Spark context available as sc.
 scala> :paste
 
+import org.apache.spark.SparkContext._
+import com.uebercomputing.mailparser.enronfiles.AvroMessageProcessor
 import com.uebercomputing.mailrecord._
 import com.uebercomputing.mailrecord.Implicits.mailRecordToMailRecordOps
 
-val args = Array("--avroMailInput", "/opt/rpm1/jebbush/avro-monthly/2000")
+val args = Array("--avroMailInput", "/opt/rpm1/enron/filemail.avro")
 val config = CommandLineOptionsParser.getConfigOpt(args).get
-val recordsRdd = MailRecordAnalytic.getMailRecordRdd(sc, config)
+val recordsRdd = MailRecordAnalytic.getMailRecordsRdd(sc, config)
 
 Ctrl-D
 
@@ -77,15 +79,42 @@ froms.take(10)
 ...
 <Lots of Spark output>
 ...
-res0: Array[String] = Array(Susan.Pareigis@awi.state.fl.us, ...
+res0: Array[String] = Array(alexandra.villarreal@enron.com, ...
 
 ```
 
+### Email exploration with file info
+
+```
+...
+val recordFileTuplesRdd =
+MailRecordAnalytic.getMailRecordFileSplitTuplesRdd(sc, config)
+
+```
 ### Some "analytics"
-2000 presidential election
+
+#### How many folders per user?
 
 ```
-val bodies = recordsRdd.map{record => record.getBody}
-val election = bodies.filter{body => body.contains("recount") && body.contains("dimpled chad")}
-election.count
-val out = election.collect()
+val analyticInput = MailRecordAnalytic.getAnalyticInput(appName, args, additionalSparkProps, LOGGER)
+val userNameFolderTupleRdd = analyticInput.mailRecordsRdd.flatMap { mailRecord =>
+  val userNameOpt = mailRecord.getMailFieldOpt(AvroMessageProcessor.UserName)
+  val folderNameOpt = mailRecord.getMailFieldOpt(AvroMessageProcessor.FolderName)
+  if (userNameOpt.isDefined && folderNameOpt.isDefined) {
+    Some((userNameOpt.get, folderNameOpt.get))
+    } else {
+      None
+    }
+  }
+
+userNameFolderTupleRdd.cache()
+
+val uniqueFoldersByUserRdd = userNameFolderTupleRdd.aggregateByKey(Set[String]())(
+    seqOp = (set, folder) => set + folder,
+    combOp = (set1, set2) => set1 ++ set2)
+val folderPerUserRddExact = uniqueFoldersByUserRdd.mapValues { set => set.size }.sortByKey()
+folderPerUserRddExact.saveAsTextFile("exact")
+
+val folderPerUserRddEstimate = userNameFolderTupleRdd.countApproxDistinctByKey().sortByKey()
+folderPerUserRddEstimate.saveAsTextFile("estimate")
+```

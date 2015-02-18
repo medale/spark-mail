@@ -9,7 +9,7 @@ import org.apache.avro.mapred.AvroKey
 import org.apache.hadoop.mapreduce.Job
 import org.apache.hadoop.fs.Path
 
-case class AnalyticInput(val sc: SparkContext, val mailRecordRdd: RDD[MailRecord], config: Config) {}
+case class AnalyticInput(val sc: SparkContext, val mailRecordsRdd: RDD[MailRecord], job: Job, config: Config) {}
 
 object MailRecordAnalytic {
 
@@ -20,8 +20,9 @@ object MailRecordAnalytic {
         val sparkConf = MailRecordSparkConfFactory(appName, additionalSparkProps)
         config.masterOpt.foreach { master => sparkConf.setMaster(master) }
         val sc = new SparkContext(sparkConf)
-        val mailRecordRdd = getMailRecordRdd(sc, config)
-        AnalyticInput(sc, mailRecordRdd, config)
+        val (mailRecordsAvroRdd, job) = getAvroRddJobTuple(sc, config)
+        val mailRecordsRdd = getMailRecordsRdd(mailRecordsAvroRdd)
+        AnalyticInput(sc, mailRecordsRdd, job, config)
       }
       case None => {
         val errMsg = s"Unable to process command line options."
@@ -32,30 +33,50 @@ object MailRecordAnalytic {
   }
 
   /**
+   * Convenience method when running from Spark shell (using
+   * CommandLineOptionsParser.getConfigOpt(args) to obtain config).
+   */
+  def getMailRecordsRdd(sc: SparkContext, config: Config): RDD[MailRecord] = {
+    val (mailRecordAvroRdd, job) = getAvroRddJobTuple(sc, config)
+    getMailRecordsRdd(mailRecordAvroRdd)
+  }
+
+  /**
    * RDD with just the mail record objects.
    */
-  def getMailRecordRdd(sc: SparkContext, config: Config): RDD[MailRecord] = {
-    val mailRecordAvroRdd = getRddFromMailRecordInputFormat(sc, config)
-    val mailRecordRdd = mailRecordAvroRdd.map { avroKeySplitTuple =>
+  def getMailRecordsRdd(mailRecordsAvroRdd: RDD[(AvroKey[MailRecord], FileSplit)]): RDD[MailRecord] = {
+    val mailRecordsRdd = mailRecordsAvroRdd.map { avroKeySplitTuple =>
       val (mailRecordAvroKey, fileSplit) = avroKeySplitTuple
       mailRecordAvroKey.datum()
     }
-    mailRecordRdd
+    mailRecordsRdd
   }
 
   /**
    * For analytics that need to know the file split where a record came from.
    */
-  def getMailRecordFileSplitTupleRdd(sc: SparkContext, config: Config): RDD[(MailRecord, FileSplit)] = {
-    val mailRecordAvroRdd = getRddFromMailRecordInputFormat(sc, config)
-    val mailRecordFileSplitTupleRdd = mailRecordAvroRdd.map { avroKeySplitTuple =>
-      val (mailRecordAvroKey, fileSplit) = avroKeySplitTuple
-      (mailRecordAvroKey.datum(), fileSplit)
+  def getMailRecordFileSplitTuplesRdd(sc: SparkContext, config: Config): RDD[(MailRecord, FileSplit)] = {
+    val (mailRecordAvroRdd, job) = getAvroRddJobTuple(sc, config)
+    val mailRecordFileSplitTupleRdd = mailRecordAvroRdd.map {
+      case (mailRecordAvroKey, fileSplit) =>
+        (mailRecordAvroKey.datum(), fileSplit)
     }
     mailRecordFileSplitTupleRdd
   }
 
-  def getRddFromMailRecordInputFormat(sc: SparkContext, config: Config): RDD[(AvroKey[MailRecord], FileSplit)] = {
+  def getMailRecordFileSplitTuplesRdd(mailRecordsAvroRdd: RDD[(AvroKey[MailRecord], FileSplit)]): RDD[(MailRecord, FileSplit)] = {
+    val mailRecordFileSplitTupleRdd = mailRecordsAvroRdd.map {
+      case (mailRecordAvroKey, fileSplit) =>
+        (mailRecordAvroKey.datum(), fileSplit)
+    }
+    mailRecordFileSplitTupleRdd
+  }
+
+  /**
+   * Uses MailRecordInputFormat based on config to create an RDD of AvroKey[MailRecord] and FileSplit
+   * tuples.
+   */
+  def getAvroRddJobTuple(sc: SparkContext, config: Config): (RDD[(AvroKey[MailRecord], FileSplit)], Job) = {
     val hadoopConf = config.hadoopConfPathOpt match {
       case Some(hadoopConfPath) => {
         val conf = new Configuration()
@@ -70,9 +91,9 @@ object MailRecordAnalytic {
     MailRecordInputFormat.setInputDirRecursive(job, true)
     //Note: addInputPath makes clone of configuration and adds input path
     //to that copy. Therefore must call job.getConfiguration!
-    val mailRecordAvroRdd = sc.newAPIHadoopRDD(job.getConfiguration,
+    val mailRecordsAvroRdd = sc.newAPIHadoopRDD(job.getConfiguration,
       classOf[MailRecordInputFormat], classOf[AvroKey[MailRecord]], classOf[FileSplit])
 
-    mailRecordAvroRdd
+    (mailRecordsAvroRdd, job)
   }
 }

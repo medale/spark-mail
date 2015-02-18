@@ -5,7 +5,7 @@ spark-mail
 The Spark Mail project contains code for a tutorial on how to use Apache Spark to analyze email data. That data comes from two different sources:
 
 1. The Enron Email dataset from Carnegie Mellon University (file-based)
-1. We had planned on using public domain emails released by [Jeb Bush from his time as Florida governor PST files](http://www.jebemails.com/email/search). However, these data sets were retracted due to [PII](http://en.wikipedia.org/wiki/Personally_identifiable_information) concerns like [Jeb Bush Releases Personal Data(http://thinkprogress.org/election/2015/02/10/3621569/oops-jeb-bush-releases-personal-data-publishing-emails-interest-transparency/).
+1. We had planned on using public domain emails released by [Jeb Bush from his time as Florida governor PST files](http://www.jebemails.com/email/search). However, these data sets were retracted due to [PII](http://en.wikipedia.org/wiki/Personally_identifiable_information) concerns as described in [Jeb Bush Releases Personal Data(http://thinkprogress.org/election/2015/02/10/3621569/oops-jeb-bush-releases-personal-data-publishing-emails-interest-transparency/).
 
 Tutorial on parsing Enron email to Avro and then explore the email set using Spark.
 
@@ -38,15 +38,6 @@ protocol MailRecordProtocol {
   }
 }
 ```
-
-# Public domain emails from Jeb Bush's time as Florida governor
-
-## Background:
-On December 13, 2014, [the Washington Post reported](http://www.washingtonpost.com/blogs/post-politics/wp/2014/12/13/jeb-bush-to-write-e-book-and-release-250000-e-mails/) that former Florida governor Jeb Bush plans to release over 250,000 emails from his time as Florida governor.
-
-The American Bridge PAC had [requested the emails via public records request](http://americanbridgepac.org/happy-holidays-here-are-thousands-of-jeb-bushs-emails/) and listed the links below at http://americanbridgepac.org/jeb-bushs-gubernatorial-email-archive/. [Jeb Bush's website had the raw PST files also](http://www.jebemails.com/email/search). However due to PII and malware concerns, the raw PST files were retracted.
-
-See [PST Processing Page](PstProcessing.md) for next steps.
 
 # Enron Email Dataset
 
@@ -114,7 +105,7 @@ We parse out specific headers like Message-ID (uuid), From (from) etc. and store
 all the other headers in a mailFields map. We also store the body in its own
 field.
 
-The [mailrecord-utils mailparser Main class](https://github.com/medale/spark-mail/blob/master/mailrecord-utils/src/main/scala/com/uebercomputing/mailparser/Main.scala)
+The [mailrecord-utils mailparser enronfiles Main class](https://github.com/medale/spark-mail/blob/master/mailrecord-utils/src/main/scala/com/uebercomputing/mailparser/enronfiles/Main.scala)
 allows us to convert the directory/file-based Enron data set into one Avro files
 with all the corresponding MailRecord Avro records.
 
@@ -125,3 +116,12 @@ See spark-mail/analytics module source and test (in progress...)
 * http://info.nuix.com/Enron.html
 
 Note: Used pst file of bill_rapp.zip downloaded from nuix.com for testing.
+
+# Public domain emails from Jeb Bush's time as Florida governor
+
+## Background:
+On December 13, 2014, [the Washington Post reported](http://www.washingtonpost.com/blogs/post-politics/wp/2014/12/13/jeb-bush-to-write-e-book-and-release-250000-e-mails/) that former Florida governor Jeb Bush plans to release over 250,000 emails from his time as Florida governor.
+
+The American Bridge PAC had [requested the emails via public records request](http://americanbridgepac.org/happy-holidays-here-are-thousands-of-jeb-bushs-emails/) and listed the links below at http://americanbridgepac.org/jeb-bushs-gubernatorial-email-archive/. [Jeb Bush's website had the raw PST files also](http://www.jebemails.com/email/search). However due to PII and malware concerns, the raw PST files were retracted.
+
+See [PST Processing Page](PstProcessing.md) for next steps.

@@ -32,6 +32,11 @@ case class MailRecordOps(mailRecord: MailRecord) {
     mutableMap.toMap
   }
 
+  def getMailFieldOpt(key: String): Option[String] = {
+    val mailFields = mailRecord.getMailFields
+    Option(mailFields.get(key))
+  }
+
   def getDateUtc(): DateTime = {
     val dateUtcEpoch = mailRecord.getDateUtcEpoch
     new DateTime(dateUtcEpoch, DateTimeZone.UTC)

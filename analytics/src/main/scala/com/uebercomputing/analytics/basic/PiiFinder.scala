@@ -30,7 +30,7 @@ object PiiFinder extends ExecutionTimer {
     val appName = "PiiFinder"
     val additionalSparkProps = Map[String, String]()
     val analyticInput = MailRecordAnalytic.getAnalyticInput(appName, args, additionalSparkProps, LOGGER)
-    val uuidBodyPairRdd = analyticInput.mailRecordRdd.map { mailRecord =>
+    val uuidBodyPairRdd = analyticInput.mailRecordsRdd.map { mailRecord =>
       val uuid = mailRecord.getUuid()
       val body = mailRecord.getBody()
       (uuid, body)
@@ -40,6 +40,8 @@ object PiiFinder extends ExecutionTimer {
       containsPii(body)
     }
     piiRdd.saveAsSequenceFile("temp")
+
+    analyticInput.sc.stop()
 
     stopTimer()
     val prefixMsg = s"Executed over ${analyticInput.config.avroMailInput} in: "

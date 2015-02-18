@@ -28,7 +28,7 @@ object AttachmentStats extends ExecutionTimer {
     val appName = "AttachmentStats"
     val additionalSparkProps = Map[String, String]()
     val analyticInput = MailRecordAnalytic.getAnalyticInput(appName, args, additionalSparkProps, LOGGER)
-    val attachmentCountsRdd = analyticInput.mailRecordRdd.flatMap { mailRecord =>
+    val attachmentCountsRdd = analyticInput.mailRecordsRdd.flatMap { mailRecord =>
       val attachmentsOpt = mailRecord.getAttachmentsOpt()
       attachmentsOpt match {
         case Some(attachments) => Some(attachments.size)
@@ -37,6 +37,7 @@ object AttachmentStats extends ExecutionTimer {
     }
     val stats = attachmentCountsRdd.stats()
     println(s"Attachment stats: ${stats}")
+    analyticInput.sc.stop()
     stopTimer()
     val prefixMsg = s"Executed over ${analyticInput.config.avroMailInput} in: "
     logTotalTime(prefixMsg, LOGGER)

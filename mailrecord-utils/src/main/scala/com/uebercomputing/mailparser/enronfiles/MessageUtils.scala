@@ -2,11 +2,11 @@ package com.uebercomputing.mailparser.enronfiles
 
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
-
 import scala.collection.JavaConverters._
 import scala.util.control.NonFatal
-
 import org.apache.logging.log4j.LogManager
+import com.google.common.hash.Hashing
+import com.google.common.base.Charsets
 
 object MessageUtils {
 
@@ -23,5 +23,11 @@ object MessageUtils {
 
   def parseCommaSeparated(commaSeparated: String): java.util.List[String] = {
     commaSeparated.split(",").toList.asJava
+  }
+
+  def getMd5Hash(message: String): String = {
+    val hashString = Hashing.md5().hashString(message, Charsets.UTF_8)
+    val md5Hash = hashString.toString()
+    md5Hash
   }
 }

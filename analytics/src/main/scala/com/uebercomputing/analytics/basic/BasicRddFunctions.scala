@@ -30,7 +30,7 @@ object BasicRddFunctions extends ExecutionTimer {
     val analyticInput = MailRecordAnalytic.getAnalyticInput(appName, args, additionalSparkProps, LOGGER)
 
     //compiler can infer bodiesRdd type - explicitly listed for example clarity
-    val bodiesRdd: RDD[String] = analyticInput.mailRecordRdd.map { record =>
+    val bodiesRdd: RDD[String] = analyticInput.mailRecordsRdd.map { record =>
       record.getBody
     }
     val bodyLinesRdd: RDD[String] = bodiesRdd.flatMap { body => body.split("\n") }
@@ -42,6 +42,8 @@ object BasicRddFunctions extends ExecutionTimer {
     println(s"There were ${wordsRdd.count()} words.")
 
     println(s"There were ${wordsRdd.distinct().count()} distinct words.")
+
+    analyticInput.sc.stop()
 
     stopTimer()
     val prefixMsg = s"Executed over ${analyticInput.config.avroMailInput} in: "

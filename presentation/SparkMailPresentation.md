@@ -15,6 +15,8 @@ under Creative Commons Attribution-NonCommercial 4.0 International License
 
 # Why Apache Spark?
 * High-level, scalable processing framework
+* Iterative algorithms
+* Interactive data exploration
 * Hadoop MapReduce is very low-level
 
     * map phase - (internal shuffle/sort) - reduce phase
@@ -33,7 +35,7 @@ under Creative Commons Attribution-NonCommercial 4.0 International License
 * Scala, Java, Python APIs
 
     * Rich combinator functions on RDD abstraction (Resilient Distributed Dataset)
-
+* Caching for iterative algorithms and interactive data exploration
 * Spark SQL
 * GraphX
 * Spark Streaming
@@ -41,7 +43,7 @@ under Creative Commons Attribution-NonCommercial 4.0 International License
 
 # Combinator functions on Scala collections
 
-* Examples: map, flatMap, filter, reduce, fold
+* Examples: map, flatMap, filter, reduce, fold, aggregate
 * Background - Combinatory logic, higher-order functions...
 
 # Combinatory Logic
@@ -302,10 +304,13 @@ println(s"There were ${wordsRdd.count()} words.")
 Solution: Create Avro record format, parse once, store (MailRecord)
 
 # Apache Avro
+* JSON - need to encode binary data
 * Hadoop Writable - Java centric
-* Apache Avro: Binary serialization framework created by Doug Cutting (Hadoop, Lucene)
-* 2009
-* Language bindings for: Java, Scala, C, C++, C#, Python, Ruby
+* Apache Avro
+
+    * Binary serialization framework created by Doug Cutting in 2009 (Hadoop, Lucene)
+    * Language bindings for: Java, Scala, C, C++, C#, Python, Ruby
+    * Schema in file - can use generic or specific processing
 
 [Apache Avro @cutting_doug_apache_2009]
 
@@ -488,4 +493,8 @@ val mailRecordAvroRdd =
   classOf[FileSplit])
 ```
 
+# mailrecord-utils - MailRecordInputFormat.scala
+```scala
+class MailRecordInputFormat extends FileInputFormat[AvroKey[MailRecord], FileSplit]
+```
 # References {.allowframebreaks}
