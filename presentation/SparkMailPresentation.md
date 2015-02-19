@@ -495,6 +495,145 @@ val mailRecordAvroRdd =
 
 # mailrecord-utils - MailRecordInputFormat.scala
 ```scala
-class MailRecordInputFormat extends FileInputFormat[AvroKey[MailRecord], FileSplit]
+class MailRecordInputFormat extends
+   FileInputFormat[AvroKey[MailRecord], FileSplit]
+...
+class MailRecordRecordReader(val readerSchema: Schema,
+   val fileSplit: FileSplit) extends
+     AvroRecordReaderBase
 ```
+
+# Analytic 1 - Mail Folder Statistics
+* What is the least, most, average amount of folders per user?
+* Each MailRecord has user name and folder name
+```
+lay-k/       <- mailFields(UserName)
+   business  <- mailFields(FolderName)
+   family
+   enron
+   inbox
+   ...
+```
+
+# Hadoop Mail Folder Stats - Mapper
+
+* read each mail record
+* emits key: userName, value: folderName for each email
+
+# Hadoop Mail Folder Stats - Reducer
+
+* reduce method
+
+    * create set from values for a given key (unique folder names per user)
+    * set.size == folder count
+    * keep adding up all set.size (totalNumberOfFolders)
+    * one up counter for each key (totalUsers)
+    * keep track of min/max count
+
+* cleanup method
+
+    * compute average for this partition: totalNumberOfFolders/totalUsers
+    * write out min, max, totalNumberOfFolders, totalUsers, avgPerPartition
+
+# Hadoop Mail Folder Stats - Driver
+* Set Input/OutputFormat
+* Number of reducers
+
+# Hadoop Mail Folder Stats - Results
+
+* if only one reducer - results are overall lowest/highest/avg
+* if multiple reducers
+
+    * post-processing overall lowest/highest
+    * add totalNumberOfFolders and totalUsers to compute overall average
+
+# Hadoop Mapper
+```java
+public void map(AvroKey<MailRecord> key,
+NullWritable value, Context context) throws ... {
+  MailRecord mailRecord = key.datum();
+  Map<CharSequence, CharSequence> mailFields =
+      mailRecord.getMailFields();
+  CharSequence userName =
+      mailFields.get(AvroMailMessageProcessor.USER_NAME);
+  CharSequence folderName =
+      mailFields.get(AvroMailMessageProcessor.FOLDER_NAME);
+  userKey.set(userName.toString());
+  folderValue.set(folderName.toString());
+  context.write(userKey, folderValue);
+}
+```
+
+# Hadoop Reducer
+```java
+public void reduce(Text userKey,
+  Iterable<Text> folderValues,
+  Context context) throws ... {
+  Set<String> uniqueFolders = new HashSet<String>();
+  for (Text folder : folderValues) {
+    uniqueFolders.add(folder.toString());
+  }
+  int count = uniqueFolder.size();
+  if (count > maxCount) maxCount = count;
+  if (count < minCount) minCount = count;
+  totalNumberOfFolder += count
+  totalUsers++
+}
+...
+public void cleanup...
+//write min, max, totalNumberOfFolders,
+//totalUsers, avgPerPartition
+```
+
+# Spark Mail Folder Stats
+* Create (user,folder) tuple for each email
+* Aggregate by key (PairRDDFunctions)- for each key, create set of folders (distinct)
+* Map values for each key (set) to the set's size:
+
+    * (String, Int) represents (userName, # of folders for that user)
+
+* Create an RDD from just the values
+* Gather statistics on values (DoubleRDDFunction) (count, min, max, mean, stddev)
+* Create a histogram (DoubleRDDFunction)
+
+# Spark - Creating an RDD of Tuples
+```scala
+val userFolderTuplesRdd =
+  analyticInput.mailRecordsRdd.flatMap {
+    mailRecord =>
+  val userNameOpt =
+    mailRecord.getMailFieldOpt(UserName)
+  val folderNameOpt =
+    mailRecord.getMailFieldOpt(FolderName)
+
+  if (userNameOpt.isDefined &&
+      folderNameOpt.isDefined) {
+    Some((userNameOpt.get, folderNameOpt.get))
+    } else {
+      None
+    }
+  }
+```
+
+# Spark - applying PairRDDFunctions
+
+```scala
+import org.apache.spark.SparkContext._
+import scala.collection.mutable.{ Set => MutableSet }
+...
+//mutable set - reduce object creation/garbage collection
+val uniqueFoldersByUserRdd =
+   userFolderTuplesRdd.aggregateByKey(MutableSet[String]())(
+    seqOp = (folderSet, folder) => folderSet + folder,
+    combOp = (set1, set2) => set1 ++ set2)
+
+val folderPerUserRddExact =
+   uniqueFoldersByUserRdd.mapValues { set => set.size }.sortByKey()
+
+val stats = folderPerUserRddExact.values.stats()
+```
+
+# Resources
+* [OrderedRDDFunctions](http://spark.apache.org/docs/1.2.0/api/scala/index.html#org.apache.spark.rdd.OrderedRDDFunctions)
+
 # References {.allowframebreaks}
