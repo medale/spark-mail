@@ -60,6 +60,9 @@ object FoldersPerUserStatistics extends ExecutionTimer {
     //or explicitly
     println(folderPerUserRddExact.max()(orderByFolderCount))
 
+    //or if we don't care about ties
+    println(folderPerUserRddExact.max()(Ordering.by(tuple => tuple._2)))
+
     val folderPerUserRddEstimate = userFolderTuplesRdd.countApproxDistinctByKey().sortByKey()
 
     val estimatedStats = folderPerUserRddEstimate.values.stats()

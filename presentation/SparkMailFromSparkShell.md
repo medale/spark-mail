@@ -46,6 +46,7 @@ spark-shell --master local[4] --driver-memory 4G --executor-memory 4G \
 --conf spark.kryoserializer.buffer.mb=128 \
 --conf spark.kryoserializer.buffer.max.mb=512 \
 --jars mailrecord-utils/target/mailrecord-utils-0.9.0-SNAPSHOT-shaded.jar
+--driver-java-options "-Dlog4j.configuration=log4j.properties"
 ```
 
 Or
@@ -54,6 +55,7 @@ Or
 spark-shell --master local[4] --driver-memory 4G --executor-memory 4G \
 --jars mailrecord-utils/target/mailrecord-utils-0.9.0-SNAPSHOT-shaded.jar \
 --properties-file mailrecord-utils/mailrecord.conf
+--driver-java-options "-Dlog4j.configuration=log4j.properties"
 ```
 
 ## Start email exploration
@@ -96,8 +98,7 @@ MailRecordAnalytic.getMailRecordFileSplitTuplesRdd(sc, config)
 #### How many folders per user?
 
 ```
-val analyticInput = MailRecordAnalytic.getAnalyticInput(appName, args, additionalSparkProps, LOGGER)
-val userNameFolderTupleRdd = analyticInput.mailRecordsRdd.flatMap { mailRecord =>
+val userNameFolderTupleRdd = recordsRdd.flatMap { mailRecord =>
   val userNameOpt = mailRecord.getMailFieldOpt(AvroMessageProcessor.UserName)
   val folderNameOpt = mailRecord.getMailFieldOpt(AvroMessageProcessor.FolderName)
   if (userNameOpt.isDefined && folderNameOpt.isDefined) {
@@ -114,6 +115,12 @@ val uniqueFoldersByUserRdd = userNameFolderTupleRdd.aggregateByKey(Set[String]()
     combOp = (set1, set2) => set1 ++ set2)
 val folderPerUserRddExact = uniqueFoldersByUserRdd.mapValues { set => set.size }.sortByKey()
 folderPerUserRddExact.saveAsTextFile("exact")
+
+val stats = folderPerUserRddExact.values.stats()
+
+folderPerUserRddExact.max()(Ordering.by(tuple => tuple._2))
+
+
 
 val folderPerUserRddEstimate = userNameFolderTupleRdd.countApproxDistinctByKey().sortByKey()
 folderPerUserRddEstimate.saveAsTextFile("estimate")

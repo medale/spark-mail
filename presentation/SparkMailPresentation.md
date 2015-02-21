@@ -504,7 +504,7 @@ class MailRecordRecordReader(val readerSchema: Schema,
 ```
 
 # Analytic 1 - Mail Folder Statistics
-* What is the least, most, average amount of folders per user?
+* What are the least/most/average number of folders per user?
 * Each MailRecord has user name and folder name
 ```
 lay-k/       <- mailFields(UserName)
@@ -592,7 +592,7 @@ public void cleanup...
 
     * (String, Int) represents (userName, # of folders for that user)
 
-* Create an RDD from just the values
+* Create an RDD from just the values (folder sizes for all users)
 * Gather statistics on values (DoubleRDDFunction) (count, min, max, mean, stddev)
 * Create a histogram (DoubleRDDFunction)
 
@@ -633,7 +633,10 @@ val folderPerUserRddExact =
 val stats = folderPerUserRddExact.values.stats()
 ```
 
-# Resources
+# To Come
+* PairRDDFunctions, DoubleRDDFunctions
+* rdd.toDebugString
+* rdd.setName
 * [OrderedRDDFunctions](http://spark.apache.org/docs/1.2.0/api/scala/index.html#org.apache.spark.rdd.OrderedRDDFunctions)
 
 # References {.allowframebreaks}
