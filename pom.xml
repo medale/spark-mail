@@ -154,6 +154,11 @@
 				<version>2.5</version>
 			</dependency>
 			<dependency>
+				<groupId>org.joda</groupId>
+				<artifactId>joda-convert</artifactId>
+				<version>1.7</version>
+			</dependency>
+			<dependency>
 				<groupId>com.jsuereth</groupId>
 				<artifactId>scala-arm_${scala.binary.version}</artifactId>
 				<version>1.4</version>

@@ -9,6 +9,17 @@ The Spark Mail project contains code for a tutorial on how to use Apache Spark t
 
 Tutorial on parsing Enron email to Avro and then explore the email set using Spark.
 
+# Building the project
+The Spark Mail project uses a Maven build. In order to avoid PermGen error,
+add the following to your .bashrc/environment:
+
+```
+export MAVEN_OPTS="-Xmx2g -XX:MaxPermSize=512M -XX:ReservedCodeCacheSize=512m"
+```
+
+Compile times can be dramatically reduced by using the [Zinc Scala build server](https://github.com/typesafehub/zinc).
+[More details](http://uebercomputing.com/scala/2014/11/09/Incremental-Compilation-With-Zinc/)
+
 # ETL (Extract Transform Load)
 Both original datasets do not lend themselves to scalable processing. The Enron file set has over 500,000 files. Especially, when processing them with the Hadoop default FileInputFormat we would create over 500,000 input splits. Furthermore, we don't want our analytic code to have to deal with the parsing.
 

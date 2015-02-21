@@ -1,5 +1,7 @@
 package com.uebercomputing.mailrecord
 
+import scala.language.implicitConversions
+
 object Implicits {
 
   /**

@@ -19,10 +19,10 @@ class SparkAvroTest extends UnitTest with TempMailFileManager {
     val sparkConf = new SparkConf().setAppName("Spark Avro Test").setMaster("local")
     val sc = new SparkContext(sparkConf)
 
-    val conf = new Job()
-    FileInputFormat.setInputPaths(conf, tempMailFile.getAbsolutePath)
+    val job = Job.getInstance()
+    FileInputFormat.setInputPaths(job, tempMailFile.getAbsolutePath)
 
-    val recordsKeyValues = sc.newAPIHadoopRDD(conf.getConfiguration,
+    val recordsKeyValues = sc.newAPIHadoopRDD(job.getConfiguration,
       classOf[AvroKeyInputFormat[MailRecord]],
       classOf[AvroKey[MailRecord]],
       classOf[NullWritable])

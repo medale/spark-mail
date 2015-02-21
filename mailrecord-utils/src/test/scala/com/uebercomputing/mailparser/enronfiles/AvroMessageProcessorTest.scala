@@ -1,29 +1,15 @@
 package com.uebercomputing.mailparser.enronfiles
 
-import com.uebercomputing.test.UnitTest
-
-import java.io.InputStream
-import java.io.File
 import java.nio.file.Files
-import java.util.Map
-
-import com.uebercomputing.mailparser.enronfiles.AvroMessageProcessor;
-import com.uebercomputing.mailparser.enronfiles.MessageParser;
-import com.uebercomputing.mailparser.enronfiles.MessageProcessor;
-import com.uebercomputing.mailrecord.MailRecord
-
+import scala.io.Source
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FSDataOutputStream
-import org.apache.hadoop.fs.FileStatus
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
-
-import resource.managed
-import scala.io.Source
-
-import org.scalatest.fixture.FunSuite
 import org.junit.runner.RunWith
+import org.scalatest.fixture.FunSuite
+import resource.managed
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
