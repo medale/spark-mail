@@ -83,8 +83,12 @@ object MailRecordAnalytic {
         conf.addResource(hadoopConfPath)
         conf
       }
-      case None => CommandLineOptionsParser.getLocalHadoopConf()
+      case None => new Configuration()
     }
+
+    val sparkHadoopConf = sc.hadoopConfiguration
+    hadoopConf.addResource(sparkHadoopConf)
+
     val job = Job.getInstance(hadoopConf)
     val path = new Path(config.avroMailInput)
     MailRecordInputFormat.addInputPath(job, path)

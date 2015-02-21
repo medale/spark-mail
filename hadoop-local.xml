@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!-- hadoop-local.xml -->
+<configuration>
+
+	<!-- Old fs.default.name -->
+	<property>
+		<name>fs.defaultFS</name>
+		<value>file:///</value>
+	</property>
+
+	<property>
+		<name>mapreduce.framework.name</name>
+		<value>local</value>
+	</property>
+	
+</configuration>

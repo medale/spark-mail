@@ -45,7 +45,7 @@ spark-shell --master local[4] --driver-memory 4G --executor-memory 4G \
 --conf spark.kryo.registrator=com.uebercomputing.mailrecord.MailRecordRegistrator \
 --conf spark.kryoserializer.buffer.mb=128 \
 --conf spark.kryoserializer.buffer.max.mb=512 \
---jars mailrecord-utils/target/mailrecord-utils-0.9.0-SNAPSHOT-shaded.jar
+--jars mailrecord-utils/target/mailrecord-utils-0.9.0-SNAPSHOT-shaded.jar \
 --driver-java-options "-Dlog4j.configuration=log4j.properties"
 ```
 
@@ -54,13 +54,15 @@ Or
 ```
 spark-shell --master local[4] --driver-memory 4G --executor-memory 4G \
 --jars mailrecord-utils/target/mailrecord-utils-0.9.0-SNAPSHOT-shaded.jar \
---properties-file mailrecord-utils/mailrecord.conf
+--properties-file mailrecord-utils/mailrecord.conf \
 --driver-java-options "-Dlog4j.configuration=log4j.properties"
 ```
 
-## Start email exploration
+## Start email exploration (Local)
 
-```
+Assumes directory is spark-mail (contains hadoop-local.xml)
+
+```scala
 various spark-shell startup messages...
 Spark context available as sc.
 scala> :paste
@@ -71,7 +73,8 @@ import com.uebercomputing.mailparser.enronfiles.AvroMessageProcessor
 import com.uebercomputing.mailrecord._
 import com.uebercomputing.mailrecord.Implicits.mailRecordToMailRecordOps
 
-val args = Array("--avroMailInput", "/opt/rpm1/enron/filemail.avro")
+val args = Array("--avroMailInput", "/opt/rpm1/enron/filemail.avro",
+"--hadoopConfPath", "hadoop-local.xml")
 val config = CommandLineOptionsParser.getConfigOpt(args).get
 val recordsRdd = MailRecordAnalytic.getMailRecordsRdd(sc, config)
 
@@ -85,6 +88,20 @@ froms.take(10)
 res0: Array[String] = Array(alexandra.villarreal@enron.com, ...
 
 ```
+
+## Email exploration (Hadoop cluster)
+```scala
+scala> :paste
+
+import org.apache.spark.SparkContext._
+import org.apache.spark.rdd._
+import com.uebercomputing.mailparser.enronfiles.AvroMessageProcessor
+import com.uebercomputing.mailrecord._
+import com.uebercomputing.mailrecord.Implicits.mailRecordToMailRecordOps
+
+val args = Array("--avroMailInput", "s3n://.../filemail.avro")
+val config = CommandLineOptionsParser.getConfigOpt(args).get
+val recordsRdd = MailRecordAnalytic.getMailRecordsRdd(sc, config)
 
 ### Email exploration with file info
 
@@ -116,7 +133,13 @@ val uniqueFoldersByUserRdd = userNameFolderTupleRdd.aggregateByKey(Set[String]()
     combOp = (set1, set2) => set1 ++ set2)
 val folderPerUserRddExact = uniqueFoldersByUserRdd.mapValues { set => set.size }
 
-val stats = folderPerUserRddExact.values.stats()
+val folderCounts: RDD[Int] = folderPerUserRddExact.values
+
+val stats = folderCounts.stats()
+
+//buckets 0-25, 25-50 etc.
+val buckets = Array(0.0,25,50,75,100,125,150,175,200)
+folderCounts.histogram(buckets, evenBuckets=true)
 
 folderPerUserRddExact.max()(Ordering.by(tuple => tuple._2))
 
