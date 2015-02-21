@@ -66,6 +66,7 @@ Spark context available as sc.
 scala> :paste
 
 import org.apache.spark.SparkContext._
+import org.apache.spark.rdd._
 import com.uebercomputing.mailparser.enronfiles.AvroMessageProcessor
 import com.uebercomputing.mailrecord._
 import com.uebercomputing.mailrecord.Implicits.mailRecordToMailRecordOps
@@ -113,8 +114,7 @@ userNameFolderTupleRdd.cache()
 val uniqueFoldersByUserRdd = userNameFolderTupleRdd.aggregateByKey(Set[String]())(
     seqOp = (set, folder) => set + folder,
     combOp = (set1, set2) => set1 ++ set2)
-val folderPerUserRddExact = uniqueFoldersByUserRdd.mapValues { set => set.size }.sortByKey()
-folderPerUserRddExact.saveAsTextFile("exact")
+val folderPerUserRddExact = uniqueFoldersByUserRdd.mapValues { set => set.size }
 
 val stats = folderPerUserRddExact.values.stats()
 
@@ -123,5 +123,7 @@ folderPerUserRddExact.max()(Ordering.by(tuple => tuple._2))
 
 
 val folderPerUserRddEstimate = userNameFolderTupleRdd.countApproxDistinctByKey().sortByKey()
+
+folderPerUserRddExact.saveAsTextFile("exact")
 folderPerUserRddEstimate.saveAsTextFile("estimate")
 ```

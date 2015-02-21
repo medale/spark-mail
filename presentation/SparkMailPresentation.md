@@ -123,9 +123,12 @@ order to output List[B]
 
 # flatMap Example
 ```scala
-val macbeth = """|When shall we three meet again?
+val macbeth = """When shall we three meet again?
 |In thunder, lightning, or in rain?""".stripMargin
 val macLines = macbeth.split("\n")
+// macLines: Array[String] = Array(
+  When shall we three meet again?,
+  In thunder, lightning, or in rain?)
 
 //Non-word character split
 val macWordsNested: Array[Array[String]] =
@@ -245,7 +248,7 @@ def aggregate[B](z: B)(seqop: (B, A) => B,
 val wordsAll = List("when", "shall", "we", "three",
   "meet", "again", "in", "thunder", "lightning",
   "or", "in", "rain")
-
+//Map(5 letter words ->3, 9->1, 2->4, 7->1, 4->3)
 val lengthDistro = wordsAll.aggregate(Map[Int, Int]())(
   seqop = (distMap, currWord) =>
   {
@@ -264,7 +267,7 @@ val lengthDistro = wordsAll.aggregate(Map[Int, Int]())(
 
 # So what does this have to do with Apache Spark?
 * Resilient Distributed Dataset ([RDD](https://spark.apache.org/docs/1.2.0/api/scala/#org.apache.spark.rdd.RDD))
-* "immutable, partitioned collection of elements that can be operated on in parallel"
+* From API docs: "immutable, partitioned collection of elements that can be operated on in parallel"
 * map, flatMap, filter, reduce, fold, aggregate...
 
 # com.uebercomputing.analytics.basic.BasicRddFunctions
@@ -286,6 +289,63 @@ val wordsRdd = bodyWordsRdd.filter(!stopWords.contains(_))
 
 println(s"There were ${wordsRdd.count()} words.")
 ```
+
+# Spark - RDD API
+* [RDD API](http://spark.apache.org/docs/1.2.0/api/scala/index.html#org.apache.spark.rdd.RDD)
+* Transforms - map, flatMap, filter, reduce, fold, aggregate...
+
+    * Lazy evaluation (not evaluated until action!)
+
+* Actions - count, collect, first, take, saveAsTextFile...
+
+# Spark - From RDD to PairRDDFunctions
+* If an RDD contains tuples (K,V) - can apply PairRDDFunctions
+* Uses implicit conversion of RDD to PairRDDFunctions
+* In 1.2 and previous versions available by importing
+org.apache.spark.SparkContext._
+
+```scala
+From org.apache.spark.SparkContext:
+
+implicit def rddToPairRDDFunctions[K, V](
+  rdd: RDD[(K, V)])
+  (implicit kt: ClassTag[K],
+    vt: ClassTag[V],
+    ord: Ordering[K] = null) = {
+      new PairRDDFunctions(rdd)
+    }
+```
+
+# PairRDDFunctions
+* keys, values - return RDD of keys/values
+* mapValues - transform each value with a given function
+* flatMapValues - flatMap each value (0, 1 or more output per value)
+* groupByKey - RDD[(K, Iterable[V])]
+
+    * Note: expensive for aggregation/sum - use reduce/aggregateByKey!
+
+* reduceByKey - return same type as value type
+* foldByKey - zero/neutral starting value
+* aggregateByKey - can return different type
+* join (left/rightOuterJoin), cogroup
+...
+
+# From RDD to DoubleRDDFunctions
+* From API docs: "Extra functions available on RDDs of Doubles through an
+  implicit conversion. Import org.apache.spark.SparkContext._ "
+
+```scala
+From org.apache.spark.SparkContext:
+implicit def doubleRDDToDoubleRDDFunctions(
+  rdd: RDD[Double])
+    = new DoubleRDDFunctions(rdd)
+```
+
+# DoubleRDDFunctions
+* mean, stddev, stats (count, mean, stddev, min, max)
+* sum
+* histogram
+...
 
 # MailRecord
 * We want to analyze email data
@@ -463,7 +523,9 @@ From spark-mail directory:
 spark-shell --master local[4] --driver-memory 4G \
 --executor-memory 4G \
 --jars mailrecord-utils/target/mailrecord-*-shaded.jar \
---properties-file mailrecord-utils/mailrecord.conf
+--properties-file mailrecord-utils/mailrecord.conf \
+--driver-java-options \
+ "-Dlog4j.configuration=log4j.properties"
 ```
 
 # Getting an RDD of MailRecords
@@ -474,7 +536,7 @@ import com.uebercomputing.mailrecord.Implicits._
 
 val args =
   Array("--avroMailInput",
-        "/opt/rpm1/jebbush/avro-monthly/2000")
+        "/opt/rpm1/enron/filemail.avro")
 val config =
   CommandLineOptionsParser.getConfigOpt(args).get
 val recordsRdd =
@@ -596,9 +658,9 @@ public void cleanup...
 * Gather statistics on values (DoubleRDDFunction) (count, min, max, mean, stddev)
 * Create a histogram (DoubleRDDFunction)
 
-# Spark - Creating an RDD of Tuples
+# Spark - Creating an RDD of 2-Tuples via flatMap
 ```scala
-val userFolderTuplesRdd =
+val userFolderTuplesRdd: RDD[(String, String)] =
   analyticInput.mailRecordsRdd.flatMap {
     mailRecord =>
   val userNameOpt =
@@ -613,30 +675,66 @@ val userFolderTuplesRdd =
       None
     }
   }
+
+userFolderTuplesRdd.cache()
 ```
 
 # Spark - applying PairRDDFunctions
-
 ```scala
 import org.apache.spark.SparkContext._
 import scala.collection.mutable.{ Set => MutableSet }
 ...
 //mutable set - reduce object creation/garbage collection
-val uniqueFoldersByUserRdd =
-   userFolderTuplesRdd.aggregateByKey(MutableSet[String]())(
+val uniqueFoldersByUserRdd:
+ RDD[(String, MutableSet[String])] =
+   userFolderTuplesRdd.aggregateByKey(
+     MutableSet[String]())(
     seqOp = (folderSet, folder) => folderSet + folder,
     combOp = (set1, set2) => set1 ++ set2)
 
-val folderPerUserRddExact =
-   uniqueFoldersByUserRdd.mapValues { set => set.size }.sortByKey()
+val folderPerUserRddExact: RDD[(String, Int)] =
+   uniqueFoldersByUserRdd.mapValues { set => set.size }
 
-val stats = folderPerUserRddExact.values.stats()
 ```
 
-# To Come
-* PairRDDFunctions, DoubleRDDFunctions
-* rdd.toDebugString
-* rdd.setName
-* [OrderedRDDFunctions](http://spark.apache.org/docs/1.2.0/api/scala/index.html#org.apache.spark.rdd.OrderedRDDFunctions)
+# DoubleRDDFunctions - Stats
+
+```scala
+val folderCounts: RDD[Int] =
+   folderPerUserRddExact.values
+
+val stats = folderCounts.stats()
+> stats: org.apache.spark.util.StatCounter =
+(count: 150, mean: 22.033333, stdev: 26.773474,
+ max: 193.000000, min: 2.000000)
+
+//buckets 0-25, 25-50 etc.
+val buckets = Array(0.0,25,50,75,100,125,150,175,200)
+folderCounts.histogram(buckets, evenBuckets=true)
+res13: Array[Long] = Array(116, 16, 11, 3, 2, 1, 0, 1)
+```
+
+# Who has 193 folders?
+* RDD - def max()(implicit ord: Ordering[T]): T
+```scala
+folderPerUserRddExact.max()(
+  Ordering.by(tuple => tuple._2))
+> res2: (String, Int) = (kean-s,193)
+```
+
+# RDD Lineage - transformations
+```scala
+folderCounts.toDebugString
+> res18: String =
+(22) MappedRDD[27] at values at <console>:35 []
+|   MappedValuesRDD[26] at mapValues at <console>:33 []
+|   ShuffledRDD[25] at aggregateByKey at <console>:31 []
++-(22) FlatMappedRDD[2] at flatMap at <console>:26 []
+|       CachedPartitions: 22; MemorySize: 76.3 MB;
+         TachyonSize: 0.0 B; DiskSize: 0.0 B
+|   MappedRDD[1] at map at MailRecordAnalytic.scala:48 []
+|   NewHadoopRDD[0] at newAPIHadoopRDD at
+         MailRecordAnalytic.scala:94 []
+```
 
 # References {.allowframebreaks}

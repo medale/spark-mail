@@ -8,6 +8,7 @@ import com.uebercomputing.mailrecord.MailRecordAnalytic
 import com.uebercomputing.mailparser.enronfiles.AvroMessageProcessor
 import java.nio.charset.StandardCharsets
 import scala.collection.mutable.{ Set => MutableSet }
+import org.apache.spark.rdd.RDD
 
 /**
  * Run with two args:
@@ -24,7 +25,7 @@ object FoldersPerUserStatistics extends ExecutionTimer {
     val appName = "FoldersPerUserStatistics"
     val additionalSparkProps = Map[String, String]()
     val analyticInput = MailRecordAnalytic.getAnalyticInput(appName, args, additionalSparkProps, LOGGER)
-    val userFolderTuplesRdd = analyticInput.mailRecordsRdd.flatMap { mailRecord =>
+    val userFolderTuplesRdd: RDD[(String, String)] = analyticInput.mailRecordsRdd.flatMap { mailRecord =>
       val userNameOpt = mailRecord.getMailFieldOpt(AvroMessageProcessor.UserName)
       val folderNameOpt = mailRecord.getMailFieldOpt(AvroMessageProcessor.FolderName)
       if (userNameOpt.isDefined && folderNameOpt.isDefined) {
@@ -36,13 +37,17 @@ object FoldersPerUserStatistics extends ExecutionTimer {
     userFolderTuplesRdd.cache()
 
     //mutable set - reduce object creation/garbage collection
-    val uniqueFoldersByUserRdd = userFolderTuplesRdd.aggregateByKey(MutableSet[String]())(
-      seqOp = (folderSet, folder) => folderSet + folder,
-      combOp = (set1, set2) => set1 ++ set2)
-    val folderPerUserRddExact = uniqueFoldersByUserRdd.mapValues { set => set.size }.sortByKey()
+    val uniqueFoldersByUserRdd: RDD[(String, MutableSet[String])] =
+      userFolderTuplesRdd.aggregateByKey(MutableSet[String]())(
+        seqOp = (folderSet, folder) => folderSet + folder,
+        combOp = (set1, set2) => set1 ++ set2)
+    val folderPerUserRddExact: RDD[(String, Int)] = uniqueFoldersByUserRdd.mapValues { set => set.size }.sortByKey()
+
     folderPerUserRddExact.saveAsTextFile("exact")
 
-    val stats = folderPerUserRddExact.values.stats()
+    val folderCounts: RDD[Int] = folderPerUserRddExact.values
+
+    val stats = folderCounts.stats()
     println(stats)
 
     //Who has 193 folders?!?
@@ -61,7 +66,8 @@ object FoldersPerUserStatistics extends ExecutionTimer {
     println(folderPerUserRddExact.max()(orderByFolderCount))
 
     //or if we don't care about ties
-    println(folderPerUserRddExact.max()(Ordering.by(tuple => tuple._2)))
+    println(folderPerUserRddExact.max()(
+      Ordering.by(tuple => tuple._2)))
 
     val folderPerUserRddEstimate = userFolderTuplesRdd.countApproxDistinctByKey().sortByKey()
 
