@@ -90,6 +90,23 @@ res0: Array[String] = Array(alexandra.villarreal@enron.com, ...
 ```
 
 ## Email exploration (Hadoop cluster)
+
+In this configuration, Spark is configured to talk to the cluster by setting
+$SPARK_HOME/conf/spark-env.sh:
+
+```bash
+# set to the directory that contains yarn-site.xml,
+# core-site.xml etc. for your cluster
+export HADOOP_CONF_DIR=/usr/lib/hadoop/conf
+```
+
+We use SparkContext's hadoopConfiguration (sc.hadoopConfiguration) to
+read all the configuration properties and therefore don't need to specify
+the --hadoopConfPath.
+
+In the example below, we assume that the user executing the job has
+a file enron.avro in their user directory (often /home/$user/enron.avro)
+
 ```scala
 scala> :paste
 
@@ -142,7 +159,6 @@ val buckets = Array(0.0,25,50,75,100,125,150,175,200)
 folderCounts.histogram(buckets, evenBuckets=true)
 
 folderPerUserRddExact.max()(Ordering.by(tuple => tuple._2))
-
 
 
 val folderPerUserRddEstimate = userNameFolderTupleRdd.countApproxDistinctByKey().sortByKey()
