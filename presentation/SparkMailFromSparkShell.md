@@ -105,7 +105,8 @@ read all the configuration properties and therefore don't need to specify
 the --hadoopConfPath.
 
 In the example below, we assume that the user executing the job has
-a file enron.avro in their user directory (often /home/$user/enron.avro)
+a file enron.avro in their user directory. The example shows user hadoop
+with a home directory of /user/hadoop containing enron.avro (in hdfs).
 
 ```scala
 scala> :paste
@@ -116,18 +117,10 @@ import com.uebercomputing.mailparser.enronfiles.AvroMessageProcessor
 import com.uebercomputing.mailrecord._
 import com.uebercomputing.mailrecord.Implicits.mailRecordToMailRecordOps
 
-val args = Array("--avroMailInput", "enron.avro")
+val args = Array("--avroMailInput", "/user/hadoop/enron.avro")
 val config = CommandLineOptionsParser.getConfigOpt(args).get
 val recordsRdd = MailRecordAnalytic.getMailRecordsRdd(sc, config)
 
-### Email exploration with file info
-
-```
-...
-val recordFileTuplesRdd =
-MailRecordAnalytic.getMailRecordFileSplitTuplesRdd(sc, config)
-
-```
 ### Some "analytics"
 
 #### How many folders per user?
