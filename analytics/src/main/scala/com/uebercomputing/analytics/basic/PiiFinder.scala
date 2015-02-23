@@ -17,7 +17,7 @@ import java.nio.charset.StandardCharsets
  * --avroMailInput /opt/rpm1/jebbush/avro-monthly --master local[4]
  *
  * JebBush (1999)
- * --avroMailInput /opt/rpm1/jebbush/avro-monthly/1999 --master local[4]
+ * --avroMailInput /opt/rpm1/jebbush/avro-yearly/1999 --master local[4]
  */
 object PiiFinder extends ExecutionTimer {
 
