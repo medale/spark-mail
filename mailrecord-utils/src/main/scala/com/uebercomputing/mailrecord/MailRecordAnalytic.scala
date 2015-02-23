@@ -51,6 +51,7 @@ object MailRecordAnalytic {
     val mailRecordsRdd = mailRecordsAvroRdd.map {
       case (mailRecordAvroKey, nullWritable) =>
         val mailRecord = mailRecordAvroKey.datum()
+        //make a copy - avro input format reuses mail record
         MailRecord.newBuilder(mailRecord).build()
     }
     mailRecordsRdd
