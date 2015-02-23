@@ -9,8 +9,10 @@ import org.apache.avro.mapred.AvroKey
 import org.apache.hadoop.mapreduce.Job
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.NullWritable
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
+import org.apache.avro.mapreduce.AvroJob
 
-case class AnalyticInput(val sc: SparkContext, val mailRecordsRdd: RDD[MailRecord], job: Job, config: Config) {}
+case class AnalyticInput(val sc: SparkContext, val mailRecordsRdd: RDD[MailRecord], hadoopConfig: Configuration, config: Config) {}
 
 object MailRecordAnalytic {
 
@@ -21,9 +23,9 @@ object MailRecordAnalytic {
         val sparkConf = MailRecordSparkConfFactory(appName, additionalSparkProps)
         config.masterOpt.foreach { master => sparkConf.setMaster(master) }
         val sc = new SparkContext(sparkConf)
-        val (mailRecordsAvroRdd, job) = getAvroRddJobTuple(sc, config)
+        val (mailRecordsAvroRdd, hadoopConfig) = getAvroRddJobTuple(sc, config)
         val mailRecordsRdd = getMailRecordsRdd(mailRecordsAvroRdd)
-        AnalyticInput(sc, mailRecordsRdd, job, config)
+        AnalyticInput(sc, mailRecordsRdd, hadoopConfig, config)
       }
       case None => {
         val errMsg = s"Unable to process command line options."
@@ -46,9 +48,10 @@ object MailRecordAnalytic {
    * RDD with just the mail record objects.
    */
   def getMailRecordsRdd(mailRecordsAvroRdd: RDD[(AvroKey[MailRecord], NullWritable)]): RDD[MailRecord] = {
-    val mailRecordsRdd = mailRecordsAvroRdd.map { avroKeySplitTuple =>
-      val (mailRecordAvroKey, fileSplit) = avroKeySplitTuple
-      mailRecordAvroKey.datum()
+    val mailRecordsRdd = mailRecordsAvroRdd.map {
+      case (mailRecordAvroKey, nullWritable) =>
+        val mailRecord = mailRecordAvroKey.datum()
+        MailRecord.newBuilder(mailRecord).build()
     }
     mailRecordsRdd
   }
@@ -57,7 +60,7 @@ object MailRecordAnalytic {
    * Uses MailRecordInputFormat based on config to create an RDD of AvroKey[MailRecord] and NullWritable
    * tuples.
    */
-  def getAvroRddJobTuple(sc: SparkContext, config: Config): (RDD[(AvroKey[MailRecord], NullWritable)], Job) = {
+  def getAvroRddJobTuple(sc: SparkContext, config: Config): (RDD[(AvroKey[MailRecord], NullWritable)], Configuration) = {
     val hadoopConf = config.hadoopConfPathOpt match {
       case Some(hadoopConfPath) => {
         val conf = new Configuration()
@@ -69,16 +72,12 @@ object MailRecordAnalytic {
 
     val sparkHadoopConf = sc.hadoopConfiguration
     hadoopConf.addResource(sparkHadoopConf)
+    hadoopConf.setBoolean(FileInputFormat.INPUT_DIR_RECURSIVE, true)
+    //see AvroJob.setInputKeySchema
+    hadoopConf.set("avro.schema.input.key", MailRecord.getClassSchema.toString())
+    val mailRecordsAvroRdd = sc.newAPIHadoopFile(config.avroMailInput,
+      classOf[MailRecordInputFormat], classOf[AvroKey[MailRecord]], classOf[NullWritable], hadoopConf)
 
-    val job = Job.getInstance(hadoopConf)
-    val path = new Path(config.avroMailInput)
-    MailRecordInputFormat.addInputPath(job, path)
-    MailRecordInputFormat.setInputDirRecursive(job, true)
-    //Note: addInputPath makes clone of configuration and adds input path
-    //to that copy. Therefore must call job.getConfiguration!
-    val mailRecordsAvroRdd = sc.newAPIHadoopRDD(job.getConfiguration,
-      classOf[MailRecordInputFormat], classOf[AvroKey[MailRecord]], classOf[NullWritable])
-
-    (mailRecordsAvroRdd, job)
+    (mailRecordsAvroRdd, hadoopConf)
   }
 }
