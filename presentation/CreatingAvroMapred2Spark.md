@@ -3,8 +3,9 @@
 Due to [SPARK-3039 Wrong Avro Mapred Library Version (hadoop1 instead of hadoop2)](https://issues.apache.org/jira/browse/SPARK-3039)
 we created our own version of Avro with a fix for that problem. This fix has been
 submitted as the [Apache Spark Pull Request 4315 on GitHub](https://github.com/apache/spark/pull/4315)
-but was too late for the 1.2.1 release. Hopefully, it will be included in the
-master (1.3.0-SNAPSHOT) and backported to 1.2.2 onwards.
+and is included in the master (1.3.0-SNAPSHOT) and 1.3.0 release candidates.
+Hopefully, it will also be backported to 1.2.2 onwards. But here is how
+to build a release using the v1.2.1 release.
 
 ## Obtaining Git repo for Apache Spark
 
@@ -12,8 +13,8 @@ Apache Spark's GitHub repo is at https://github.com/apache/spark/.
 
     git clone git@github.com:apache/spark.git
     cd spark
-    # Create branch fix from tag v1.2.1-rc3 (latest release branch)
-    git checkout -b fix v1.2.1-rc3
+    # Create branch fix from tag v1.2.1 (latest release branch)
+    git checkout -b fix v1.2.1
 
 ## Fixing SPARK-3039
 
