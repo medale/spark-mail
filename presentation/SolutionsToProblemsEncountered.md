@@ -84,6 +84,43 @@ val serializableConf = new SerializableWritable(hadoopConf)
 val mailRecordByDateWriter = new MailRecordByDateWriter(serializableConf.value, datePartitionType, rootPath, pstAbsolutePath)
 ```
 
+# AvroRecordReaderBase - reuses MailRecord object!
+
+Symptom: Trying to cache whole recordsRdd throws off the filter counts:
+
+```
+import org.apache.spark.SparkContext._
+import org.apache.spark.rdd._
+import com.uebercomputing.mailparser.enronfiles.AvroMessageProcessor
+import com.uebercomputing.mailrecord._
+import com.uebercomputing.mailrecord.Implicits.mailRecordToMailRecordOps
+
+scala> val d = recordsRdd.filter{ record =>
+  record.getFrom() == "dortha.gray@enron.com" }
+scala> d.count
+res0: Long = 14
+scala> recordsRdd.cache
+scala> val d = recordsRdd.filter{ record =>
+  record.getFrom() == "dortha.gray@enron.com" }
+scala> d.count
+res2: Long = 0
+```
+
+Cause: AvroRecordReaderBase (and most Hadoop InputFormats) reuses the same
+MailRecord object to minimize object creation.
+
+Solution: If you absolutely need to cache MailRecords, make a copy. Or just
+pull out the fields you need and then cache that RDD!
+
+```scala
+val mailRecordsRdd = mailRecordsAvroRdd.map {
+  case (mailRecordAvroKey, fileSplit) =>
+    val mailRecord = mailRecordAvroKey.datum()
+    //make a copy - avro input format reuses mail record
+    MailRecord.newBuilder(mailRecord).build()
+  }
+```
+
 # Scala That Came in Handy
 
 ## Typing list as vargs

@@ -123,6 +123,14 @@ val recordsRdd = MailRecordAnalytic.getMailRecordsRdd(sc, config)
 
 ### Some "analytics"
 
+#### How many emails from dortha.gray@enron.com?
+
+```scala
+val d = recordsRdd.filter(record => record.getFrom == "dortha.gray@enron.com")
+d.count
+
+```
+
 #### How many folders per user?
 
 ```

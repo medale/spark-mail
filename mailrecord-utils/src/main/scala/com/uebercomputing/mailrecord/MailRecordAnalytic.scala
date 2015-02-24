@@ -23,7 +23,7 @@ object MailRecordAnalytic {
         val sparkConf = MailRecordSparkConfFactory(appName, additionalSparkProps)
         config.masterOpt.foreach { master => sparkConf.setMaster(master) }
         val sc = new SparkContext(sparkConf)
-        val (mailRecordsAvroRdd, hadoopConfig) = getAvroRddJobTuple(sc, config)
+        val (mailRecordsAvroRdd, hadoopConfig) = getAvroRddHadoopConfigTuple(sc, config)
         val mailRecordsRdd = getMailRecordsRdd(mailRecordsAvroRdd)
         AnalyticInput(sc, mailRecordsRdd, hadoopConfig, config)
       }
@@ -40,28 +40,41 @@ object MailRecordAnalytic {
    * CommandLineOptionsParser.getConfigOpt(args) to obtain config).
    */
   def getMailRecordsRdd(sc: SparkContext, config: Config): RDD[MailRecord] = {
-    val (mailRecordAvroRdd, job) = getAvroRddJobTuple(sc, config)
+    val (mailRecordAvroRdd, job) = getAvroRddHadoopConfigTuple(sc, config)
     getMailRecordsRdd(mailRecordAvroRdd)
   }
 
+  //TODO: Create cacheable and nonCacheable versions of getMailRecordsRdd
+
   /**
-   * RDD with just the mail record objects.
+   * RDD with just the mail record objects. This version is cacheable but does create more
+   * objects as it needs to make a copy of the original MailRecord that is being reused.
    */
-  def getMailRecordsRdd(mailRecordsAvroRdd: RDD[(AvroKey[MailRecord], NullWritable)]): RDD[MailRecord] = {
+  def getMailRecordsRdd(mailRecordsAvroRdd: RDD[(AvroKey[MailRecord], FileSplit)]): RDD[MailRecord] = {
     val mailRecordsRdd = mailRecordsAvroRdd.map {
-      case (mailRecordAvroKey, nullWritable) =>
+      case (mailRecordAvroKey, fileSplit) =>
         val mailRecord = mailRecordAvroKey.datum()
-        //make a copy - avro input format reuses mail record
+        //make a copy - MailRecord gets reused
         MailRecord.newBuilder(mailRecord).build()
     }
     mailRecordsRdd
   }
 
   /**
-   * Uses MailRecordInputFormat based on config to create an RDD of AvroKey[MailRecord] and NullWritable
-   * tuples.
+   * Uses MailRecordInputFormat based on config to create an RDD of AvroKey[MailRecord] and FileSplit
+   * tuples (FileSplit pinpoints which file/offset the data came from).
    */
-  def getAvroRddJobTuple(sc: SparkContext, config: Config): (RDD[(AvroKey[MailRecord], NullWritable)], Configuration) = {
+  def getAvroRddHadoopConfigTuple(sc: SparkContext, config: Config): (RDD[(AvroKey[MailRecord], FileSplit)], Configuration) = {
+    val hadoopConf = getHadoopConfiguration(config)
+    val sparkHadoopConf = sc.hadoopConfiguration
+    hadoopConf.addResource(sparkHadoopConf)
+    hadoopConf.setBoolean(FileInputFormat.INPUT_DIR_RECURSIVE, true)
+    val mailRecordsAvroRdd = sc.newAPIHadoopFile(config.avroMailInput,
+      classOf[MailRecordInputFormat], classOf[AvroKey[MailRecord]], classOf[FileSplit], hadoopConf)
+    (mailRecordsAvroRdd, hadoopConf)
+  }
+
+  def getHadoopConfiguration(config: Config): Configuration = {
     val hadoopConf = config.hadoopConfPathOpt match {
       case Some(hadoopConfPath) => {
         val conf = new Configuration()
@@ -70,15 +83,6 @@ object MailRecordAnalytic {
       }
       case None => new Configuration()
     }
-
-    val sparkHadoopConf = sc.hadoopConfiguration
-    hadoopConf.addResource(sparkHadoopConf)
-    hadoopConf.setBoolean(FileInputFormat.INPUT_DIR_RECURSIVE, true)
-    //see AvroJob.setInputKeySchema
-    hadoopConf.set("avro.schema.input.key", MailRecord.getClassSchema.toString())
-    val mailRecordsAvroRdd = sc.newAPIHadoopFile(config.avroMailInput,
-      classOf[MailRecordInputFormat], classOf[AvroKey[MailRecord]], classOf[NullWritable], hadoopConf)
-
-    (mailRecordsAvroRdd, hadoopConf)
+    hadoopConf
   }
 }

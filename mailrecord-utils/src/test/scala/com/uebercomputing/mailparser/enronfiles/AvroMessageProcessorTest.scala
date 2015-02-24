@@ -1,46 +1,12 @@
 package com.uebercomputing.mailparser.enronfiles
 
-import java.nio.file.Files
 import scala.io.Source
-import org.apache.commons.io.IOUtils
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.FSDataOutputStream
-import org.apache.hadoop.fs.FileSystem
-import org.apache.hadoop.fs.Path
-import org.junit.runner.RunWith
-import org.scalatest.fixture.FunSuite
+import com.uebercomputing.test.AvroFileFixtureTest
 import resource.managed
-import org.scalatest.junit.JUnitRunner
 
-@RunWith(classOf[JUnitRunner])
-class AvroMessageProcessorTest extends FunSuite {
-
-  case class AvroFileTestInfo(val fileSystem: FileSystem, val avroFilePath: Path, val out: FSDataOutputStream)
+class AvroMessageProcessorTest extends AvroFileFixtureTest {
 
   val TestFileUrl = "/enron/maildir/neal-s/all_documents/99.txt"
-
-  private var tempFile: java.nio.file.Path = _
-
-  type FixtureParam = AvroFileTestInfo
-
-  override def withFixture(test: OneArgTest) = {
-    tempFile = Files.createTempFile("test", ".avro")
-    val conf = new Configuration()
-    conf.set("default.fsName", "file:///")
-    val avroFileUri = tempFile.toFile().getAbsolutePath
-    println(avroFileUri)
-    val fileSys = FileSystem.get(conf)
-    val avroFilePath = new Path(avroFileUri)
-    var out: FSDataOutputStream = null
-
-    try {
-      out = fileSys.create(avroFilePath)
-      test(AvroFileTestInfo(fileSys, avroFilePath, out))
-    } finally {
-      IOUtils.closeQuietly(out)
-      Files.deleteIfExists(tempFile)
-    }
-  }
 
   test("sunny day conversion from neal-s 99.") { testInfo =>
     val processor = new MessageProcessor with AvroMessageProcessor
@@ -69,8 +35,8 @@ class AvroMessageProcessorTest extends FunSuite {
     processor.close()
 
     val fileSys = testInfo.fileSystem
-    assert(fileSys.exists(testInfo.avroFilePath))
-    val fileStatus = fileSys.getFileStatus(testInfo.avroFilePath)
+    assert(fileSys.exists(testInfo.hadoopPath))
+    val fileStatus = fileSys.getFileStatus(testInfo.hadoopPath)
     val len = fileStatus.getLen()
     assert(len > 0)
   }

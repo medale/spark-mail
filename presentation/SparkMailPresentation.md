@@ -548,11 +548,15 @@ val recordsRdd =
 com.uebercomputing.mailrecord.MailRecordAnalytic.scala
 
 ```scala
-val mailRecordAvroRdd =
-  sc.newAPIHadoopRDD(job.getConfiguration,
+val sparkHadoopConf = sc.hadoopConfiguration
+hadoopConf.addResource(sparkHadoopConf)
+hadoopConf.setBoolean(
+  FileInputFormat.INPUT_DIR_RECURSIVE, true)
+val mailRecordsAvroRdd =
+  sc.newAPIHadoopFile(config.avroMailInput,
   classOf[MailRecordInputFormat],
   classOf[AvroKey[MailRecord]],
-  classOf[FileSplit])
+  classOf[FileSplit], hadoopConf)
 ```
 
 # mailrecord-utils - MailRecordInputFormat.scala
@@ -563,6 +567,20 @@ class MailRecordInputFormat extends
 class MailRecordRecordReader(val readerSchema: Schema,
    val fileSplit: FileSplit) extends
      AvroRecordReaderBase
+```
+
+# Hadoop InputFormats - Minimize object creation!
+* WARNING: Hadoop InputFormats generally reuse the key/value objects
+* Same with AvroRecordReaderBase in MailRecordInputFormat
+* Generally, not a problem if you just map out the fields you need (getFrom etc.)
+* However, if you want to cache the whole MailRecord you need to copy the original:
+```scala
+val mailRecordsRdd = mailRecordsAvroRdd.map {
+  case (mailRecordAvroKey, fileSplit) =>
+    val mailRecord = mailRecordAvroKey.datum()
+    //make a copy - avro input format reuses mail record
+    MailRecord.newBuilder(mailRecord).build()
+  }
 ```
 
 # Analytic 1 - Mail Folder Statistics

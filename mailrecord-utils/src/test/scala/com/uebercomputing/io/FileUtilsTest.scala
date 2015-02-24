@@ -18,8 +18,10 @@ class FileUtilsTest extends UnitTest {
     val startingDir = new File("src/test/resources")
     val xmlFileFilter = new FileExtensionFilter(".XML", ".xml")
     val results = FileUtils.getMatchingFilesRecursively(startingDir, xmlFileFilter)
-    assert(results.size === 1)
-    assert(results(0).getName === "log4j2-test.xml")
+    assert(results.size === 2)
+    val sorted = results.sorted
+    assert(sorted(0).getName === "log4j.xml")
+    assert(sorted(1).getName === "log4j2-test.xml")
   }
 
   test("getMatchingFilesRecursively empty - .avro") {
