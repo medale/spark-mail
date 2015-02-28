@@ -13,37 +13,56 @@ under Creative Commons Attribution-NonCommercial 4.0 International License
 
 # Speaker Background
 
-# Why Apache Spark?
-* High-level, scalable processing framework
-* Iterative algorithms
-* Interactive data exploration
-* Hadoop MapReduce is very low-level
+# Hadoop Ecosystem
+* Based on Google GFS (2003)/MapReduce (2004) papers
+* Extremely rich and robust
+
+    * ~ 2005 Nutch/2006 Yahoo - Doug Cutting/Mike Cafarella
+
+* HDFS/Hadoop MapReduce
+* DSLs: Pig, Cascading/Scalding, Crunch, Hive (SQL)
+* Graph processing: Giraph
+* Real-time streaming: Storm
+* Machine Learning: Apache Mahout
+...
+
+# Hadoop Challenges
+* With rich ecosystem: installation, maintenance, cognitive load for each
+add-on framework
+* Batch only
+* Must write out to disk between each iteration
+* No memory caching yet (Apache Tez working on complex DAGs of tasks)
+* Hadoop MapReduce programming is very low-level
 
     * map phase - (internal shuffle/sort) - reduce phase
     * Progammer expresses logic in map/reduce
 
-# Hadoop Ecosystem
-* Extremely rich and robust
-* SQL interface: Hive
-* DSLs: Pig, Cascading/Scalding, Crunch...
-* Graph processing: Giraph
-* Real-time streaming: Storm
-* Machine Learning: Apache Mahout
-* Downside: installation, maintenance, cognitive load
 
-# Apache Spark
+
+# Why Apache Spark?
+* Different trade-offs
+
+    * Improved hardware (faster processors, more memory)
+
+* High-level, scalable processing framework (programmer productivity)
+* Iterative algorithms
+* Interactive data exploration
+
+# Apache Spark Unified Large Scale Processing System
 * Scala, Java, Python APIs
 
     * Rich combinator functions on RDD abstraction (Resilient Distributed Dataset)
+
 * Caching for iterative algorithms and interactive data exploration
 * Spark SQL
 * GraphX
 * Spark Streaming
 * MLlib
 
-# Combinator functions on Scala collections
+# Exploration: Combinator functions on Scala collections
 
 * Examples: map, flatMap, filter, reduce, fold, aggregate
+* We will disregard type variance (covariance, contravariance)
 * Background - Combinatory logic, higher-order functions...
 
 # Combinatory Logic
@@ -52,13 +71,12 @@ Moses Schönfinkel and Haskell Curry in the 1920s
 
 > [C]ombinator is a higher-order function that uses only function application and earlier defined combinators to define a result from its arguments [Combinatory Logic @wikipedia_combinatory_2014]
 
-# Higher-order function
-Function that takes function as argument or returns function
+* Higher-order function: Function that takes function as argument or returns function
 
 # map
 
 * applies a given function to every element of a collection
-* returns collection of output of that function
+* returns collection of output of that function (one per original element)
 * input argument - same type as collection type
 * return type - can be any type
 
@@ -91,12 +109,12 @@ val list4 = words.map(_.length)
 
 See [immutable List ScalaDoc](http://www.scala-lang.org/api/2.10.4/index.html#scala.collection.immutable.List)
 ```scala
-List[+A]
+List[A]
 ...
 final def map[B](f: (A) => B): List[B]
 ```
 * Builds a new collection by applying a function to all elements of this list.
-* B - the element type of the returned collection.
+* B - the element type of the returned collection (can be same as A or different)
 * f - the function to apply to each element.
 * returns - a new list resulting from applying the given function f to each
           element of this list and collecting the results.
@@ -105,7 +123,7 @@ final def map[B](f: (A) => B): List[B]
 
 * ScalaDoc:
 ```scala
-List[+A]
+List[A]
 ...
 def flatMap[B](f: (A) =>
            GenTraversableOnce[B]): List[B]
@@ -144,7 +162,7 @@ val macWords: Array[String] =
 
 # filter
 ```scala
-List[+A]
+List[A]
 ...
 def filter(p: (A) => Boolean): List[A]
 ```
@@ -167,13 +185,11 @@ val withoutStopWords =
 
 # reduce
 ```scala
-List[+A]
+List[A]
 ...
-def reduce[A1 >: A](op: (A1, A1) => A1): A1
+def reduce[A](op: (A, A) => A): A
 ```
 * Creates one cumulative value using the specified associative binary operator.
-* A1 - A type parameter for the binary operator, a supertype (super or same) of A.
-(List is covariant +A)
 * op - A binary operator that must be associative.
 * returns - The result of applying op between all the elements if the list is nonempty.
 Result is same type as (or supertype of) list type.
@@ -198,9 +214,9 @@ emptyList.reduce((x, y) => x + y)
 
 # fold
 ```scala
-List[+A]
+List[A]
 ...
-def fold[A1 >: A](z: A1)(op: (A1, A1) => A1): A1
+def fold[A](z: A)(op: (A, A) => A): A
 ```
 * Very similar to reduce but takes start value z (a neutral value, e.g.
   0 for addition, 1 for multiplication, Nil for list concatenation)
@@ -232,7 +248,7 @@ evenCount: Int = 2
 
 # aggregate
 ```
-List[+A]
+List[A]
 ...
 def aggregate[B](z: B)(seqop: (B, A) => B,
                        combop: (B, B) => B): B
@@ -327,6 +343,7 @@ implicit def rddToPairRDDFunctions[K, V](
 * reduceByKey - return same type as value type
 * foldByKey - zero/neutral starting value
 * aggregateByKey - can return different type
+* lookup - retrieve all values for a given key
 * join (left/rightOuterJoin), cogroup
 ...
 
@@ -578,7 +595,7 @@ class MailRecordRecordReader(val readerSchema: Schema,
 val mailRecordsRdd = mailRecordsAvroRdd.map {
   case (mailRecordAvroKey, fileSplit) =>
     val mailRecord = mailRecordAvroKey.datum()
-    //make a copy - avro input format reuses mail record
+    //make a copy - MailRecord gets reused!!!
     MailRecord.newBuilder(mailRecord).build()
   }
 ```
