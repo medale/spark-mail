@@ -1,4 +1,4 @@
-# Spark 1.2.1-rc3 with Avro-mapred-1.7.6-hadoop2
+# Spark 1.2.1 with Avro-mapred-1.7.6-hadoop2
 
 Due to [SPARK-3039 Wrong Avro Mapred Library Version (hadoop1 instead of hadoop2)](https://issues.apache.org/jira/browse/SPARK-3039)
 we created our own version of Avro with a fix for that problem. This fix has been

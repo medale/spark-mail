@@ -62,7 +62,8 @@ add-on framework
 # Exploration: Combinator functions on Scala collections
 
 * Examples: map, flatMap, filter, reduce, fold, aggregate
-* We will disregard type variance (covariance, contravariance)
+* We will disregard type variance (covariance, contravariance) because RDD is
+invariant.
 * Background - Combinatory logic, higher-order functions...
 
 # Combinatory Logic

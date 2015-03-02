@@ -117,7 +117,7 @@ import com.uebercomputing.mailparser.enronfiles.AvroMessageProcessor
 import com.uebercomputing.mailrecord._
 import com.uebercomputing.mailrecord.Implicits.mailRecordToMailRecordOps
 
-val args = Array("--avroMailInput", "/user/hadoop/enron.avro")
+val args = Array("--avroMailInput", "enron.avro")
 val config = CommandLineOptionsParser.getConfigOpt(args).get
 val recordsRdd = MailRecordAnalytic.getMailRecordsRdd(sc, config)
 
