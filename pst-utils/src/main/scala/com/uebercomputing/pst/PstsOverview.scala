@@ -12,7 +12,7 @@ import com.uebercomputing.io.FileExtensionFilter
 
 /**
  * Run:
- * java -classpath target/pst-utils-0.9.0-SNAPSHOT-shaded.jar com.uebercomputing.pst.PstOverview /opt/rpm1/jebbush > overview.txt
+ * java -classpath target/pst-utils-*-shaded.jar com.uebercomputing.pst.PstOverview /opt/rpm1/jebbush > overview.txt
  *
  * Based on Java example at https://code.google.com/p/java-libpst/.
  */

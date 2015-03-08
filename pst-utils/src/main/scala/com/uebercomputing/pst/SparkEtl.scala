@@ -17,7 +17,7 @@ import com.uebercomputing.time.DateUtils
 
 /**
  * Invoke command line from spark-mail:
- * java -classpath pst-utils/target/pst-utils-0.9.0-SNAPSHOT-shaded.jar com.uebercomputing.pst.SparkEtl --pstDir /opt/rpm1/jebbush --avroOutDir /opt/rpm1/jebbush/spark-avro-monthly --rollup monthly > msg-spark.txt 2>&1
+ * java -classpath pst-utils/target/pst-utils-*-SNAPSHOT-shaded.jar com.uebercomputing.pst.SparkEtl --pstDir /opt/rpm1/jebbush --avroOutDir /opt/rpm1/jebbush/spark-avro-monthly --rollup monthly > msg-spark.txt 2>&1
  *
  * Note: this code assumes that .pst files are read from a local directory. If running in cluster that directory needs to
  * be a shared NFS drive. com.pff.PSTFile object only supports local input via String/File constructor.

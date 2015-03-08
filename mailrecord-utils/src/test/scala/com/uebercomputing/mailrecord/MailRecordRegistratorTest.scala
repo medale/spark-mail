@@ -4,7 +4,6 @@ import java.nio.ByteBuffer
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-
 import org.apache.avro.file.CodecFactory
 import org.apache.avro.file.DataFileWriter
 import org.apache.avro.mapred.AvroKey
@@ -18,11 +17,11 @@ import org.apache.spark.SparkContext
 import org.junit.runner.RunWith
 import org.scalatest.fixture
 import org.scalatest.junit.JUnitRunner
-
 import scala.collection.JavaConverters._
 import com.uebercomputing.io.PathUtils
-
 import resource.managed
+import org.apache.log4j.Logger
+import org.apache.log4j.Level
 
 @RunWith(classOf[JUnitRunner])
 class MailRecordRegistratorTest extends fixture.FunSuite {
@@ -32,7 +31,8 @@ class MailRecordRegistratorTest extends fixture.FunSuite {
   case class FixtureParam(outPath: Path)
 
   def withFixture(test: OneArgTest) = {
-
+    val rootLogger = Logger.getRootLogger()
+    rootLogger.setLevel(Level.WARN)
     val mailFolder = Paths.get(layInbox)
 
     val prefix = "temp"
@@ -73,6 +73,7 @@ class MailRecordRegistratorTest extends fixture.FunSuite {
         }
         byteBufferList
     }
+    sc.stop()
   }
 
   //TODO:

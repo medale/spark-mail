@@ -13,7 +13,7 @@ import com.uebercomputing.io.IoConstants
 
 /**
  * Invoke command line from spark-mail:
- * java -classpath pst-utils/target/pst-utils-0.9.0-SNAPSHOT-shaded.jar com.uebercomputing.pst.Main --pstDir /opt/rpm1/jebbush --avroOutDir /opt/rpm1/jebbush/avro-monthly --rollup monthly > msg.txt 2>&1
+ * java -classpath pst-utils/target/pst-utils-*-shaded.jar com.uebercomputing.pst.Main --pstDir /opt/rpm1/jebbush --avroOutDir /opt/rpm1/jebbush/avro-monthly --rollup monthly > msg.txt 2>&1
  *
  * --pstDir /opt/rpm1/jebbush
  * --avroOutDir /opt/rpm1/jebbush/avro

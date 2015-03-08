@@ -4,14 +4,14 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.uebercomputing</groupId>
 	<artifactId>spark-mail-parent</artifactId>
-	<version>0.9.0-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<packaging>pom</packaging>
 	<name>Spark Mail Tutorial</name>
 	<url>http://github.com/medale/spark-mail</url>
 	<licenses>
 		<license>
-			<name>Apache 2.0 License</name>
-			<url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+			<name>Creative Commons Attribution-NonCommercial 4.0 International License</name>
+			<url>http://creativecommons.org/licenses/by-nc/4.0</url>
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
@@ -487,5 +487,4 @@
 			</build>
 		</profile>
 	</profiles>
-
 </project>

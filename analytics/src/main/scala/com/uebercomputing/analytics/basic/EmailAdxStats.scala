@@ -27,7 +27,7 @@ import com.uebercomputing.mailrecord.AnalyticInput
  * --conf spark.kryo.registrator=com.uebercomputing.mailrecord.MailRecordRegistrator \
  * --conf spark.kryoserializer.buffer.mb=128 \
  * --conf spark.kryoserializer.buffer.max.mb=512 \
- * --jars mailrecord-utils/target/mailrecord-utils-0.9.0-SNAPSHOT-shaded.jar
+ * --jars mailrecord-utils/target/mailrecord-utils-1.0.0-shaded.jar
  *
  * scala> :paste
  *
