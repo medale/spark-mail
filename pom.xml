@@ -49,16 +49,19 @@
 				<groupId>org.scala-lang</groupId>
 				<artifactId>scala-library</artifactId>
 				<version>${scala.version}</version>
+				<scope>provided</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.spark</groupId>
 				<artifactId>spark-core_${scala.binary.version}</artifactId>
 				<version>1.2.0</version>
+				<scope>provided</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.hadoop</groupId>
 				<artifactId>hadoop-client</artifactId>
 				<version>${hadoop.version}</version>
+				<scope>provided</scope>
 				<exclusions>
 					<exclusion>
 						<groupId>asm</groupId>
@@ -94,12 +97,14 @@
 				<groupId>org.apache.avro</groupId>
 				<artifactId>avro</artifactId>
 				<version>${avro.version}</version>
+				<scope>provided</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.avro</groupId>
 				<artifactId>avro-mapred</artifactId>
 				<version>${avro.version}</version>
 				<classifier>${avro.mapred.classifier}</classifier>
+				<scope>provided</scope>
 				<exclusions>
 					<exclusion>
 						<groupId>io.netty</groupId>
