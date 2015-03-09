@@ -45,7 +45,7 @@ spark-shell --master local[4] --driver-memory 4G --executor-memory 4G \
 --conf spark.kryo.registrator=com.uebercomputing.mailrecord.MailRecordRegistrator \
 --conf spark.kryoserializer.buffer.mb=128 \
 --conf spark.kryoserializer.buffer.max.mb=512 \
---jars mailrecord-utils/target/mailrecord-utils-1.0.0-shaded.jar \
+--jars mailrecord-utils/target/mailrecord-utils-1.1.0-SNAPSHOT-shaded.jar \
 --driver-java-options "-Dlog4j.configuration=log4j.properties"
 ```
 
@@ -53,7 +53,7 @@ Or
 
 ```
 spark-shell --master local[4] --driver-memory 4G --executor-memory 4G \
---jars mailrecord-utils/target/mailrecord-utils-1.0.0-shaded.jar \
+--jars mailrecord-utils/target/mailrecord-utils-1.1.0-SNAPSHOT-shaded.jar \
 --properties-file mailrecord-utils/mailrecord.conf \
 --driver-java-options "-Dlog4j.configuration=log4j.properties"
 ```
