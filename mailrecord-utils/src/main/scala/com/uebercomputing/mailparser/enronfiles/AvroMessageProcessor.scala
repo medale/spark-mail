@@ -7,7 +7,7 @@ import java.io.OutputStream
 import java.util.UUID
 
 import org.apache.commons.io.IOUtils
-import org.apache.logging.log4j.LogManager
+import org.apache.log4j.Logger
 
 import scala.io.Source
 
@@ -20,7 +20,7 @@ object AvroMessageProcessor {
 
 trait AvroMessageProcessor extends MessageProcessor {
 
-  private val Logger = LogManager.getLogger(this.getClass())
+  private val logger = Logger.getLogger(this.getClass())
 
   private var recordWriter: MailRecordWriter = _
   private val mailRecordBuilder = MailRecord.newBuilder()
@@ -85,7 +85,7 @@ trait AvroMessageProcessor extends MessageProcessor {
       } catch {
         case e: ParseException => {
           val errMsg = s"Invalid date $dateStr in $fileSystemMeta - using default epoch"
-          Logger.warn(errMsg)
+          logger.warn(errMsg)
           val date = 0L
           mailRecordBuilder.setDateUtcEpoch(date)
         }

@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>mailrecord-utils</artifactId>
+	<artifactId>sql-analytics</artifactId>
 
 	<parent>
 		<groupId>com.uebercomputing</groupId>
@@ -9,9 +9,21 @@
 		<version>1.1.0-SNAPSHOT</version>
 	</parent>
 
-	<name>mailrecord-utils</name>
+	<name>sql-analytics</name>
 
 	<dependencies>
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-core_${scala.binary.version}</artifactId>
+		</dependency>	
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-core_${scala.binary.version}</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-sql_${scala.binary.version}</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.avro</groupId>
 			<artifactId>avro</artifactId>
@@ -22,13 +34,9 @@
 			<classifier>${avro.mapred.classifier}</classifier>
 		</dependency>
 		<dependency>
-			<groupId>com.twitter</groupId>
-			<artifactId>chill-avro_2.10</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.spark</groupId>
-			<artifactId>spark-core_${scala.binary.version}</artifactId>
-			<version>1.1.0</version>
+			<groupId>com.databricks</groupId>
+			<artifactId>spark-avro_2.10</artifactId>
+			<version>0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
@@ -44,10 +52,6 @@
 			<artifactId>joda-time</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.joda</groupId>
-			<artifactId>joda-convert</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>com.jsuereth</groupId>
 			<artifactId>scala-arm_${scala.binary.version}</artifactId>
 			<version>1.4</version>
@@ -60,6 +64,15 @@
 			<groupId>com.uebercomputing</groupId>
 			<artifactId>mailrecord</artifactId>
 			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.uebercomputing</groupId>
+			<artifactId>mailrecord-utils</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-client</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>
@@ -192,6 +205,10 @@
 					<plugin>
 						<groupId>org.scalastyle</groupId>
 						<artifactId>scalastyle-maven-plugin</artifactId>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-source-plugin</artifactId>
 					</plugin>
 				</plugins>
 			</build>

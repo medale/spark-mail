@@ -5,7 +5,7 @@ import java.nio.file.Path
 
 import scala.io.Source
 
-import org.apache.logging.log4j.LogManager
+import org.apache.log4j.Logger
 
 import com.uebercomputing.io.PathUtils
 import com.uebercomputing.io.Utf8Codec
@@ -14,7 +14,7 @@ import resource.managed
 
 abstract class MailDirectoryProcessor(mailDirectory: Path, userNamesToProcess: List[String] = Nil) extends MessageProcessor {
 
-  private val Logger = LogManager.getLogger(classOf[MailDirectoryProcessor])
+  private val logger = Logger.getLogger(classOf[MailDirectoryProcessor])
 
   def processMailDirectory(): Int = {
     var mailMessagesProcessedCount = 0
@@ -86,7 +86,7 @@ abstract class MailDirectoryProcessor(mailDirectory: Path, userNamesToProcess: L
         case e: Exception =>
           // scalastyle:off
           val msg = s"Unable to process ${mailDirectory.toAbsolutePath().toString()}/${userName}/${folderName}/${fileName} due to $e"
-          Logger.warn(msg)
+          logger.warn(msg)
           // scalastyle:on
           throw new ParseException(msg)
       }

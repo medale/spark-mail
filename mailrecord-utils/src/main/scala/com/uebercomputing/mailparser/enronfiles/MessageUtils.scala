@@ -4,14 +4,13 @@ import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
 import scala.collection.JavaConverters._
 import scala.util.control.NonFatal
-import org.apache.logging.log4j.LogManager
+import org.apache.log4j.Logger
 import com.google.common.hash.Hashing
 import com.google.common.base.Charsets
 
 object MessageUtils {
 
   private val DateFormatter = DateTimeFormat.forPattern("EEE, dd MMM yyyy HH:mm:ss Z (z)").withZoneUTC()
-  private val Logger = LogManager.getLogger(classOf[MailDirectoryProcessor])
 
   def parseDateAsUtcEpoch(dateStr: String): Long = {
     try {

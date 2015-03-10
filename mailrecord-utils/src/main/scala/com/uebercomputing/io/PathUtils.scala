@@ -6,11 +6,11 @@ import java.nio.file.Path
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
-import org.apache.logging.log4j.LogManager
+import org.apache.log4j.Logger
 
 object PathUtils {
 
-  private val Logger = LogManager.getLogger(PathUtils.getClass)
+  private val logger = Logger.getLogger(PathUtils.getClass)
 
   /**
    * Get a list of all files/paths in parentPath directory. If the path is invalid
@@ -28,7 +28,7 @@ object PathUtils {
           childPaths += iter.next()
         }
         dirStream.close()
-      case Failure(ex) => Logger.warn(s"Unable to list files for ${parentPath} due to ${ex}")
+      case Failure(ex) => logger.warn(s"Unable to list files for ${parentPath} due to ${ex}")
     }
     childPaths.toList
   }

@@ -26,6 +26,7 @@
 		<module>mailrecord</module>
 		<module>mailrecord-utils</module>
 		<module>analytics</module>
+		<module>sql-analytics</module>
 		<module>pst-utils</module>
 	</modules>
 
@@ -35,10 +36,11 @@
 		<java.version>1.7</java.version>
 		<scala.version>2.10.4</scala.version>
 		<scala.binary.version>2.10</scala.binary.version>
+		<spark.version>1.2.1</spark.version>
 		<hadoop.version>2.4.0</hadoop.version>
 		<avro.version>1.7.6</avro.version>
 		<avro.mapred.classifier>hadoop2</avro.mapred.classifier>
-		<log4j.version>2.1</log4j.version>
+		<log4j.version>1.2.17</log4j.version>
 		<PermGen>64m</PermGen>
 		<MaxPermGen>512m</MaxPermGen>
 	</properties>
@@ -49,12 +51,17 @@
 				<groupId>org.scala-lang</groupId>
 				<artifactId>scala-library</artifactId>
 				<version>${scala.version}</version>
-				<scope>provided</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.spark</groupId>
 				<artifactId>spark-core_${scala.binary.version}</artifactId>
-				<version>1.2.0</version>
+				<version>${spark.version}</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.spark</groupId>
+				<artifactId>spark-sql_${scala.binary.version}</artifactId>
+				<version>${spark.version}</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
@@ -144,14 +151,10 @@
 				<version>2.4</version>
 			</dependency>
 			<dependency>
-				<groupId>org.apache.logging.log4j</groupId>
-				<artifactId>log4j-api</artifactId>
+				<groupId>log4j</groupId>
+				<artifactId>log4j</artifactId>
 				<version>${log4j.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.logging.log4j</groupId>
-				<artifactId>log4j-core</artifactId>
-				<version>${log4j.version}</version>
+				<scope>provided</scope>
 			</dependency>
 			<dependency>
 				<groupId>joda-time</groupId>
