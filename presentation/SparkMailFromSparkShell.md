@@ -60,7 +60,13 @@ spark-shell --master local[4] --driver-memory 4G --executor-memory 4G \
 
 ## Start email exploration (Local)
 
-Assumes directory is spark-mail (contains hadoop-local.xml)
+Assumes directory is spark-mail (contains hadoop-local.xml) and that
+the directory contains a link enron.avro to the actual email file in avro
+format. For example, if your email file is /opt/rpm1/enron/filemail.avro the
+link might be created as:
+
+    ln -s /opt/rpm1/enron/filemail.avro enron.avro
+
 
 ```scala
 various spark-shell startup messages...
@@ -73,7 +79,7 @@ import com.uebercomputing.mailparser.enronfiles.AvroMessageProcessor
 import com.uebercomputing.mailrecord._
 import com.uebercomputing.mailrecord.Implicits.mailRecordToMailRecordOps
 
-val args = Array("--avroMailInput", "/opt/rpm1/enron/filemail.avro",
+val args = Array("--avroMailInput", "enron.avro",
 "--hadoopConfPath", "hadoop-local.xml")
 val config = CommandLineOptionsParser.getConfigOpt(args).get
 val recordsRdd = MailRecordAnalytic.getMailRecordsRdd(sc, config)

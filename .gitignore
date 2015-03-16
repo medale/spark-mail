@@ -25,3 +25,8 @@ project/plugins/project
 
 msg.txt
 msg-spark.txt
+
+# This should be a link to the actual mail file
+enron.avro
+
+metastore_db/
