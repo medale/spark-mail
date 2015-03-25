@@ -1,4 +1,4 @@
 echo "Building beamer presentation..."
-./beamer
+./sparkMailMakePdf
 echo "Building reveal.js presentation..."
-./reveal
+./sparkMailMakeReveal

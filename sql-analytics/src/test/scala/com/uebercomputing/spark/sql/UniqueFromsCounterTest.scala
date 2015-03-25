@@ -9,7 +9,7 @@ import com.databricks.spark.avro._
 
 class UniqueFromsCounterTest extends FunSuite {
 
-  ignore("Mail records") {
+  test("Mail records") {
     val sqlContext = TestSQLContext
     //import com.databricks.spark.avro._
     val recordsDf = sqlContext.avroFile("enron.avro")

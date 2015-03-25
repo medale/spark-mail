@@ -1,0 +1,1 @@
+pandoc -t beamer --latex-engine=xelatex --no-tex-ligatures --biblio ApacheSpark.bib SparkDataFrames.md -o SparkDataFrames.pdf

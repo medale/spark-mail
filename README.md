@@ -21,6 +21,13 @@ Compile times can be dramatically reduced by using the [Zinc Scala build server]
 Short overview and additional links at
 [this blog entry](http://uebercomputing.com/scala/2014/11/09/Incremental-Compilation-With-Zinc/).
 
+19MAR15: Exploring Spark SQL data frames and using very recently published com.databricks/spark-avro_2.10/1.0.0.
+
+See https://github.com/databricks/spark-avro. To build to local Maven repo:
+
+    sbt publishM2
+
+
 # ETL (Extract Transform Load)
 Both original datasets do not lend themselves to scalable processing. The Enron file set has over 500,000 files. Especially, when processing them with the Hadoop default FileInputFormat we would create over 500,000 input splits. Furthermore, we don't want our analytic code to have to deal with the parsing.
 
