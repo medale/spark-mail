@@ -1,4 +1,4 @@
-% Learning Apache Spark by processing Email
+% Learning Apache Spark by processing email
 % Markus Dale
 % 2015
 
@@ -14,6 +14,7 @@ under Creative Commons Attribution-NonCommercial 4.0 International License
 # Speaker Background
 
 # Hadoop Ecosystem
+
 * Based on Google GFS (2003)/MapReduce (2004) papers
 * Extremely rich and robust
 
@@ -27,9 +28,10 @@ under Creative Commons Attribution-NonCommercial 4.0 International License
 ...
 
 # Hadoop Challenges
+
 * With rich ecosystem: installation, maintenance, cognitive load for each
 add-on framework
-* Batch only
+* MapReduce is batch only - no interactive shell
 * Must write out to disk between each iteration
 * No memory caching yet (Apache Tez working on complex DAGs of tasks)
 * Hadoop MapReduce programming is very low-level
@@ -40,24 +42,32 @@ add-on framework
 
 
 # Why Apache Spark?
+
 * Different trade-offs
 
     * Improved hardware (faster processors, more memory)
 
 * High-level, scalable processing framework (programmer productivity)
 * Iterative algorithms
-* Interactive data exploration
+* Interactive data exploration (Spark shell)
 
 # Apache Spark Unified Large Scale Processing System
-* Scala, Java, Python APIs
 
-    * Rich combinator functions on RDD abstraction (Resilient Distributed Dataset)
+![Databricks Spark @ecosystem_databricks_2015](graphics/SparkComponents-Databricks-2015-03-19.png)
 
-* Caching for iterative algorithms and interactive data exploration
-* Spark SQL
-* GraphX
-* Spark Streaming
-* MLlib
+# Spark Resilient Distributed Dataset (RDD)
+
+* Treat distributed, immutable data set as a collection
+* Resilient: Use RDD lineage to recompute failed partitions
+* Two forms of RDD operations:
+
+    * Transformations (applied lazily - optimized evaluation)
+    * Actions (cause transformations to be executed)
+
+* Scala, Java, Python APIs (Spark R coming)
+
+    * Rich combinator functions on RDD abstraction
+
 
 # Exploration: Combinator functions on Scala collections
 
@@ -193,7 +203,7 @@ def reduce[A](op: (A, A) => A): A
 * Creates one cumulative value using the specified associative binary operator.
 * op - A binary operator that must be associative.
 * returns - The result of applying op between all the elements if the list is nonempty.
-Result is same type as (or supertype of) list type.
+Result is same type as list type.
 * UnsupportedOperationException if this list is empty.
 
 # reduce Example
@@ -283,7 +293,7 @@ val lengthDistro = wordsAll.aggregate(Map[Int, Int]())(
 ```
 
 # So what does this have to do with Apache Spark?
-* Resilient Distributed Dataset ([RDD](https://spark.apache.org/docs/1.2.0/api/scala/#org.apache.spark.rdd.RDD))
+* Resilient Distributed Dataset ([RDD](https://spark.apache.org/docs/1.3.0/api/scala/#org.apache.spark.rdd.RDD))
 * From API docs: "immutable, partitioned collection of elements that can be operated on in parallel"
 * map, flatMap, filter, reduce, fold, aggregate...
 
@@ -294,43 +304,41 @@ val bodiesRdd: RDD[String] =
   analyticInput.mailRecordRdd.map { record =>
   record.getBody
 }
-
 val bodyLinesRdd: RDD[String] =
   bodiesRdd.flatMap { body => body.split("\n") }
-
 val bodyWordsRdd: RDD[String] =
   bodyLinesRdd.flatMap { line => line.split("""\W+""") }
-
 val stopWords = List("in", "it", "let", "no", "or", "the")
 val wordsRdd = bodyWordsRdd.filter(!stopWords.contains(_))
 
+//Lazy eval all transforms so far - now action!
 println(s"There were ${wordsRdd.count()} words.")
 ```
 
 # Spark - RDD API
-* [RDD API](http://spark.apache.org/docs/1.2.0/api/scala/index.html#org.apache.spark.rdd.RDD)
+* [RDD API](http://spark.apache.org/docs/1.3.0/api/scala/index.html#org.apache.spark.rdd.RDD)
 * Transforms - map, flatMap, filter, reduce, fold, aggregate...
 
-    * Lazy evaluation (not evaluated until action!)
+    * Lazy evaluation (not evaluated until action! Optimizations)
 
 * Actions - count, collect, first, take, saveAsTextFile...
 
 # Spark - From RDD to PairRDDFunctions
 * If an RDD contains tuples (K,V) - can apply PairRDDFunctions
 * Uses implicit conversion of RDD to PairRDDFunctions
+* In 1.3 conversion is defined in RDD singleton object
 * In 1.2 and previous versions available by importing
 org.apache.spark.SparkContext._
 
 ```scala
-From org.apache.spark.SparkContext:
+From 1.3.0 org.apache.spark.rdd.RDD (object):
 
-implicit def rddToPairRDDFunctions[K, V](
-  rdd: RDD[(K, V)])
-  (implicit kt: ClassTag[K],
-    vt: ClassTag[V],
-    ord: Ordering[K] = null) = {
-      new PairRDDFunctions(rdd)
-    }
+implicit def rddToPairRDDFunctions[K, V](rdd: RDD[(K, V)])
+(implicit kt: ClassTag[K], vt: ClassTag[V],
+  ord: Ordering[K] = null): PairRDDFunctions[K, V] = {
+  new PairRDDFunctions(rdd)
+}
+
 ```
 
 # PairRDDFunctions
@@ -349,17 +357,10 @@ implicit def rddToPairRDDFunctions[K, V](
 ...
 
 # From RDD to DoubleRDDFunctions
+
 * From API docs: "Extra functions available on RDDs of Doubles through an
-  implicit conversion. Import org.apache.spark.SparkContext._ "
+  implicit conversion."
 
-```scala
-From org.apache.spark.SparkContext:
-implicit def doubleRDDToDoubleRDDFunctions(
-  rdd: RDD[Double])
-    = new DoubleRDDFunctions(rdd)
-```
-
-# DoubleRDDFunctions
 * mean, stddev, stats (count, mean, stddev, min, max)
 * sum
 * histogram
@@ -373,15 +374,12 @@ implicit def doubleRDDToDoubleRDDFunctions(
     * Emails as text files with headers (To, From, Subject...)
     * over 500,000 files (= 500,000 splits for FileInputFormat)
 
-* Jeb Bush Governorship PST files
-
-    * PII information - did not use this dataset
-
 * Don't want our analytic code to worry about parsing
 
 Solution: Create Avro record format, parse once, store (MailRecord)
 
 # Apache Avro
+
 * JSON - need to encode binary data
 * Hadoop Writable - Java centric
 * Apache Avro
@@ -393,6 +391,7 @@ Solution: Create Avro record format, parse once, store (MailRecord)
 [Apache Avro @cutting_doug_apache_2009]
 
 # Avro Container File
+
 * Contains many individual Avro records (~ SequenceFile)
 * Schema for each record at the beginning of file
 * Supports compression
@@ -459,9 +458,9 @@ for details on how to go from Enron/PST files to Avro.
 
 # Apache Spark execution environments
 * Local, standalone process (can be started command line or Eclipse)
-* Spark Standalone Cluster (master/workers - http://spark.apache.org/docs/1.2.0/spark-standalone.html)
-* Mesos resource manager http://spark.apache.org/docs/1.2.0/running-on-mesos.html
-* Hadoop YARN resource manager http://spark.apache.org/docs/1.2.0/running-on-yarn.html
+* Spark Standalone Cluster (master/workers - http://spark.apache.org/docs/1.3.0/spark-standalone.html)
+* Mesos resource manager http://spark.apache.org/docs/1.3.0/running-on-mesos.html
+* Hadoop YARN resource manager http://spark.apache.org/docs/1.3.0/running-on-yarn.html
 
 # Running Spark
 * Command line interactive shell environment (spark-shell)
@@ -717,7 +716,7 @@ userFolderTuplesRdd.cache()
 
 # Spark - applying PairRDDFunctions
 ```scala
-import org.apache.spark.SparkContext._
+//pre Spark 1.3.0: import org.apache.spark.SparkContext._
 import scala.collection.mutable.{ Set => MutableSet }
 ...
 //mutable set - reduce object creation/garbage collection
