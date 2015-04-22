@@ -10,9 +10,14 @@ Docker Image to run Spark 1.3.1 on Hadoop 2.6 with Enron email sample
 data set at https://registry.hub.docker.com/u/medale/spark-mail-docker/.
 
 # Talk Overview
-* Hadoop Ecosystem
-* Spark Intro
+* Hadoop - Spark Comparison
 * Resilient Distributed Datasets (RDDs)
+* Enron Email with Avro storage
+* Analytic: Mail Folder Statistics in Hadoop and Spark
+* Spark Installation, running on YARN, Spark Shell
+* Spark Web UI
+* RDD, PairRDDFunctions, DoubleRDDFunctions
+* Resources
 
 # Speaker Background
 
@@ -23,7 +28,8 @@ data set at https://registry.hub.docker.com/u/medale/spark-mail-docker/.
 
     * ~ 2005 Nutch/2006 Yahoo - Doug Cutting/Mike Cafarella
 
-* HDFS/Hadoop MapReduce
+* HDFS/Hadoop MapReduce batch
+* YARN - allows other processing frameworks (like Spark)
 * DSLs: Pig, Cascading/Scalding, Crunch, Hive (SQL)
 * Graph processing: Giraph
 * Real-time streaming: Storm
@@ -32,11 +38,10 @@ data set at https://registry.hub.docker.com/u/medale/spark-mail-docker/.
 
 # Hadoop Challenges
 
-* With rich ecosystem: installation, maintenance, cognitive load for each
-add-on framework
+* With rich ecosystem: install, maintain, learn
 * MapReduce is batch only - no interactive shell
 * Must write out to disk between each iteration
-* No memory caching yet (Apache Tez working on complex DAGs of tasks)
+* No general memory caching yet (Apache Tez?)
 * Hadoop MapReduce programming is very low-level
 
     * map phase - (internal shuffle/sort) - reduce phase
@@ -49,10 +54,17 @@ add-on framework
 
     * Improved hardware (faster processors, more memory)
 
-* High-level, scalable processing framework (programmer productivity)
-* Iterative algorithms: Cache interim results
+* Programmer productivity
+
+    * High-level, scalable processing framework
+
+* Iterative algorithms/ML: Cache interim results
 * Interactive data exploration (Spark shell)
-* Can run on YARN (or standalone, Mesos) and read/write HDFS
+* Can run on YARN (or standalone, Mesos)
+* read/write HDFS (and many other data sources)
+
+# Apache Spark Buzz
+![Google Trends Apache Spark/Apache Hadoop](graphics/GoogleTrendsSparkHadoop-April2015.png)
 
 # Apache Spark Unified Large Scale Processing System
 
@@ -71,33 +83,27 @@ add-on framework
 
     * Rich functions on RDD abstraction
 
-
-# RDD API
-
-* Resilient Distributed Dataset ([RDD](https://spark.apache.org/docs/1.3.1/api/scala/#org.apache.spark.rdd.RDD))
-* From API scala docs: "immutable, partitioned collection of elements that can be operated on in parallel"
-* map, flatMap, filter, reduce...
-
-
 # Enron Email Dataset and Avro MailRecord
 
-* Downloaded [Enron email dataset from Carnegie Mellon University](https://www.cs.cmu.edu/~./enron/enron_mail_20110402.tgz)
+* [Enron email dataset from Carnegie Mellon University](https://www.cs.cmu.edu/~./enron/enron_mail_20110402.tgz)
 * Nested directories for each user/folder/subfolder
 * Emails as text files with headers (To, From, Subject...)
 * Over 500,000 files (= 500,000 splits for FileInputFormat)
 
 * Don't want our analytic code to worry about parsing
 
-Solution: Create Avro record format, parse once, store (MailRecord)
+Solution: Parse to Avro record format, store (MailRecord)
 
-# Apache Avro
+# Why Apache Avro?
 
 * JSON - need to encode binary data
 * Hadoop Writable - Java centric
-* Apache Avro
 
-* Binary serialization framework created by Doug Cutting in 2009 (Hadoop, Lucene)
-* Language bindings for: Java, Scala, C, C++, C#, Python, Ruby
+Apache Avro
+
+* Binary serialization framework
+* Doug Cutting 2009 (Hadoop, Lucene)
+* Language bindings: Java, Scala, C, C++, C#, Python, Ruby
 * Schema in file - can use generic or specific processing
 
 [Apache Avro @cutting_doug_apache_2009]
@@ -125,11 +131,13 @@ record MailRecord {
 }
 ```
 
-# Mail Folder Statistics
+# Analytic: Mail Folder Statistics
 * What are the least/most/average number of folders per user?
 * Each MailRecord has user name and folder name
+
 ```
-lay-k/       <- mailFields(UserName)
+
+lay-k/    <- mailFields(UserName)
 business  <- mailFields(FolderName)
 family
 enron
@@ -140,7 +148,10 @@ inbox
 # Hadoop Mail Folder Stats - Mapper
 
 * read each mail record
-* emits key: userName, value: folderName for each email
+
+    * AvroKey(MailRecord), NullWritable
+
+* emits key: Text(userName), value: Text(folderName)
 
 # Hadoop Mail Folder Stats - Reducer
 
