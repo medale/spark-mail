@@ -175,12 +175,19 @@ inbox
 * See https://github.com/medale/spark-mail/blob/master/hadoop-example/src/main/java/com/uebercomputing/hadoop/FolderAnalyticsDriver.java
 
 # Spark Installation
-* Download binary tgz from Apache Spark (match Hadoop version)
-* Untar on edge node (requires java)
-* Set HADOOP_CONF_DIR environment variable or $SPARK_HOME/conf/spark-env.sh
-* Or
+* Download binary tgz from Apache Spark
 
-    * Bundled with Cloudera, Hortonworks, MapR distros...
+    * match Hadoop version
+    * or build from source
+
+* Untar on edge node
+* Need Java to run
+* Set HADOOP_CONF_DIR environment variable
+* or $SPARK_HOME/conf/spark-env.sh
+
+Or
+
+* Bundled with Cloudera, Hortonworks, MapR distros...
 
 # Running Spark on YARN
 * https://spark.apache.org/docs/1.3.1/running-on-yarn.html
