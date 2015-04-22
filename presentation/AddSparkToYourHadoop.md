@@ -175,22 +175,27 @@ inbox
 * See https://github.com/medale/spark-mail/blob/master/hadoop-example/src/main/java/com/uebercomputing/hadoop/FolderAnalyticsDriver.java
 
 # Spark Installation
-* Bundled with Cloudera, Hortonworks, MapR distros
-* Or download binary tgz from Apache Spark (match Hadoop version)
-* Untar on edge node
+* Download binary tgz from Apache Spark (match Hadoop version)
+* Untar on edge node (requires java)
 * Set HADOOP_CONF_DIR environment variable or $SPARK_HOME/conf/spark-env.sh
+* Or
+
+    * Bundled with Cloudera, Hortonworks, MapR distros...
 
 # Running Spark on YARN
 * https://spark.apache.org/docs/1.3.1/running-on-yarn.html
 * Driver, Executors (SparkApplicationMaster)
-* Submit jobs to YARN Resource Manager via spark-submit (yarn-cluster/yarn-client master)
+* Submit jobs to YARN Resource Manager
+
+    * spark-submit --master yarn-cluster/yarn-client
+
 * Or run as interactive shell
 
 # Spark Interactive Shell
 ```bash
 /usr/local/spark/bin/spark-shell \
   --master yarn-client --driver-memory 1G \
-  --executor-memory 1G --num-executors 1
+  --executor-memory 1G --num-executors 1 \
   --executor-cores 1 \
   ... (Kryo serialization/logging)
   --jars /root/mailrecord-utils-1.0.0-shaded.jar
@@ -199,8 +204,14 @@ inbox
 # Brief Scala Background - map function on collections
 
 * map: applies a given function to every element of a collection
-* returns collection of output of that function (one per original element)
-* map(f: (A) => B)
+* returns collection of output of that function
+
+    * one per original element
+
+* List[A]:
+
+    * map(f: (A) => B): List[B]
+    * Note: List[A].size == List[B].size
 
 # map - Scala
 ```scala
@@ -217,6 +228,10 @@ val lengths = words.map(computeLength)
 
 # map - Scala syntactic sugar
 ```scala
+//functions are first class objects
+val f = (w: String) => w.length
+val list1 = words.map(f)
+
 //anonymous function (specifying input arg type)
 val list2 = words.map((w: String) => w.length)
 
@@ -228,24 +243,25 @@ val list4 = words.map(_.length)
 ```
 
 # Option
-* Used instead of Null
-* Can be instance of Some[T] or singleton object None
+* NPE - NullPointerException no more!
+* Used instead of null
+* If something declared as Option[T]
+
+    * Some[T] or singleton object None
+
 * Can be treated as a collection
 
 # flatMap
 
-* ScalaDoc:
 ```scala
-List[A]
-...
-def flatMap[B](f: (A) =>
-           GenTraversableOnce[B]): List[B]
+For List[A]
+
+flatMap[B](f: (A) =>
+    GenTraversableOnce[B]): List[B]
 ```
 
-* [GenTraversableOnce](http://www.scala-lang.org/api/2.10.4/index.html#scala.collection.GenTraversableOnce) - List, Array, Option...
-
-  * can be empty collection or None
-
+* GenTraversableOnce - List, Array, Option...
+* can be empty collection or None
 * flatMap takes each element in the GenTraversableOnce and puts it in
 order to output List[B]
 
@@ -281,6 +297,9 @@ tuple: (String, String) = (key,value)
 > tuple._1
 res0: String = key
 
+> tuple._2
+res2: String = value
+
 > val (key,value) = tuple
 key: String = key
 value: String = value
@@ -289,10 +308,15 @@ value: String = value
 > None
 ```
 # Spark - SparkContext
-* Automatically created by shell (sc, sqlContext)
+* Automatically created by shell
+
+    * In 1.3.1. variable names: sc, sqlContext
+
 * Or created with SparkConf for submitting a job
-* accumulator and broadcast variables (~ Hadoop counters/distributed cache)
 * input from HDFS or local file system (Hadoop API, textFile...)
+* accumulator and broadcast variables
+
+    * ~ Hadoop counters/distributed cache
 
 # Spark - RDD API
 * [RDD API](http://spark.apache.org/docs/1.3.0/api/scala/index.html#org.apache.spark.rdd.RDD)
@@ -301,6 +325,7 @@ value: String = value
     * Lazy evaluation (not evaluated until action! Optimizations)
 
 * Actions - count, collect, first, take, saveAsTextFile...
+* Also PairRDDFunctions, DoubleRDDFunctions, OrderedRDDFunctions
 
 # RDD Scaladocs
 
@@ -429,12 +454,9 @@ import scala.collection.mutable.{ Set => MutableSet }
 //mutable set - reduce object creation/garbage collection
 val uniqueFoldersByUserRdd:
 RDD[(String, MutableSet[String])] =
- tupleRdd.aggregateByKey(
-  MutableSet[String]())(
-    seqOp = (folderSet, folder)
-       => folderSet + folder,
-    combOp = (set1, set2)
-       => set1 ++ set2)
+ tupleRdd.aggregateByKey(MutableSet[String]())(
+    seqOp = (folderSet, folder) => folderSet + folder,
+    combOp = (set1, set2) => set1 ++ set2)
 > RDD[(String, Set[String])] = ShuffledRDD
 ```
 
@@ -462,7 +484,7 @@ res11: (String, Int) = (kean-s,193)
 >foldersPerUserRdd.min()(Ordering.by(_._2))
 res12: (String, Int) = (harris-s,2)
 
-> foldersPerUserRdd.sample(false, 0.1).collect()
+> foldersPerUserRdd.sample(false, 0.1)
 ```
 
 # From RDD to DoubleRDDFunctions
