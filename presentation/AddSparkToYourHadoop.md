@@ -6,6 +6,8 @@
 
 This presentation, ETL code for email and all example code available
 at [https://github.com/medale/spark-mail/](https://github.com/medale/spark-mail/).
+Docker Image to run Spark 1.3.1 on Hadoop 2.6 with Enron email sample
+data set at https://registry.hub.docker.com/u/medale/spark-mail-docker/.
 
 # Talk Overview
 * Hadoop Ecosystem
@@ -50,12 +52,13 @@ add-on framework
 * High-level, scalable processing framework (programmer productivity)
 * Iterative algorithms: Cache interim results
 * Interactive data exploration (Spark shell)
+* Can run on YARN (or standalone, Mesos) and read/write HDFS
 
 # Apache Spark Unified Large Scale Processing System
 
 ![Databricks Spark @ecosystem_databricks_2015](graphics/SparkComponents-Databricks-2015-03-19.png)
 
-# Spark Resilient Distributed Dataset (RDD)
+# Resilient Distributed Dataset (RDD)
 
 * Treat distributed, immutable data set as a collection
 * Resilient: Use RDD lineage to recompute failed partitions
@@ -71,16 +74,208 @@ add-on framework
 
 # RDD API
 
-* Resilient Distributed Dataset ([RDD](https://spark.apache.org/docs/1.3.0/api/scala/#org.apache.spark.rdd.RDD))
+* Resilient Distributed Dataset ([RDD](https://spark.apache.org/docs/1.3.1/api/scala/#org.apache.spark.rdd.RDD))
 * From API scala docs: "immutable, partitioned collection of elements that can be operated on in parallel"
 * map, flatMap, filter, reduce...
 
-# map
 
-* applies a given function to every element of a collection
+# Enron Email Dataset and Avro MailRecord
+
+* Downloaded [Enron email dataset from Carnegie Mellon University](https://www.cs.cmu.edu/~./enron/enron_mail_20110402.tgz)
+* Nested directories for each user/folder/subfolder
+* Emails as text files with headers (To, From, Subject...)
+* over 500,000 files (= 500,000 splits for FileInputFormat)
+
+* Don't want our analytic code to worry about parsing
+
+Solution: Create Avro record format, parse once, store (MailRecord)
+
+# Apache Avro
+
+* JSON - need to encode binary data
+* Hadoop Writable - Java centric
+* Apache Avro
+
+* Binary serialization framework created by Doug Cutting in 2009 (Hadoop, Lucene)
+* Language bindings for: Java, Scala, C, C++, C#, Python, Ruby
+* Schema in file - can use generic or specific processing
+
+[Apache Avro @cutting_doug_apache_2009]
+
+# Avro Container File
+
+* Contains many individual Avro records (~ SequenceFile)
+* Schema for each record at the beginning of file
+* Supports compression
+* Files can be split
+
+# Avro Schema for MailRecord
+```
+record MailRecord {
+  string uuid;
+  string from;
+  union{null, array<string>} to = null;
+  union{null, array<string>} cc = null;
+  union{null, array<string>} bcc = null;
+  long dateUtcEpoch;
+  string subject;
+  union{null, map<string>} mailFields = null;
+  string body;
+  union{null, array<Attachment>} attachments = null;
+}
+```
+
+# Mail Folder Statistics
+* What are the least/most/average number of folders per user?
+* Each MailRecord has user name and folder name
+```
+lay-k/       <- mailFields(UserName)
+business  <- mailFields(FolderName)
+family
+enron
+inbox
+...
+```
+
+# Hadoop Mail Folder Stats - Mapper
+
+* read each mail record
+* emits key: userName, value: folderName for each email
+
+# Hadoop Mail Folder Stats - Reducer
+
+* reduce method
+
+    * create set from values for a given key (unique folder names per user)
+    * set.size == folder count
+    * keep adding up all set.size (totalNumberOfFolders)
+    * one up counter for each key (totalUsers)
+    * keep track of min/max count
+
+* cleanup method
+
+    * compute average for this partition: totalNumberOfFolders/totalUsers
+    * write out min, max, totalNumberOfFolders, totalUsers, avgPerPartition
+
+# Hadoop Mail Folder Stats - Driver
+* Set Input/OutputFormat
+* Number of reducers
+
+# Hadoop Mapper
+```java
+public void map(AvroKey<MailRecord> key,
+        NullWritable value,
+				Context context) throws ... {
+	MailRecord mailRecord = key.datum();
+	Map<String, String> mailFields =
+         mailRecord.getMailFields();
+	String userNameStr = mailFields.get("UserName");
+	String folderNameStr = mailFields.get("FolderName");
+	if (userNameStr != null && folderNameStr != null) {
+		userName.set(userNameStr);
+		folderName.set(folderNameStr);
+		context.write(userName, folderName);
+	}
+}
+```
+
+# Hadoop Reducer - reduce
+```java
+public void reduce(Text userName,
+     Iterable<Text> folderNames,
+    Context context) throws ... {
+ Set<String> uniqueFoldersPerUser = new HashSet<String>();
+ for (Text folderName : folderNames) {
+  uniqueFoldersPerUser.add(folderName.toString());
+ }
+ int count = uniqueFoldersPerUser.size();
+ if (count > maxCount) {
+    maxCount = count;
+    maxUserName = userName.toString();
+ }
+ if (count < minCount) {
+    minCount = count;
+ }
+ totalNumberOfFolders += count;
+ totalUsers++;
+}
+```
+
+# Hadoop Reducer - cleanup
+```java
+@Override
+public void cleanup(Context context) throws ... {
+	double avgFolderCountPerPartition =
+     totalNumberOfFolders / totalUsers;
+
+	String resultStr = "AvgPerPart=" +
+      avgFolderCountPerPartition +
+			"\tTotalFolders=" +
+      totalNumberOfFolders +
+			+ "\tTotalUsers=" +
+      totalUsers +
+      "\tMaxCount=" +
+      maxCount +
+			"\tMaxUser=" + maxUserName +
+      "\tMinCount=" + minCount;
+	Text resultKey = new Text(resultStr);
+	context.write(resultKey, NullWritable.get());
+}
+```
+
+# Hadoop Driver
+```java
+FileInputFormat.addInputPath(job, new Path("enron.avro"));
+FileOutputFormat.setOutputPath(job,
+   new Path("folderAnalytics"));
+
+job.setInputFormatClass(AvroKeyInputFormat.class);
+job.setMapperClass(FolderAnalyticsMapper.class);
+job.setReducerClass(FolderAnalyticsReducer.class);
+
+job.setNumReduceTasks(1);
+AvroJob.setInputKeySchema(job,
+   MailRecord.getClassSchema());
+
+job.setMapOutputKeyClass(Text.class);
+job.setMapOutputValueClass(Text.class);
+
+job.setOutputFormatClass(TextOutputFormat.class);
+```
+
+# Spark Installation
+* Bundled with Cloudera, Hortonworks, MapR distros
+* Or download binary tgz from Apache Spark (match Hadoop version)
+* Untar on edge node
+* Set HADOOP_CONF_DIR environment variable or $SPARK_HOME/conf/spark-env.sh
+
+# Running Spark on YARN
+* https://spark.apache.org/docs/1.3.1/running-on-yarn.html
+* Driver, Executors (SparkApplicationMaster)
+* Submit jobs to YARN Resource Manager via spark-submit (yarn-cluster/yarn-client master)
+* Or run as interactive shell
+
+# Spark Interactive Shell
+```bash
+/usr/local/spark/bin/spark-shell \
+  --master yarn-client --driver-memory 1G \
+  --executor-memory 1G --num-executors 1
+  --executor-cores 1 \
+  ... (Kryo serialization)
+  --jars /root/mailrecord-utils-1.0.0-shaded.jar \
+  --driver-java-options \
+  "-Dlog4j.configuration=log4j.properties"
+```
+
+# RDD Scaladocs
+
+![Spark RDD Scaladocs](graphics/SparkScaladocs.png)
+
+# Brief Scala Background - map function on collections
+
+* map: applies a given function to every element of a collection
 * returns collection of output of that function (one per original element)
-* input argument - same type as collection type
-* return type - can be any type
+* map(f: (A) => B)
 
 # map - Scala
 ```scala
@@ -88,8 +283,10 @@ def computeLength(w: String): Int = w.length
 
 val words = List("when", "shall", "we", "three",
   "meet", "again")
-val lengths = words.map(computeLength)
+> words: List[String] = List(when, shall, we, three,
+     meet, again)
 
+val lengths = words.map(computeLength)
 > lengths  : List[Int] = List(4, 5, 2, 5, 4, 5)
 ```
 
@@ -104,6 +301,11 @@ val list3 = words.map(w => w.length)
 //use positionally matched argument
 val list4 = words.map(_.length)
 ```
+
+# Option
+* Used instead of Null
+* Can be instance of Some[T] or singleton object None
+* Can be treated as a collection
 
 # flatMap
 
@@ -146,57 +348,7 @@ val macWords: Array[String] =
 //      thunder, lightning, or, in, rain)
 ```
 
-# filter
-```scala
-List[A]
-...
-def filter(p: (A) => Boolean): List[A]
-```
-* selects all elements of this list which satisfy a predicate.
-* returns - a new list consisting of all elements of this list that satisfy the
-          given predicate p. The order of the elements is preserved.
 
-# filter Example
-```scala
-val macWordsLower = macWords.map{_.toLowerCase}
-//Array(when, shall, we, three, meet, again, in, thunder,
-//      lightning, or, in, rain)
-
-val stopWords = List("in","it","let","no","or","the")
-val withoutStopWords =
-  macWordsLower.filter(word => !stopWords.contains(word))
-// Array(when, shall, we, three, meet, again, thunder,
-//       lightning, rain)
-```
-
-# reduce
-```scala
-List[A]
-...
-def reduce[A](op: (A, A) => A): A
-```
-* Creates one cumulative value using the specified associative binary operator.
-* op - A binary operator that must be associative.
-* returns - The result of applying op between all the elements if the list is nonempty.
-Result is same type as list type.
-* UnsupportedOperationException if this list is empty.
-
-# reduce Example
-```scala
-//beware of overflow if using default Int!
-val numberOfAttachments: List[Long] =
-List(0, 3, 4, 1, 5)
-val totalAttachments =
-numberOfAttachments.reduce((x, y) => x + y)
-//Order unspecified/non-deterministic, but one
-//execution could be:
-//0 + 3 = 3, 3 + 4 = 7,
-//7 + 1 = 8, 8 + 5 = 13
-
-val emptyList: List[Long] = Nil
-//UnsupportedOperationException
-emptyList.reduce((x, y) => x + y)
-```
 
 # Spark - RDD API
 * [RDD API](http://spark.apache.org/docs/1.3.0/api/scala/index.html#org.apache.spark.rdd.RDD)

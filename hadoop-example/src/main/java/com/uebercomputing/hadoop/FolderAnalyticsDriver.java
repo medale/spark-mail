@@ -64,30 +64,29 @@ public class FolderAnalyticsDriver extends Configured implements Tool {
 			for (Text folderName : folderNames) {
 				uniqueFoldersPerUser.add(folderName.toString());
 			}
-		
-		  int count = uniqueFoldersPerUser.size();
-		  if (count > maxCount) { 
-			  maxCount = count;
-			  maxUserName = userName.toString();
-		  }
-		  if (count < minCount){
-			  minCount = count;
-		  }
-		  totalNumberOfFolders += count;
-		  totalUsers++;
+
+			int count = uniqueFoldersPerUser.size();
+			if (count > maxCount) {
+				maxCount = count;
+				maxUserName = userName.toString();
+			}
+			if (count < minCount) {
+				minCount = count;
+			}
+			totalNumberOfFolders += count;
+			totalUsers++;
 		}
 
 		@Override
 		public void cleanup(Context context) throws IOException,
 				InterruptedException {
-			double avgFolderCountPerPartition = totalNumberOfFolders / totalUsers;
-			
-			String resultStr = "AvgPerPart=" + avgFolderCountPerPartition + 
-					"\tTotalFolders=" +  totalNumberOfFolders +
-					"\tTotalUsers=" + totalUsers +
-					"\tMaxCount=" + maxCount +
-					"\tMaxUser=" + maxUserName +
-					"\tMinCount=" + minCount;
+			double avgFolderCountPerPartition = totalNumberOfFolders
+					/ totalUsers;
+
+			String resultStr = "AvgPerPart=" + avgFolderCountPerPartition
+					+ "\tTotalFolders=" + totalNumberOfFolders
+					+ "\tTotalUsers=" + totalUsers + "\tMaxCount=" + maxCount
+					+ "\tMaxUser=" + maxUserName + "\tMinCount=" + minCount;
 			Text resultKey = new Text(resultStr);
 			context.write(resultKey, NullWritable.get());
 		}
@@ -119,6 +118,7 @@ public class FolderAnalyticsDriver extends Configured implements Tool {
 		job.setMapperClass(FolderAnalyticsMapper.class);
 		job.setReducerClass(FolderAnalyticsReducer.class);
 
+		job.setNumReduceTasks(1);
 		AvroJob.setInputKeySchema(job, MailRecord.getClassSchema());
 
 		// map output not the same as reducer output (default)
@@ -127,7 +127,7 @@ public class FolderAnalyticsDriver extends Configured implements Tool {
 		job.setMapOutputValueClass(Text.class);
 
 		job.setOutputFormatClass(TextOutputFormat.class);
-		
+
 		return (job.waitForCompletion(true) ? 0 : 1);
 	}
 }

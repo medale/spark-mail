@@ -54,7 +54,7 @@ Or
 ```
 spark-shell --master local[4] --driver-memory 4G --executor-memory 4G \
 --jars mailrecord-utils/target/mailrecord-utils-1.1.0-SNAPSHOT-shaded.jar \
---properties-file mailrecord-utils/mailrecord.conf \
+--properties-file mailRecordKryo.conf \
 --driver-java-options "-Dlog4j.configuration=log4j.properties"
 ```
 
@@ -73,7 +73,7 @@ various spark-shell startup messages...
 Spark context available as sc.
 scala> :paste
 
-import org.apache.spark.SparkContext._
+//import org.apache.spark.SparkContext._ pre 1.3.0
 import org.apache.spark.rdd._
 import com.uebercomputing.mailparser.enronfiles.AvroMessageProcessor
 import com.uebercomputing.mailrecord._
