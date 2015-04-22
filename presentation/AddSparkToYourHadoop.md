@@ -84,7 +84,7 @@ add-on framework
 * Downloaded [Enron email dataset from Carnegie Mellon University](https://www.cs.cmu.edu/~./enron/enron_mail_20110402.tgz)
 * Nested directories for each user/folder/subfolder
 * Emails as text files with headers (To, From, Subject...)
-* over 500,000 files (= 500,000 splits for FileInputFormat)
+* Over 500,000 files (= 500,000 splits for FileInputFormat)
 
 * Don't want our analytic code to worry about parsing
 
@@ -158,90 +158,10 @@ inbox
     * write out min, max, totalNumberOfFolders, totalUsers, avgPerPartition
 
 # Hadoop Mail Folder Stats - Driver
-* Set Input/OutputFormat
+* Set AvroKeyInputFormat, key schema
 * Number of reducers
-
-# Hadoop Mapper
-```java
-public void map(AvroKey<MailRecord> key,
-        NullWritable value,
-				Context context) throws ... {
-	MailRecord mailRecord = key.datum();
-	Map<String, String> mailFields =
-         mailRecord.getMailFields();
-	String userNameStr = mailFields.get("UserName");
-	String folderNameStr = mailFields.get("FolderName");
-	if (userNameStr != null && folderNameStr != null) {
-		userName.set(userNameStr);
-		folderName.set(folderNameStr);
-		context.write(userName, folderName);
-	}
-}
-```
-
-# Hadoop Reducer - reduce
-```java
-public void reduce(Text userName,
-     Iterable<Text> folderNames,
-    Context context) throws ... {
- Set<String> uniqueFoldersPerUser = new HashSet<String>();
- for (Text folderName : folderNames) {
-  uniqueFoldersPerUser.add(folderName.toString());
- }
- int count = uniqueFoldersPerUser.size();
- if (count > maxCount) {
-    maxCount = count;
-    maxUserName = userName.toString();
- }
- if (count < minCount) {
-    minCount = count;
- }
- totalNumberOfFolders += count;
- totalUsers++;
-}
-```
-
-# Hadoop Reducer - cleanup
-```java
-@Override
-public void cleanup(Context context) throws ... {
-	double avgFolderCountPerPartition =
-     totalNumberOfFolders / totalUsers;
-
-	String resultStr = "AvgPerPart=" +
-      avgFolderCountPerPartition +
-			"\tTotalFolders=" +
-      totalNumberOfFolders +
-			+ "\tTotalUsers=" +
-      totalUsers +
-      "\tMaxCount=" +
-      maxCount +
-			"\tMaxUser=" + maxUserName +
-      "\tMinCount=" + minCount;
-	Text resultKey = new Text(resultStr);
-	context.write(resultKey, NullWritable.get());
-}
-```
-
-# Hadoop Driver
-```java
-FileInputFormat.addInputPath(job, new Path("enron.avro"));
-FileOutputFormat.setOutputPath(job,
-   new Path("folderAnalytics"));
-
-job.setInputFormatClass(AvroKeyInputFormat.class);
-job.setMapperClass(FolderAnalyticsMapper.class);
-job.setReducerClass(FolderAnalyticsReducer.class);
-
-job.setNumReduceTasks(1);
-AvroJob.setInputKeySchema(job,
-   MailRecord.getClassSchema());
-
-job.setMapOutputKeyClass(Text.class);
-job.setMapOutputValueClass(Text.class);
-
-job.setOutputFormatClass(TextOutputFormat.class);
-```
+* OutputFormat
+* See https://github.com/medale/spark-mail/blob/master/hadoop-example/src/main/java/com/uebercomputing/hadoop/FolderAnalyticsDriver.java
 
 # Spark Installation
 * Bundled with Cloudera, Hortonworks, MapR distros
@@ -261,15 +181,9 @@ job.setOutputFormatClass(TextOutputFormat.class);
   --master yarn-client --driver-memory 1G \
   --executor-memory 1G --num-executors 1
   --executor-cores 1 \
-  ... (Kryo serialization)
-  --jars /root/mailrecord-utils-1.0.0-shaded.jar \
-  --driver-java-options \
-  "-Dlog4j.configuration=log4j.properties"
+  ... (Kryo serialization/logging)
+  --jars /root/mailrecord-utils-1.0.0-shaded.jar
 ```
-
-# RDD Scaladocs
-
-![Spark RDD Scaladocs](graphics/SparkScaladocs.png)
 
 # Brief Scala Background - map function on collections
 
@@ -348,15 +262,119 @@ val macWords: Array[String] =
 //      thunder, lightning, or, in, rain)
 ```
 
+# Scala Tuples - key/value pairs
+```scala
+> val tuple = ("key", "value")
+tuple: (String, String) = (key,value)
 
+> tuple._1
+res0: String = key
+
+> val (key,value) = tuple
+key: String = key
+value: String = value
+
+> Some(tuple)
+> None
+```
+# Spark - SparkContext
+* Automatically created by shell (sc, sqlContext)
+* Or created with SparkConf for submitting a job
+* accumulator and broadcast variables (~ Hadoop counters/distributed cache)
+* input from HDFS or local file system (Hadoop API, textFile...)
 
 # Spark - RDD API
 * [RDD API](http://spark.apache.org/docs/1.3.0/api/scala/index.html#org.apache.spark.rdd.RDD)
-* Transforms - map, flatMap, filter, reduce, fold, aggregate...
+* Transforms - map, flatMap, filter, reduce, fold...
 
     * Lazy evaluation (not evaluated until action! Optimizations)
 
 * Actions - count, collect, first, take, saveAsTextFile...
+
+# RDD Scaladocs
+
+![Spark RDD Scaladocs](graphics/SparkScaladocs.png)
+
+# Spark Shell - import required classes
+```scala
+scala> :paste
+import org.apache.spark.rdd._
+import org.apache.avro.mapred.AvroKey
+import org.apache.avro.mapreduce.AvroKeyInputFormat
+import org.apache.hadoop.io.NullWritable
+import com.uebercomputing.mailrecord._
+import com.uebercomputing.mailrecord.Implicits.mailRecordToMailRecordOps
+import com.uebercomputing.mailparser.enronfiles.AvroMessageProcessor
+
+Ctrl-D
+```
+
+# Shell Command Completion, History, Exit
+* $VAR_NAME. + TAB - shows available methods
+* Up/down scroll through command history
+* exit - to shut down Spark Shell
+
+# Reading enron.avro as MailRecord
+```scala
+val hadoopConf = sc.hadoopConfiguration
+
+val mailRecordsAvroRdd =
+  sc.newAPIHadoopFile("enron.avro",
+  classOf[AvroKeyInputFormat[MailRecord]],
+  classOf[AvroKey[MailRecord]],
+  classOf[NullWritable], hadoopConf)
+> RDD[(AvroKey[MailRecord], NullWritable)]
+```
+
+# Convert to RDD with just MailRecords via map
+```scala
+val recordsRdd = mailRecordsAvroRdd.map {
+     tuple => tuple._1.datum()
+}
+
+Or
+
+val recordsRdd = mailRecordsAvroRdd.map {
+    case(avroKey, _) => avroKey.datum()
+}
+> RDD[MailRecord]
+```
+
+# Extract userName/folderName Tuples
+```scala
+val tupleRdd: RDD[(String,String)] =
+
+ recordsRdd.flatMap { mailRecord =>
+  val userNameOpt =
+     mailRecord.getMailFieldOpt(
+       AvroMessageProcessor.UserName)
+  val folderNameOpt =
+     mailRecord.getMailFieldOpt(
+       AvroMessageProcessor.FolderName)
+
+  if (userNameOpt.isDefined &&
+    folderNameOpt.isDefined) {
+    Some((userNameOpt.get,
+      folderNameOpt.get))
+    } else {
+      None
+    }
+ }
+```
+
+# Caching and Action
+```scala
+tupleRdd.cache()
+
+tupleRdd.count()
+tupleRdd.count()
+```
+
+# Spark Web UI - Resource Manager
+![Yarn Resource Manager](graphics/YarnResourceManager.png)
+
+# Spark Web UI - Tour
+![Spark Web UI](graphics/SparkUi.png)
 
 # Spark - From RDD to PairRDDFunctions
 
@@ -392,44 +410,49 @@ implicit def rddToPairRDDFunctions[K, V](rdd: RDD[(K, V)])
 * join (left/rightOuterJoin), cogroup
 ...
 
-# Spark Enron Word Count from the Spark Shell
-
+# Sets of folderNames per user
 ```scala
-spark-shell --master local[4] --driver-memory 4G \
---executor-memory 4G \
---jars mailrecord-utils/target/mailrecord*shaded.jar \
---properties-file mailRecordKryo.conf \
---driver-java-options "-Dlog4j.configuration=log4j.properties"
+//pre Spark 1.3.0: import org.apache.spark.SparkContext._
+import scala.collection.mutable.{ Set => MutableSet }
+
+//mutable set - reduce object creation/garbage collection
+val uniqueFoldersByUserRdd:
+RDD[(String, MutableSet[String])] =
+ tupleRdd.aggregateByKey(
+  MutableSet[String]())(
+    seqOp = (folderSet, folder)
+       => folderSet + folder,
+    combOp = (set1, set2)
+       => set1 ++ set2)
+> RDD[(String, Set[String])] = ShuffledRDD
 ```
 
-# Loading Enron Email set
+# Just the Set Size please
 ```scala
-scala> :paste
-import org.apache.spark.rdd._
-import com.uebercomputing.mailparser.enronfiles.AvroMessageProcessor
-import com.uebercomputing.mailrecord._
-import com.uebercomputing.mailrecord.Implicits.mailRecordToMailRecordOps
-import org.apache.avro.mapred.AvroKey
-import org.apache.hadoop.mapreduce.lib.input.FileSplit
-
-val hadoopConf = sc.hadoopConfiguration
-val mailRecordsAvroRdd =
-sc.newAPIHadoopFile("enron.avro",
-classOf[MailRecordInputFormat],
-classOf[AvroKey[MailRecord]],
-classOf[FileSplit], hadoopConf)
-
-val bodiesRdd = mailRecordsAvroRdd.map {
-  case(avroKey, fileSplit) => avroKey.datum().getBody
-}
-
-bodiesRdd.toDebugString
-
-Ctrl-D
+val foldersPerUserRdd: RDD[(String, Int)] =
+  uniqueFoldersByUserRdd.mapValues { set => set.size }
+> RDD[(String, Int)]
 ```
 
-# Spark UI
-![Spark UI - Local Mode 4040](graphics/SparkUi.png)
+# Exploring a data set
+```scala
+>foldersPerUserRdd.first()
+res7: (String, Int) = (beck-s,135)
+
+//WARNING: Brings it all back to driver!
+>foldersPerUserRdd.collect()
+
+>foldersPerUserRdd.count()
+>foldersPerUserRdd.take(3)
+
+>foldersPerUserRdd.max()(Ordering.by(_._2))
+res11: (String, Int) = (kean-s,193)
+
+>foldersPerUserRdd.min()(Ordering.by(_._2))
+res12: (String, Int) = (harris-s,2)
+
+> foldersPerUserRdd.sample(false, 0.1).collect()
+```
 
 # From RDD to DoubleRDDFunctions
 
@@ -441,395 +464,21 @@ Ctrl-D
 * histogram
 ...
 
-# MailRecord
-* We want to analyze email data
-* Started with Enron email dataset from Carnegie Mellon University
-
-    * Nested directories for each user/folder/subfolder
-    * Emails as text files with headers (To, From, Subject...)
-    * over 500,000 files (= 500,000 splits for FileInputFormat)
-
-* Don't want our analytic code to worry about parsing
-
-Solution: Create Avro record format, parse once, store (MailRecord)
-
-# Apache Avro
-
-* JSON - need to encode binary data
-* Hadoop Writable - Java centric
-* Apache Avro
-
-    * Binary serialization framework created by Doug Cutting in 2009 (Hadoop, Lucene)
-    * Language bindings for: Java, Scala, C, C++, C#, Python, Ruby
-    * Schema in file - can use generic or specific processing
-
-[Apache Avro @cutting_doug_apache_2009]
-
-# Avro Container File
-
-* Contains many individual Avro records (~ SequenceFile)
-* Schema for each record at the beginning of file
-* Supports compression
-* Files can be split
-
-# Avro Schema for MailRecord
-```
-  record MailRecord {
-    string uuid;
-    string from;
-    union{null, array<string>} to = null;
-    union{null, array<string>} cc = null;
-    union{null, array<string>} bcc = null;
-    long dateUtcEpoch;
-    string subject;
-    union{null, map<string>} mailFields = null;
-    string body;
-    union{null, array<Attachment>} attachments = null;
-  }
-```
-
-# Avro Schema for Attachment
-```
-record Attachment {
-  string fileName;
-  int size;
-  string mimeType;
-  bytes data;
-}
-```
-
-# com.uebercomputing.mailrecord.MailRecord
-* Avro Maven plugin translates schema into Java source code
-* spark-mail/mailrecord
-    * src/main/avro/
-        * com/uebercomputing/mailrecord/MailRecord.avdl ->
-    * src/main/java
-        * com/uebercomputing/mailrecord/MailRecord.java
-
-# MailRecord.java
-```java
-//Autogenerated by Avro DO NOT EDIT DIRECTLY
-package com.uebercomputing.mailrecord;  
-
-public class MailRecord extends
-   org.apache.avro.specific.SpecificRecordBase...
-   public java.lang.String getFrom() {
-     return from;
-   }
-   public java.lang.String getBody() {
-     return body;
-   }
-   public List<Attachment> getAttachments() {
-     return attachments;
-   }
-}
-```
-
-# Converting emails to Avro
-* See spark-mail/README.md
-* spark-mail/PstProcessing.md
-
-for details on how to go from Enron/PST files to Avro.
-
-# Apache Spark execution environments
-* Local, standalone process (can be started command line or Eclipse)
-* Spark Standalone Cluster (master/workers - http://spark.apache.org/docs/1.3.0/spark-standalone.html)
-* Mesos resource manager http://spark.apache.org/docs/1.3.0/running-on-mesos.html
-* Hadoop YARN resource manager http://spark.apache.org/docs/1.3.0/running-on-yarn.html
-
-# Running Spark
-* Command line interactive shell environment (spark-shell)
-* Submit job (spark-submit)
-
-Both methods can be used in all execution environments.
-
-# Some Spark command arguments
-```
-spark-shell --help
-```
-* --master MASTER - e.g. yarn or local.
-* --driver-memory  MEM - Memory for driver (e.g. 1000M, 2G) (Default: 512M)
-* --executor-memory MEM - Memory per executor (e.g. 1000M, 2G) (Default: 1G).
-* --jars JARS - Comma-separated list of local jars for driver and executor classpaths.
-* --conf PROP=VALUE Arbitrary Spark configuration property.
-* --properties-file FILE  Path for extra properties. If not specified, conf/spark-defaults.conf.
-
-# Spark Serialization
-* Default - Java Serialization (java.io.ObjectOutputStream). Classes must
-implement java.io.Serializable otherwise:
-```
-java.io.NotSerializableException:
-  ...
-	at java.io.ObjectOutputStream.writeObject0
-  (ObjectOutputStream.java:1183)
-```
-* Better: Kryo "significantly faster and more compact than Java serialization (often as much as 10x)"
-
-# com.uebercomputing.mailrecord.MailRecordRegistrator
-```scala
-import org.apache.spark.serializer.KryoRegistrator
-import com.esotericsoftware.kryo.Kryo
-import com.twitter.chill.avro.AvroSerializer
-
-//Uses Twitter's chill-avro library.
-class MailRecordRegistrator extends KryoRegistrator {
-
-  def registerClasses(kryo: Kryo): Unit = {
-    kryo.register(classOf[MailRecord],
-      AvroSerializer.
-      SpecificRecordBinarySerializer[MailRecord])
-  }
-}
-```
-# Spark Kryo Configurations
-* spark.serializer - org.apache.spark.serializer.KryoSerializer
-* spark.kryo.registrator
-* spark.kryoserializer.buffer.mb
-* spark.kryoserializer.buffer.max.mb
-
-# Kryo configurations
-
-From command line:
-```
---conf spark.serializer=\
-org.apache.spark.serializer.KryoSerializer \
---conf spark.kryo.registrator=\
-com.uebercomputing.mailrecord.MailRecordRegistrator \
---conf spark.kryoserializer.buffer.mb=128 \
---conf spark.kryoserializer.buffer.max.mb=512 \
-```
-
-# Kryo configuration properties file
-spark-mail/mailrecord-utils/mailrecord.conf
-
-```
-spark.serializer=org...serializer.KryoSerializer
-spark.kryo.registrator=com...MailRecordRegistrator
-spark.kryoserializer.buffer.mb=128
-spark.kryoserializer.buffer.max.mb=512
-```
-
-# Starting Spark interactive exploration
-From spark-mail directory:
-```
-spark-shell --master local[4] --driver-memory 4G \
---executor-memory 4G \
---jars mailrecord-utils/target/mailrecord-*-shaded.jar \
---properties-file mailrecord-utils/mailrecord.conf \
---driver-java-options \
- "-Dlog4j.configuration=log4j.properties"
-```
-
-# Getting an RDD of MailRecords
-With spark-mail utilities:
-```
-import com.uebercomputing.mailrecord._
-import com.uebercomputing.mailrecord.Implicits._
-
-val args =
-  Array("--avroMailInput",
-        "/opt/rpm1/enron/filemail.avro")
-val config =
-  CommandLineOptionsParser.getConfigOpt(args).get
-val recordsRdd =
-  MailRecordAnalytic.getMailRecordRdd(sc, config)
-```
-
-# Under the Hood - newAPIHadoopRDD in SparkContext
-
-com.uebercomputing.mailrecord.MailRecordAnalytic.scala
-
-```scala
-val sparkHadoopConf = sc.hadoopConfiguration
-hadoopConf.addResource(sparkHadoopConf)
-hadoopConf.setBoolean(
-  FileInputFormat.INPUT_DIR_RECURSIVE, true)
-val mailRecordsAvroRdd =
-  sc.newAPIHadoopFile(config.avroMailInput,
-  classOf[MailRecordInputFormat],
-  classOf[AvroKey[MailRecord]],
-  classOf[FileSplit], hadoopConf)
-```
-
-# mailrecord-utils - MailRecordInputFormat.scala
-```scala
-class MailRecordInputFormat extends
-   FileInputFormat[AvroKey[MailRecord], FileSplit]
-...
-class MailRecordRecordReader(val readerSchema: Schema,
-   val fileSplit: FileSplit) extends
-     AvroRecordReaderBase
-```
-
-# Hadoop InputFormats - Minimize object creation!
-* WARNING: Hadoop InputFormats generally reuse the key/value objects
-* Same with AvroRecordReaderBase in MailRecordInputFormat
-* Generally, not a problem if you just map out the fields you need (getFrom etc.)
-* However, if you want to cache the whole MailRecord you need to copy the original:
-```scala
-val mailRecordsRdd = mailRecordsAvroRdd.map {
-  case (mailRecordAvroKey, fileSplit) =>
-    val mailRecord = mailRecordAvroKey.datum()
-    //make a copy - MailRecord gets reused!!!
-    MailRecord.newBuilder(mailRecord).build()
-  }
-```
-
-# Analytic 1 - Mail Folder Statistics
-* What are the least/most/average number of folders per user?
-* Each MailRecord has user name and folder name
-```
-lay-k/       <- mailFields(UserName)
-   business  <- mailFields(FolderName)
-   family
-   enron
-   inbox
-   ...
-```
-
-# Hadoop Mail Folder Stats - Mapper
-
-* read each mail record
-* emits key: userName, value: folderName for each email
-
-# Hadoop Mail Folder Stats - Reducer
-
-* reduce method
-
-    * create set from values for a given key (unique folder names per user)
-    * set.size == folder count
-    * keep adding up all set.size (totalNumberOfFolders)
-    * one up counter for each key (totalUsers)
-    * keep track of min/max count
-
-* cleanup method
-
-    * compute average for this partition: totalNumberOfFolders/totalUsers
-    * write out min, max, totalNumberOfFolders, totalUsers, avgPerPartition
-
-# Hadoop Mail Folder Stats - Driver
-* Set Input/OutputFormat
-* Number of reducers
-
-# Hadoop Mail Folder Stats - Results
-
-* if only one reducer - results are overall lowest/highest/avg
-* if multiple reducers
-
-    * post-processing overall lowest/highest
-    * add totalNumberOfFolders and totalUsers to compute overall average
-
-# Hadoop Mapper
-```java
-public void map(AvroKey<MailRecord> key,
-NullWritable value, Context context) throws ... {
-  MailRecord mailRecord = key.datum();
-  Map<CharSequence, CharSequence> mailFields =
-      mailRecord.getMailFields();
-  CharSequence userName =
-      mailFields.get(AvroMailMessageProcessor.USER_NAME);
-  CharSequence folderName =
-      mailFields.get(AvroMailMessageProcessor.FOLDER_NAME);
-  userKey.set(userName.toString());
-  folderValue.set(folderName.toString());
-  context.write(userKey, folderValue);
-}
-```
-
-# Hadoop Reducer
-```java
-public void reduce(Text userKey,
-  Iterable<Text> folderValues,
-  Context context) throws ... {
-  Set<String> uniqueFolders = new HashSet<String>();
-  for (Text folder : folderValues) {
-    uniqueFolders.add(folder.toString());
-  }
-  int count = uniqueFolder.size();
-  if (count > maxCount) maxCount = count;
-  if (count < minCount) minCount = count;
-  totalNumberOfFolder += count
-  totalUsers++
-}
-...
-public void cleanup...
-//write min, max, totalNumberOfFolders,
-//totalUsers, avgPerPartition
-```
-
-# Spark Mail Folder Stats
-* Create (user,folder) tuple for each email
-* Aggregate by key (PairRDDFunctions)- for each key, create set of folders (distinct)
-* Map values for each key (set) to the set's size:
-
-    * (String, Int) represents (userName, # of folders for that user)
-
-* Create an RDD from just the values (folder sizes for all users)
-* Gather statistics on values (DoubleRDDFunction) (count, min, max, mean, stddev)
-* Create a histogram (DoubleRDDFunction)
-
-# Spark - Creating an RDD of 2-Tuples via flatMap
-```scala
-val userFolderTuplesRdd: RDD[(String, String)] =
-  analyticInput.mailRecordsRdd.flatMap {
-    mailRecord =>
-  val userNameOpt =
-    mailRecord.getMailFieldOpt(UserName)
-  val folderNameOpt =
-    mailRecord.getMailFieldOpt(FolderName)
-
-  if (userNameOpt.isDefined &&
-      folderNameOpt.isDefined) {
-    Some((userNameOpt.get, folderNameOpt.get))
-    } else {
-      None
-    }
-  }
-
-userFolderTuplesRdd.cache()
-```
-
-# Spark - applying PairRDDFunctions
-```scala
-//pre Spark 1.3.0: import org.apache.spark.SparkContext._
-import scala.collection.mutable.{ Set => MutableSet }
-...
-//mutable set - reduce object creation/garbage collection
-val uniqueFoldersByUserRdd:
- RDD[(String, MutableSet[String])] =
-   userFolderTuplesRdd.aggregateByKey(
-     MutableSet[String]())(
-    seqOp = (folderSet, folder) => folderSet + folder,
-    combOp = (set1, set2) => set1 ++ set2)
-
-val folderPerUserRddExact: RDD[(String, Int)] =
-   uniqueFoldersByUserRdd.mapValues { set => set.size }
-
-```
-
 # DoubleRDDFunctions - Stats
 
 ```scala
 val folderCounts: RDD[Int] =
-   folderPerUserRddExact.values
+   foldersPerUserRdd.values
 
 val stats = folderCounts.stats()
 > stats: org.apache.spark.util.StatCounter =
-(count: 150, mean: 22.033333, stdev: 26.773474,
+(count: 40, mean: 30.050000, stdev: 37.856935,
  max: 193.000000, min: 2.000000)
 
 //buckets 0-25, 25-50 etc.
 val buckets = Array(0.0,25,50,75,100,125,150,175,200)
 folderCounts.histogram(buckets, evenBuckets=true)
-res13: Array[Long] = Array(116, 16, 11, 3, 2, 1, 0, 1)
-```
-
-# Who has 193 folders?
-* RDD - def max()(implicit ord: Ordering[T]): T
-```scala
-folderPerUserRddExact.max()(
-  Ordering.by(tuple => tuple._2))
-> res2: (String, Int) = (kean-s,193)
+res21: Array[Long] = Array(26, 5, 6, 1, 0, 1, 0, 1)
 ```
 
 # RDD Lineage - transformations
@@ -846,5 +495,105 @@ folderCounts.toDebugString
 |   NewHadoopRDD[0] at newAPIHadoopRDD at
          MailRecordAnalytic.scala:94 []
 ```
+
+# Hadoop InputFormats - Minimize object creation!
+* WARNING: Hadoop InputFormats generally reuse the key/value objects
+* Same with AvroKeyInputFormat
+* Generally, not a problem if you just map out the fields you need (getFrom etc.)
+* However, if you want to cache the whole MailRecord you need to copy the original:
+```scala
+val mailRecordsRdd = mailRecordsAvroRdd.map {
+  case (mailRecordAvroKey, fileSplit) =>
+    val mailRecord = mailRecordAvroKey.datum()
+    //make a copy - MailRecord gets reused!!!
+    MailRecord.newBuilder(mailRecord).build()
+  }
+```
+
+# Questions?
+
+# Backup Slides
+
+# Hadoop Mapper
+```java
+public void map(AvroKey<MailRecord> key,
+NullWritable value,
+Context context) throws ... {
+  MailRecord mailRecord = key.datum();
+  Map<String, String> mailFields =
+  mailRecord.getMailFields();
+  String userNameStr = mailFields.get("UserName");
+  String folderNameStr = mailFields.get("FolderName");
+  if (userNameStr != null && folderNameStr != null) {
+    userName.set(userNameStr);
+    folderName.set(folderNameStr);
+    context.write(userName, folderName);
+  }
+}
+```
+
+# Hadoop Reducer - reduce
+```java
+public void reduce(Text userName,
+Iterable<Text> folderNames,
+Context context) throws ... {
+  Set<String> uniqueFoldersPerUser = new HashSet<String>();
+  for (Text folderName : folderNames) {
+    uniqueFoldersPerUser.add(folderName.toString());
+  }
+  int count = uniqueFoldersPerUser.size();
+  if (count > maxCount) {
+    maxCount = count;
+    maxUserName = userName.toString();
+  }
+  if (count < minCount) {
+    minCount = count;
+  }
+  totalNumberOfFolders += count;
+  totalUsers++;
+}
+```
+
+# Hadoop Reducer - cleanup
+```java
+@Override
+public void cleanup(Context context) throws ... {
+  double avgFolderCountPerPartition =
+  totalNumberOfFolders / totalUsers;
+
+  String resultStr = "AvgPerPart=" +
+  avgFolderCountPerPartition +
+  "\tTotalFolders=" +
+  totalNumberOfFolders +
+  + "\tTotalUsers=" +
+  totalUsers +
+  "\tMaxCount=" +
+  maxCount +
+  "\tMaxUser=" + maxUserName +
+  "\tMinCount=" + minCount;
+  Text resultKey = new Text(resultStr);
+  context.write(resultKey, NullWritable.get());
+}
+```
+
+# Hadoop Driver
+```java
+FileInputFormat.addInputPath(job, new Path("enron.avro"));
+FileOutputFormat.setOutputPath(job,
+  new Path("folderAnalytics"));
+
+  job.setInputFormatClass(AvroKeyInputFormat.class);
+  job.setMapperClass(FolderAnalyticsMapper.class);
+  job.setReducerClass(FolderAnalyticsReducer.class);
+
+  job.setNumReduceTasks(1);
+  AvroJob.setInputKeySchema(job,
+    MailRecord.getClassSchema());
+
+    job.setMapOutputKeyClass(Text.class);
+    job.setMapOutputValueClass(Text.class);
+
+    job.setOutputFormatClass(TextOutputFormat.class);
+    ```
 
 # References {.allowframebreaks}
