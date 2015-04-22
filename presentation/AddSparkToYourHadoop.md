@@ -544,6 +544,13 @@ val mailRecordsRdd = mailRecordsAvroRdd.map {
   }
 ```
 
+# Learning Resources
+* https://github.com/medale/spark-mail
+* https://github.com/medale/spark-mail-docker
+* O'Reilly: Learning Spark, Advanced Analytics with Spark
+* Coursera: 2 Spark ML MOOCs summer 2015, Scala MOOC
+* Databricks: https://databricks.com/spark/developer-resources
+
 # Questions?
 
 # Backup Slides
@@ -611,23 +618,25 @@ public void cleanup(Context context) throws ... {
 ```
 
 # Hadoop Driver
+
 ```java
+
 FileInputFormat.addInputPath(job, new Path("enron.avro"));
 FileOutputFormat.setOutputPath(job,
   new Path("folderAnalytics"));
 
-  job.setInputFormatClass(AvroKeyInputFormat.class);
-  job.setMapperClass(FolderAnalyticsMapper.class);
-  job.setReducerClass(FolderAnalyticsReducer.class);
+job.setInputFormatClass(AvroKeyInputFormat.class);
+job.setMapperClass(FolderAnalyticsMapper.class);
+job.setReducerClass(FolderAnalyticsReducer.class);
 
-  job.setNumReduceTasks(1);
-  AvroJob.setInputKeySchema(job,
-    MailRecord.getClassSchema());
+job.setNumReduceTasks(1);
+AvroJob.setInputKeySchema(job,
+MailRecord.getClassSchema());
 
-    job.setMapOutputKeyClass(Text.class);
-    job.setMapOutputValueClass(Text.class);
+job.setMapOutputKeyClass(Text.class);
+job.setMapOutputValueClass(Text.class);
 
-    job.setOutputFormatClass(TextOutputFormat.class);
-    ```
+job.setOutputFormatClass(TextOutputFormat.class);
+```
 
 # References {.allowframebreaks}
