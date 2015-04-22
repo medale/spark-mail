@@ -250,6 +250,7 @@ val list4 = words.map(_.length)
     * Some[T] or singleton object None
 
 * Can be treated as a collection
+* Option(null) == None
 
 # flatMap
 
