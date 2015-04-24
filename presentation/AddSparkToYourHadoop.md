@@ -555,7 +555,8 @@ val mailRecordsRdd = mailRecordsAvroRdd.map {
 * https://github.com/medale/spark-mail
 * https://github.com/medale/spark-mail-docker
 * O'Reilly: Learning Spark, Advanced Analytics with Spark
-* Coursera: 2 Spark ML MOOCs summer 2015, Scala MOOC
+* EdX: 2 Spark ML MOOCs summer 2015
+* Coursera: 2 Scala MOOCs by Martin Odersky
 * Databricks: https://databricks.com/spark/developer-resources
 
 # Questions?
