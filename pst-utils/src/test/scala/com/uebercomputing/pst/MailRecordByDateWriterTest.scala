@@ -5,7 +5,7 @@ import org.apache.hadoop.conf.Configuration
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
-import com.uebercomputing.mailrecord.MailRecordReader
+import com.uebercomputing.mailrecord.MailRecordAvroReader
 import org.apache.commons.io.IOUtils
 import java.nio.file.Path
 import org.joda.time.DateTime
@@ -173,7 +173,7 @@ class MailRecordByDateWriterTest extends UnitTest with MailRecordProvider {
   def assertDescriptorNodeIds(ids: List[String], avroPath: Path): Unit = {
     assert(Files.exists(avroPath))
     val in = Files.newInputStream(avroPath)
-    val recordReader = new MailRecordReader()
+    val recordReader = new MailRecordAvroReader()
     recordReader.open(in)
     for (descriptorNodeId <- ids) {
       assert(recordReader.hasNext())

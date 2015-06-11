@@ -1,2 +1,4 @@
 .testEmails.avro.crc
 testEmails.avro
+.enron-small.parquet.crc
+enron-small.parquet

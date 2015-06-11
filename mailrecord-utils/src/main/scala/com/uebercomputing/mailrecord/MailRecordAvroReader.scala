@@ -7,7 +7,11 @@ import org.apache.avro.file.DataFileStream
 import org.apache.avro.specific.SpecificDatumReader
 import org.apache.commons.io.IOUtils
 
-class MailRecordReader extends Closeable {
+/**
+ * Used to read MailRecord objects from an Avro
+ * collection file.
+ */
+class MailRecordAvroReader extends Closeable {
 
   private var mailRecordStream: DataFileStream[MailRecord] = _
 

@@ -17,13 +17,13 @@ class AvroMessageProcessorTest extends AvroFileFixtureTest {
       val mailRecord = processor.process(fileSystemMetadata, msgSrc)
 
       val mailFields = mailRecord.getMailFields()
-      val actualFilename = mailFields.get(AvroMessageProcessor.FileName)
+      val actualFilename = mailFields.get(MessageProcessor.FileName)
       assert(fileSystemMetadata.fileName === actualFilename.toString())
 
-      val actualFolderName = mailFields.get(AvroMessageProcessor.FolderName)
+      val actualFolderName = mailFields.get(MessageProcessor.FolderName)
       assert(fileSystemMetadata.folderName === actualFolderName.toString())
 
-      val actualUserName = mailFields.get(AvroMessageProcessor.UserName)
+      val actualUserName = mailFields.get(MessageProcessor.UserName)
       assert(fileSystemMetadata.userName === actualUserName.toString())
 
       assert("<19546475.1075853053633.JavaMail.evans@thyme>" === mailFields.get(MessageParser.MsgId).toString())

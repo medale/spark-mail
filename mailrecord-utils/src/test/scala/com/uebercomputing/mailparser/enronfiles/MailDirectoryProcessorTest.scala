@@ -65,6 +65,6 @@ trait InMemoryMailMessageProcessor extends MessageProcessor {
 
   override def process(fileSystemMeta: FileSystemMetadata, mailIn: Source): MailRecord = {
     val parseMap = MessageParser(mailIn)
-    messageProcessor.convertMapToMailRecord(fileSystemMeta, parseMap)
+    ParsedMessageToMailRecordConverter.convert(fileSystemMeta, parseMap)
   }
 }

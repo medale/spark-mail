@@ -124,7 +124,7 @@ We parse out specific headers like Message-ID (uuid), From (from) etc. and store
 all the other headers in a mailFields map. We also store the body in its own
 field.
 
-The [mailrecord-utils mailparser enronfiles Main class](https://github.com/medale/spark-mail/blob/master/mailrecord-utils/src/main/scala/com/uebercomputing/mailparser/enronfiles/Main.scala)
+The [mailrecord-utils mailparser enronfiles Main class](https://github.com/medale/spark-mail/blob/master/mailrecord-utils/src/main/scala/com/uebercomputing/mailparser/enronfiles/AvroMain.scala)
 allows us to convert the directory/file-based Enron data set into one Avro files
 with all the corresponding MailRecord Avro records.
 

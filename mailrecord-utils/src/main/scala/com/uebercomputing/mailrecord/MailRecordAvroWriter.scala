@@ -10,8 +10,15 @@ import org.apache.avro.io.DatumWriter
 import org.apache.avro.specific.SpecificDatumWriter
 import org.apache.commons.io.IOUtils
 
+/**
+ * Used to write MailRecord objects to an Avro
+ * collection file. Call open to initialize,
+ * then append mail records via append method.
+ * Must call close to properly close the Avro
+ * collection file.
+ */
 // scalastyle:off
-class MailRecordWriter extends Closeable {
+class MailRecordAvroWriter extends Closeable {
 
   private var mailRecordWriter: DataFileWriter[MailRecord] = _
 

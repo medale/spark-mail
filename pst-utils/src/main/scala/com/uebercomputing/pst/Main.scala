@@ -10,6 +10,7 @@ import com.uebercomputing.io.FileExtensionFilter
 import com.uebercomputing.io.FileUtils
 import com.uebercomputing.time.DateUtils
 import com.uebercomputing.io.IoConstants
+import com.uebercomputing.hadoop.HadoopUtils
 
 /**
  * Invoke command line from spark-mail:
@@ -43,12 +44,8 @@ object Main {
       val pstFiles = getPstFiles(new File(config.pstDir))
       println(s"Processing: ${pstFiles.mkString(",")}")
       val hadoopConf = config.hadoopConfFileOpt match {
-        case Some(confFilePath) => {
-          val conf = new Configuration()
-          conf.addResource(confFilePath)
-          conf
-        }
-        case None => getLocalHadoopConf()
+        case Some(configLocation) => HadoopUtils.getHadoopConfiguration(configLocation)
+        case None                 => HadoopUtils.getLocalHadoopConfiguration()
       }
       val rootPath = config.avroOutDir
       val datePartitionType = config.rollup
@@ -74,13 +71,6 @@ object Main {
 
   def getPstFiles(pstDir: File): List[File] = {
     FileUtils.getMatchingFilesRecursively(pstDir, PstFilter)
-  }
-
-  def getLocalHadoopConf(): Configuration = {
-    val conf = new Configuration
-    conf.set("fs.defaultFS", "file:///")
-    conf.set("mapreduce.framework.name", "local")
-    conf
   }
 
   def parser(): scopt.OptionParser[Config] = {

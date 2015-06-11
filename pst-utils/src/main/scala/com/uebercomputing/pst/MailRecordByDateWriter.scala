@@ -1,7 +1,7 @@
 package com.uebercomputing.pst
 
 import scala.collection.mutable
-import com.uebercomputing.mailrecord.MailRecordWriter
+import com.uebercomputing.mailrecord.MailRecordAvroWriter
 import com.uebercomputing.mailrecord.MailRecord
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
@@ -41,7 +41,7 @@ class MailRecordByDateWriter(hadoopConf: Configuration, datePartitionType: DateP
 
   val LOGGER = Logger.getLogger(this.getClass)
 
-  private val directoryToMailRecordWriterMap = mutable.Map[String, MailRecordWriter]()
+  private val directoryToMailRecordAvroWriterMap = mutable.Map[String, MailRecordAvroWriter]()
 
   val fileSystem = FileSystem.get(hadoopConf)
 
@@ -52,7 +52,7 @@ class MailRecordByDateWriter(hadoopConf: Configuration, datePartitionType: DateP
       val utcOffsetInMillis = mailRecord.getDateUtcEpoch
       val datePartitions = DatePartitioner.getDatePartion(datePartitionType, utcOffsetInMillis)
       val datePartitionsKey = datePartitions.mkString("/")
-      val recordWriter = getMailRecordWriter(datePartitionsKey)
+      val recordWriter = getMailRecordAvroWriter(datePartitionsKey)
       recordWriter.append(mailRecord)
       true
     } catch {
@@ -64,33 +64,33 @@ class MailRecordByDateWriter(hadoopConf: Configuration, datePartitionType: DateP
   }
 
   /**
-   * Must call to close all associated MailRecordWriters.
+   * Must call to close all associated MailRecordAvroWriters.
    */
   def closeAllWriters(): Unit = {
-    for ((key, mailRecordWriter) <- directoryToMailRecordWriterMap) {
+    for ((key, mailRecordWriter) <- directoryToMailRecordAvroWriterMap) {
       mailRecordWriter.close()
     }
   }
 
-  def getMailRecordWriter(datePartitionsKey: String): MailRecordWriter = {
-    if (directoryToMailRecordWriterMap.contains(datePartitionsKey)) {
-      val recordWriter = directoryToMailRecordWriterMap(datePartitionsKey)
+  def getMailRecordAvroWriter(datePartitionsKey: String): MailRecordAvroWriter = {
+    if (directoryToMailRecordAvroWriterMap.contains(datePartitionsKey)) {
+      val recordWriter = directoryToMailRecordAvroWriterMap(datePartitionsKey)
       recordWriter
     } else {
-      createAndCacheMailRecordWriter(datePartitionsKey)
+      createAndCacheMailRecordAvroWriter(datePartitionsKey)
     }
   }
 
-  def createAndCacheMailRecordWriter(datePartitionsKey: String): MailRecordWriter = {
+  def createAndCacheMailRecordAvroWriter(datePartitionsKey: String): MailRecordAvroWriter = {
     val outputPathStr = getOutputPathString(datePartitionsKey)
     val outputPath = new Path(outputPathStr)
     if (fileSystem.exists(outputPath)) {
       throw new RuntimeException(s"Path already exists ${outputPath.toString()}")
     }
     val outputStream = fileSystem.create(outputPath)
-    val recordWriter = new MailRecordWriter()
+    val recordWriter = new MailRecordAvroWriter()
     recordWriter.open(outputStream)
-    directoryToMailRecordWriterMap(datePartitionsKey) = recordWriter
+    directoryToMailRecordAvroWriterMap(datePartitionsKey) = recordWriter
     recordWriter
   }
 

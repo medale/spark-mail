@@ -2,33 +2,36 @@ package com.uebercomputing.mailparser.enronfiles
 
 import com.uebercomputing.mailrecord.MailRecord
 import com.uebercomputing.mailrecord.MailRecordAvroWriter
-
 import java.io.OutputStream
 import java.util.UUID
-
 import org.apache.commons.io.IOUtils
 import org.apache.log4j.Logger
-
 import scala.io.Source
+import com.uebercomputing.mailrecord.MailRecordParquetWriter
+import org.apache.hadoop.fs.Path
 
 /**
- * A Message processor trait to save output in Avro MailRecord
- * format. Mixed in with MailDirectoryProcessor (see AvroMain).
+ * A Message processor trait to save output in Parquet format
+ * as MailRecord records. Mixed in with MailDirectoryProcessor
+ * (see ParquetMain).
  */
-trait AvroMessageProcessor extends MessageProcessor {
+trait ParquetMessageProcessor extends MessageProcessor {
 
   private val logger = Logger.getLogger(this.getClass())
 
-  private var recordWriter: MailRecordAvroWriter = _
+  private var recordWriter: MailRecordParquetWriter = _
+  private val mailRecordBuilder = MailRecord.newBuilder()
+
+  mailRecordBuilder.setMailFields(new java.util.HashMap[String, String])
   var recordsAppendedCount = 0
 
-  def open(out: OutputStream): Unit = {
-    recordWriter = new MailRecordAvroWriter()
-    recordWriter.open(out)
+  def open(path: Path): Unit = {
+    recordWriter = new MailRecordParquetWriter()
+    recordWriter.open(path)
   }
 
   /**
-   * Parses mailIn and stores result as an Avro mail record to the output stream provided
+   * Parses mailIn and stores result as a mail record to the output stream provided
    * by calling the open method.
    *
    * @return MailRecord as it was written to output stream (warning - this mail record will

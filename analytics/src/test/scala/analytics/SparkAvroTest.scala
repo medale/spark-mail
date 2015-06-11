@@ -8,12 +8,12 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
 import com.uebercomputing.mailrecord.MailRecord
-import com.uebercomputing.test.TempMailFileManager
+import com.uebercomputing.test.TempMailFileManagerAvro
 import com.uebercomputing.test.UnitTest
 import org.apache.log4j.Logger
 import org.apache.log4j.Level
 
-class SparkAvroTest extends UnitTest with TempMailFileManager {
+class SparkAvroTest extends UnitTest with TempMailFileManagerAvro {
 
   test("Run basic Spark job against local Avro file") {
     val rootLogger = Logger.getRootLogger()

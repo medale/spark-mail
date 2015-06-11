@@ -1,10 +1,11 @@
 package com.uebercomputing.mailrecord
 
 import java.io.Closeable
-import org.apache.parquet.avro.AvroParquetReader
+import parquet.avro.AvroParquetReader
 import org.apache.hadoop.fs.Path
-import org.apache.parquet.hadoop.ParquetReader
+import parquet.hadoop.ParquetReader
 import org.apache.commons.io.IOUtils
+import parquet.avro.AvroReadSupport
 
 class MailRecordParquetReader extends Closeable {
 
@@ -12,7 +13,7 @@ class MailRecordParquetReader extends Closeable {
   private var mailRecord: MailRecord = _
 
   def open(path: Path): Unit = {
-    val builder = AvroParquetReader.builder[MailRecord](path)
+    val builder = ParquetReader.builder(new AvroReadSupport[MailRecord](), path)
     reader = builder.build()
   }
 

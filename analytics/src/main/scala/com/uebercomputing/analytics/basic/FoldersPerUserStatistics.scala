@@ -6,6 +6,7 @@ import com.uebercomputing.mailrecord.ExecutionTimer
 import com.uebercomputing.mailrecord.Implicits.mailRecordToMailRecordOps
 import com.uebercomputing.mailrecord.MailRecordAnalytic
 import com.uebercomputing.mailparser.enronfiles.AvroMessageProcessor
+import com.uebercomputing.mailparser.enronfiles.MessageProcessor
 import java.nio.charset.StandardCharsets
 import scala.collection.mutable.{ Set => MutableSet }
 import org.apache.spark.rdd.RDD
@@ -26,8 +27,8 @@ object FoldersPerUserStatistics extends ExecutionTimer {
     val additionalSparkProps = Map[String, String]()
     val analyticInput = MailRecordAnalytic.getAnalyticInput(appName, args, additionalSparkProps, LOGGER)
     val userFolderTuplesRdd: RDD[(String, String)] = analyticInput.mailRecordsRdd.flatMap { mailRecord =>
-      val userNameOpt = mailRecord.getMailFieldOpt(AvroMessageProcessor.UserName)
-      val folderNameOpt = mailRecord.getMailFieldOpt(AvroMessageProcessor.FolderName)
+      val userNameOpt = mailRecord.getMailFieldOpt(MessageProcessor.UserName)
+      val folderNameOpt = mailRecord.getMailFieldOpt(MessageProcessor.FolderName)
       if (userNameOpt.isDefined && folderNameOpt.isDefined) {
         Some((userNameOpt.get, folderNameOpt.get))
       } else {

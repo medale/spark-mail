@@ -26,7 +26,7 @@ object MailRecordsCoalescer {
     p.parse(args, Config()) map { config =>
       val avroFiles = FileUtils.getMatchingFilesRecursively(new File(config.avroRootDir), AvroFileFilter)
       println(s"Processing ${avroFiles.size} files from ${config.avroRootDir}...")
-      val mailRecordWriter = new MailRecordWriter
+      val mailRecordWriter = new MailRecordAvroWriter
       for (out <- managed(new FileOutputStream(config.combinedOutputFile))) {
         mailRecordWriter.open(out)
         for (avroFile <- avroFiles) {
@@ -38,9 +38,9 @@ object MailRecordsCoalescer {
     }
   }
 
-  def appendFile(mailRecordWriter: MailRecordWriter, avroFile: File): Unit = {
+  def appendFile(mailRecordWriter: MailRecordAvroWriter, avroFile: File): Unit = {
     for (in <- managed(new FileInputStream(avroFile))) {
-      val mailRecordReader = new MailRecordReader
+      val mailRecordReader = new MailRecordAvroReader
       mailRecordReader.open(in)
       var count = 0
       while (mailRecordReader.hasNext()) {
