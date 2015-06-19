@@ -7,6 +7,8 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
 import org.apache.log4j.Logger
+import com.uebercomputing.utils.DatePartitioner
+import com.uebercomputing.utils.DatePartitionType
 
 object MailRecordByDateWriter {
 

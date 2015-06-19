@@ -11,6 +11,9 @@ import java.nio.file.Path
 import org.joda.time.DateTime
 import java.util.TimeZone
 import org.joda.time.DateTimeZone
+import com.uebercomputing.utils.PartitionByMonth
+import com.uebercomputing.utils.PartitionByDay
+import com.uebercomputing.utils.PartitionByYear
 
 class MailRecordByDateWriterTest extends UnitTest with MailRecordProvider {
 

@@ -9,6 +9,7 @@ import scala.annotation.tailrec
 import com.uebercomputing.io.PathUtils
 import resource.managed
 import com.uebercomputing.hadoop.HadoopUtils
+import com.uebercomputing.mailrecord.MailRecord
 
 /**
  * Invoke:
@@ -52,7 +53,8 @@ object ParquetMain {
       }
       val path = HadoopUtils.getAsHadoopPath(config.parquetOutput, hadoopConf)
       mailDirProcessor.open(path)
-      val messagesProcessed = mailDirProcessor.processMailDirectory()
+      val noFilter = (m: MailRecord) => true
+      val messagesProcessed = mailDirProcessor.processMailDirectory(noFilter)
       println(s"\nTotal messages processed: $messagesProcessed")
       mailDirProcessor.close()
     }

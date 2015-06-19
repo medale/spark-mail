@@ -10,7 +10,6 @@ object UniqueFromsCounter {
     //val sc = new SparkContext(sparkConf)
     //val sqlContext = new SQLContext(sc)
     val sqlContext = org.apache.spark.sql.test.TestSQLContext
-    val minPartitions = 10
     //assumes either we are using HDFS with enron.avro in user's home directory
     //or local file system with enron.avro a link to the actual file with the
     //link in the directory where we started spark from.

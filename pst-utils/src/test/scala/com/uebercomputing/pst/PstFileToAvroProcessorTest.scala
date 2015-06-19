@@ -5,6 +5,7 @@ import java.nio.file.Paths
 import java.nio.file.Files
 import org.apache.hadoop.conf.Configuration
 import com.uebercomputing.io.IoConstants
+import com.uebercomputing.utils.PartitionByDay
 
 class PstFileToAvroProcessorTest extends UnitTest with EmailProvider {
 

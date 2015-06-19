@@ -3,17 +3,20 @@ package com.uebercomputing.pst
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
-
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SerializableWritable
 import org.apache.spark.SparkContext
 import org.joda.time.DateTime
-
 import com.pff.PSTFile
 import com.uebercomputing.io.FileExtensionFilter
 import com.uebercomputing.io.IoConstants
 import com.uebercomputing.mailrecord.MailRecordSparkConfFactory
 import com.uebercomputing.time.DateUtils
+import com.uebercomputing.utils.DatePartitionType
+import com.uebercomputing.utils.PartitionByMonth
+import com.uebercomputing.utils.PartitionByDay
+import com.uebercomputing.utils.PartitionByYear
+import com.uebercomputing.utils.PartitionByYear
 
 /**
  * Invoke command line from spark-mail:

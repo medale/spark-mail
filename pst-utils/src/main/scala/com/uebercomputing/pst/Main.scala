@@ -11,6 +11,11 @@ import com.uebercomputing.io.FileUtils
 import com.uebercomputing.time.DateUtils
 import com.uebercomputing.io.IoConstants
 import com.uebercomputing.hadoop.HadoopUtils
+import com.uebercomputing.utils.DatePartitionType
+import com.uebercomputing.utils.PartitionByMonth
+import com.uebercomputing.utils.PartitionByDay
+import com.uebercomputing.utils.PartitionByYear
+import com.uebercomputing.utils.NoDatePartition
 
 /**
  * Invoke command line from spark-mail:

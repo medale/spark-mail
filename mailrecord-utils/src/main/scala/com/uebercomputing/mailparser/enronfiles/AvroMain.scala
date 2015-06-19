@@ -5,12 +5,10 @@ import java.io.FileOutputStream
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-
 import scala.annotation.tailrec
-
 import com.uebercomputing.io.PathUtils
-
 import resource.managed
+import com.uebercomputing.mailrecord.MailRecord
 
 /**
  * Invoke:
@@ -49,7 +47,8 @@ object AvroMain {
       println(s"Getting ready to process $totalMessageCount mail messages")
       for (out <- managed(new FileOutputStream(config.avroOutput))) {
         mailDirProcessor.open(out)
-        val messagesProcessed = mailDirProcessor.processMailDirectory()
+        val noFilter = (m: MailRecord) => true
+        val messagesProcessed = mailDirProcessor.processMailDirectory(noFilter)
         println(s"\nTotal messages processed: $messagesProcessed")
         mailDirProcessor.close()
       }

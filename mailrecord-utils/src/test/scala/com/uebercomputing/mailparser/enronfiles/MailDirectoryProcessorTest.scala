@@ -12,12 +12,13 @@ import com.uebercomputing.test.UnitTest
 class MailDirectoryProcessorTest extends UnitTest {
 
   val mailDirPath = Paths.get("src/test/resources/enron/maildir")
+  val noFilter = (m: MailRecord) => true
 
   test("All 13 mail messages under mail directory should get processed") {
 
     val dirProc = new MailDirectoryProcessor(
       mailDirPath, Nil) with InMemoryMailMessageProcessor
-    val messagesProcessed = dirProc.processMailDirectory()
+    val messagesProcessed = dirProc.processMailDirectory(noFilter)
     assert(messagesProcessed === 13)
   }
 
@@ -26,7 +27,7 @@ class MailDirectoryProcessorTest extends UnitTest {
     val dirProc = new MailDirectoryProcessor(
       invalidMailDir, Nil) with InMemoryMailMessageProcessor
     intercept[ParseException] {
-      dirProc.processMailDirectory()
+      dirProc.processMailDirectory(noFilter)
     }
   }
 
@@ -34,7 +35,7 @@ class MailDirectoryProcessorTest extends UnitTest {
     val userDir = mailDirPath.resolve("neal-s")
     val dirProc = new MailDirectoryProcessor(
       mailDirPath, Nil) with InMemoryMailMessageProcessor
-    val actualProcessedCount = dirProc.processUserDirectory(userDir, 0)
+    val actualProcessedCount = dirProc.processUserDirectory(userDir, 0, noFilter)
     assert(actualProcessedCount === 6)
   }
 
@@ -63,7 +64,7 @@ trait InMemoryMailMessageProcessor extends MessageProcessor {
 
   private val messageProcessor = new MessageProcessor with AvroMessageProcessor
 
-  override def process(fileSystemMeta: FileSystemMetadata, mailIn: Source): MailRecord = {
+  override def process(fileSystemMeta: FileSystemMetadata, mailIn: Source, filter: MailRecord => Boolean): MailRecord = {
     val parseMap = MessageParser(mailIn)
     ParsedMessageToMailRecordConverter.convert(fileSystemMeta, parseMap)
   }

@@ -2,26 +2,23 @@ package com.uebercomputing.mailparser.enronfiles
 
 import java.nio.file.Files
 import java.nio.file.Path
-
 import scala.io.Source
-
 import org.apache.log4j.Logger
-
 import com.uebercomputing.io.PathUtils
 import com.uebercomputing.io.Utf8Codec
-
 import resource.managed
+import com.uebercomputing.mailrecord.MailRecord
 
 abstract class MailDirectoryProcessor(mailDirectory: Path, userNamesToProcess: List[String] = Nil) extends MessageProcessor {
 
   private val logger = Logger.getLogger(classOf[MailDirectoryProcessor])
 
-  def processMailDirectory(): Int = {
+  def processMailDirectory(filter: MailRecord => Boolean): Int = {
     var mailMessagesProcessedCount = 0
     val userDirectories = PathUtils.listChildPaths(mailDirectory)
     for (userDirectory <- userDirectories) {
       if (isReadableDirectory(userDirectory)) {
-        mailMessagesProcessedCount = processUserDirectory(userDirectory, mailMessagesProcessedCount)
+        mailMessagesProcessedCount = processUserDirectory(userDirectory, mailMessagesProcessedCount, filter)
       } else {
         val errMsg = s"Mail directory layout (${userDirectory} violates assumption: " +
           "Mail directory should contain only user directories."
@@ -31,7 +28,7 @@ abstract class MailDirectoryProcessor(mailDirectory: Path, userNamesToProcess: L
     mailMessagesProcessedCount
   }
 
-  def processUserDirectory(userDirectory: Path, processedCountSoFar: Int): Int =
+  def processUserDirectory(userDirectory: Path, processedCountSoFar: Int, filter: MailRecord => Boolean): Int =
     {
       var processedCount = processedCountSoFar
       if (userNamesToProcess == Nil || isUserDirectoryToBeProcessed(userDirectory)) {
@@ -41,7 +38,7 @@ abstract class MailDirectoryProcessor(mailDirectory: Path, userNamesToProcess: L
           if (isReadableDirectory(folder)) {
             val parentFolderName = None
             processedCount = processFolder(userName, parentFolderName,
-              folder, processedCount)
+              folder, processedCount, filter)
           }
         }
       }
@@ -54,15 +51,16 @@ abstract class MailDirectoryProcessor(mailDirectory: Path, userNamesToProcess: L
   }
 
   def processFolder(userName: String, parentFolderName: Option[String],
-                    folder: Path, processCountSoFar: Int): Int = {
+                    folder: Path, processCountSoFar: Int,
+                    filter: MailRecord => Boolean): Int = {
     val folderName = getFolderName(parentFolderName, folder)
     var processedCount = processCountSoFar
     val mailsOrSubdirs = PathUtils.listChildPaths(folder)
     for (mailOrSubdir <- mailsOrSubdirs) {
       if (Files.isRegularFile(mailOrSubdir)) {
-        processedCount = processFile(userName, folderName, mailOrSubdir, processedCount)
+        processedCount = processFile(userName, folderName, mailOrSubdir, processedCount, filter)
       } else {
-        processedCount = processFolder(userName, Some(folderName), mailOrSubdir, processedCount)
+        processedCount = processFolder(userName, Some(folderName), mailOrSubdir, processedCount, filter)
       }
       if (processedCount % 10000 == 0) {
         println()
@@ -74,14 +72,15 @@ abstract class MailDirectoryProcessor(mailDirectory: Path, userNamesToProcess: L
     processedCount
   }
 
-  def processFile(userName: String, folderName: String, mailFile: Path, processedCount: Int): Int = {
+  def processFile(userName: String, folderName: String, mailFile: Path, processedCount: Int,
+                  filter: MailRecord => Boolean): Int = {
     val fileName = mailFile.getFileName().toString()
     for (mailIn <- managed(Files.newInputStream(mailFile))) {
       try {
         val fileSystemMetadata = FileSystemMetadata(userName, folderName,
           fileName)
         val utf8Codec = Utf8Codec.codec
-        process(fileSystemMetadata, Source.fromInputStream(mailIn)(utf8Codec))
+        process(fileSystemMetadata, Source.fromInputStream(mailIn)(utf8Codec), filter)
       } catch {
         case e: Exception =>
           // scalastyle:off

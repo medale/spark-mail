@@ -3,6 +3,7 @@ package com.uebercomputing.mailparser.enronfiles
 import scala.io.Source
 import com.uebercomputing.test.AvroFileFixtureTest
 import resource.managed
+import com.uebercomputing.mailrecord.MailRecord
 
 class AvroMessageProcessorTest extends AvroFileFixtureTest {
 
@@ -14,7 +15,8 @@ class AvroMessageProcessorTest extends AvroFileFixtureTest {
     for (testFileIn <- managed(getClass().getResourceAsStream(TestFileUrl))) {
       val msgSrc = Source.fromInputStream(testFileIn)
       val fileSystemMetadata = getFileSystemMetadata(TestFileUrl)
-      val mailRecord = processor.process(fileSystemMetadata, msgSrc)
+      val noFilter = (m: MailRecord) => true
+      val mailRecord = processor.process(fileSystemMetadata, msgSrc, noFilter)
 
       val mailFields = mailRecord.getMailFields()
       val actualFilename = mailFields.get(MessageProcessor.FileName)

@@ -71,7 +71,8 @@ class MailRecordInputFormatTest extends FunSuite with AvroMailRecordsFileProvide
     val users = Nil
     val mailDirProcessor = new MailDirectoryProcessor(mailDir, users) with AvroMessageProcessor
     mailDirProcessor.open(testInfo.out)
-    val messagesProcessed = mailDirProcessor.processMailDirectory()
+    val noFilter = (m: MailRecord) => true
+    val messagesProcessed = mailDirProcessor.processMailDirectory(noFilter)
     println(s"\nTotal messages processed: $messagesProcessed")
     mailDirProcessor.close()
   }
