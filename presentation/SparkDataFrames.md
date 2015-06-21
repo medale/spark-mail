@@ -10,7 +10,7 @@
 
 * Structured/semi-structured data on Spark
 * Can write SQL-like queries or
-* DataFrames DSL language
+* DataFrame DSL language
 * Michael Armbrust (Databricks Spark SQL lead):
 
     * Write less code
