@@ -7,6 +7,8 @@ import org.apache.spark.sql.Row
 import com.uebercomputing.utils.DatePartitioner
 import com.uebercomputing.utils.PartitionByYear
 
+import org.apache.spark.sql.functions.udf
+
 /**
  *
  */
@@ -42,19 +44,12 @@ object ParquetPartitions {
  |    |    |-- mimeType: string (nullable = false)
  |    |    |-- data: binary (nullable = false)
      */
-    val emailsWithYearDf = emailsDf.withColumn("year", emailsDf("uuid"))
-    val extendedEmailsRdd = emailsWithYearDf.map(row => {
-      val dateUtcEpoch = row.getAs[Long]("dateUtcEpoch")
+    val getYearUdf = udf((dateUtcEpoch: Long) => {
       val yearList = DatePartitioner.getDatePartion(PartitionByYear, dateUtcEpoch)
-      val year = yearList(0)
-      val rowSeq = row.toSeq
-      val newSeq = rowSeq.take(rowSeq.size - 1) ++ Seq(year)
-      Row.fromSeq(newSeq)
+      yearList(0)
     })
-    val schema = emailsWithYearDf.schema
-    val extendedEmailsDf = sqlContext.createDataFrame(extendedEmailsRdd, schema)
-
-    extendedEmailsDf.write.format("parquet").partitionBy("year").save("/opt/rpm1/enron/parquet/out")
+    val emailsWithYearDf = emailsDf.withColumn("year", getYearUdf(emailsDf("dateUtcEpoch")))
+    emailsWithYearDf.write.format("parquet").partitionBy("year").save("/opt/rpm1/enron/parquet/out")
     /*_common_metadata  year=0001  year=1986  year=1999  year=2002  year=2007  year=2024
 _metadata         year=0002  year=1997  year=2000  year=2004  year=2012  year=2043
 _SUCCESS          year=1980  year=1998  year=2001  year=2005  year=2020  year=2044

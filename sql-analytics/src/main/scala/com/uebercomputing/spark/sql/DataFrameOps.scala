@@ -20,7 +20,8 @@ object DataFrameOps {
     //attachments: array<struct<fileName:string,size:int,mimeType:string,data:binary>>]
     val emailsDf = sqlContext.read.parquet("enron.parquet")
     //[emailPrefix: string, Name: string, Position: string, Location: string]
-    val rolesDf = sqlContext.read.format("com.databricks.spark.csv").option("header", "true").load("roles.csv")
+    val rolesDf = sqlContext.read.format("com.databricks.spark.csv").
+      option("header", "true").load("roles.csv")
 
     import sqlContext.implicits._
 
