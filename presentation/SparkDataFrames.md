@@ -286,7 +286,7 @@ import sqlContext.implicits.rddToDataFrameHolder
 
 case class Role(emailPrefix: String, name: String,
   position: String, location: String)
-  
+
 val rolesRdd = sc.textFile("roles.csv")
 val rolesDf = rolesRdd.map(s => s.split(",")).
       map(lineArray => Role(lineArray(0), lineArray(1),
@@ -334,5 +334,9 @@ mailFieldSizesY2kRdd.stats()
 //(count: 196100, mean: 14.000347, stdev: 0.018618,
 // max: 15.000000, min: 14.000000)
 ```
+
+# Thanks for coming out!
+
+Questions?
 
 # References {.allowframebreaks}
