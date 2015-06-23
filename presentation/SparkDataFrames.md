@@ -1,4 +1,4 @@
-% Apache Spark DataFrames
+% Apache Spark DataFrame API
 % Markus Dale
 % 2015
 
@@ -17,25 +17,32 @@
     * Read less data
     * Let [Catalyst query] optimizer do the hard work
 
+# Spark SQL in Context
+
+* Complete re-write/superset of Shark announced April 2014
+* Not [Hive on Spark](https://issues.apache.org/jira/browse/HIVE-7292)
+* Leverages Spark Core infrastructure/RDD abstractions
+* Separate library (in addition to Spark Core): spark-sql, spark-hive
+
 # Emails per user - RDD
 ```
 val mailRecordsAvroRdd =
-  sc.newAPIHadoopFile("enron.avro",
-        classOf[AvroKeyInputFormat[MailRecord]],
-        classOf[AvroKey[MailRecord]],
-        classOf[NullWritable], hadoopConf)
+sc.newAPIHadoopFile("enron.avro",
+classOf[AvroKeyInputFormat[MailRecord]],
+classOf[AvroKey[MailRecord]],
+classOf[NullWritable], hadoopConf)
+
 val recordsRdd = mailRecordsAvroRdd.map {
-  case (avroKey, _) => avroKey.datum()
+  case(avroKey, _) => avroKey.datum()
 }
-val emailsPerUserRdd =
-    recordsRdd.flatMap(mailRecord => {
-      val userNameOpt =
-        mailRecord.getMailFieldOpt("UserName")
-      if (userNameOpt.isDefined) Some(userNameOpt.get, 1)
-      else None
-    }).reduceByKey(_ + _).
-    sortBy(((t: (String, Int)) => t._2),
-         ascending = false)
+val tupleRdd =
+recordsRdd.map { mailRecord =>
+  val mailFields = mailRecord.getMailFields()
+  val user = mailFields.get("UserName")
+  (user, 1)
+  }.reduceByKey(_ + _).
+  sortBy(((t: (String, Int)) => t._2),
+  ascending = false)
 ```
 
 # Emails per user - DataFrame
@@ -48,20 +55,14 @@ val getUserUdf = udf((mailFields: Map[String, String])
                => mailFields("UserName"))
 
 import sqlContext.implicits._
+
 val recordsWithUserDf =
-  recordsDf.withColumn("user",
-       getUserUdf($"mailFields"))
+  recordsDf.withColumn("user", getUserUdf($"mailFields"))
+
 recordsWithUserDf.groupBy("user").
   count().
   orderBy($"count".desc)
 ```
-
-# Spark SQL in Context
-
-* Complete re-write/superset of Shark announced April 2014
-* Not [Hive on Spark](https://issues.apache.org/jira/browse/HIVE-7292)
-* Leverages Spark Core infrastructure/RDD abstractions
-* Separate library (in addition to Spark Core): spark-sql, spark-hive
 
 # DataFrame
 
@@ -70,7 +71,7 @@ recordsWithUserDf.groupBy("user").
 * Inspired by data frames in [Python Data Analysis (pandas)](http://pandas.pydata.org/) and
 [R](http://www.r-project.org/)
 * Distributed collection of Row objects (with known schema/columns)
-* Abstractions for selecting, filtering, aggregation
+* Abstractions for selecting, filtering, aggregation...
 
 # Catalyst Query Optimizer Pipeline
 
@@ -90,7 +91,7 @@ recordsWithUserDf.groupBy("user").
 * spark-avro
 * spark-redshift
 * couchbase-spark-connector
-* 10 more entries (as of June 21, 2015)
+* ...10 more entries (as of June 21, 2015)
 
 # Apache Parquet
 
