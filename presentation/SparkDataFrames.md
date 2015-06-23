@@ -2,6 +2,10 @@
 % Markus Dale
 % 2015
 
+# Slides And Code
+* Slides: https://github.com/medale/spark-mail/blob/master/presentation/SparkDataFrames.pdf
+* Spark SQL Examples: https://github.com/medale/spark-mail/tree/master/sql-analytics/src/main/scala/com/uebercomputing/spark/sql
+
 # Spark Ecosystem
 
 ![Databricks Spark 1.4.0 @ecosystem_databricks_2015](graphics/SparkComponents-Databricks-2015-06-18.png)
@@ -22,6 +26,8 @@
 * Complete re-write/superset of Shark announced April 2014
 * Not [Hive on Spark](https://issues.apache.org/jira/browse/HIVE-7292)
 * Leverages Spark Core infrastructure/RDD abstractions
+* Can mix procedural view (RDD) and relational view (DataFrame)
+* Inline user-defined functions (UDFs)
 * Separate library (in addition to Spark Core): spark-sql, spark-hive
 
 # Emails per user - RDD
@@ -40,9 +46,9 @@ recordsRdd.map { mailRecord =>
   val mailFields = mailRecord.getMailFields()
   val user = mailFields.get("UserName")
   (user, 1)
-  }.reduceByKey(_ + _).
+}.reduceByKey(_ + _).
   sortBy(((t: (String, Int)) => t._2),
-  ascending = false)
+    ascending = false)
 ```
 
 # Emails per user - DataFrame
@@ -71,11 +77,12 @@ recordsWithUserDf.groupBy("user").
 * Inspired by data frames in [Python Data Analysis (pandas)](http://pandas.pydata.org/) and
 [R](http://www.r-project.org/)
 * Distributed collection of Row objects (with known schema/columns)
-* Abstractions for selecting, filtering, aggregation...
+* Abstractions for projection (select), filter (where), join, aggregation (groupBy)
+* Lazy evaluation - build abstract syntax tree for Catalyst optimizer
 
 # Catalyst Query Optimizer Pipeline
 
-![Catalyst Query Optimizer Pipeline @armbrust_whats_2015](graphics/SparkSql-Catalyst-Databricks-2015-03-24.png)
+![Catalyst Query Optimizer Pipeline @armbrust_spark_2015](graphics/SparkSql-Catalyst-Databricks-2015-03-24.png)
 
 # DataFrame Speed Up - Catalyst Query Optimizer
 
@@ -96,8 +103,10 @@ recordsWithUserDf.groupBy("user").
 # Apache Parquet
 
 * Columnar storage format - store data by chunks of columns rather than rows
-* Support complex nesting using algorithms from [Google Dremel @melnik_dremel_2010].
-* See [Apache Parquet docs @parquet_apache_2014]
+* Support complex nesting using algorithms from [Google Dremel @melnik_dremel_2010]
+* Spark SQL can push down projection (select) and filter (e.g. partitioning year=2000,
+  min/max/null count statistics per column chunk page)
+* See [Apache @parquet_apache_2014]
 
 # Parquet File Structure
 
@@ -127,5 +136,145 @@ emailsWithYearDf.write.format("parquet").
 //part-r-00001.gz.parquet in each
 ```
 
+# How many emails by position/location?
+
+Enron MailRecords - enron.parquet
+```
+record MailRecord {
+  string uuid;
+  string from;  //brad.mckay@enron.com
+  union{null, array<string>} to = null;
+  union{null, array<string>} cc = null;
+  union{null, array<string>} bcc = null;
+  long dateUtcEpoch;
+  string subject;
+  union{null, map<string>} mailFields = null;
+  string body;
+  union{null, array<Attachment>} attachments = null;
+}
+```
+
+# Enron Positions and Locations - roles.csv
+
+```
+emailPrefix,Name,Position,Location
+...
+bill.williams,Unknown,Unknown,Unknown
+brad.mckay,Bradley Mckay,Employee,Unknown
+brenda.whitehead,Unknown,Unknown,Unknown
+...
+```
+[Enron Positions and Roles, @lavrenko_enron_2013]
+
+# How many emails by position/location - Join
+```
+//[uuid: string, from: string, to: array<string>,
+//cc: array<string>, ...>]
+val emailsDf = sqlContext.read.parquet("enron.parquet")
+
+//[emailPrefix: string, Name: string, Position: string,
+// Location: string]
+val rolesDf = sqlContext.read.
+   format("com.databricks.spark.csv").
+   option("header", "true").
+   load("roles.csv")
+```
+
+# Inline User defined functions (UDFs) 1
+```
+import sqlContext.implicits._
+
+val stripDomainUdf = udf((emailAdx: String) => {
+  val prefixAndDomain = emailAdx.split("@")
+  prefixAndDomain(0)
+})
+
+//if implicits._ => $ instead of emailsDf("...")
+  val emailsWithFromPrefixDf =
+    emailsDf.withColumn("fromEmailPrefix",
+       stripDomainUdf($"from"))
+
+```
+
+# Inline User defined functions (UDFs) 2
+```
+val stripDomainFunc = (emailAdx: String) => {
+  val prefixAndDomain = emailAdx.split("@")
+  prefixAndDomain(0)
+}
+
+val emailsWithFromPrefixDf1 =
+  emailsDf.withColumn("fromEmailPrefix",
+    callUDF(stripDomainFunc, StringType, col("from")))
+
+```
+
+# Joining two data frames
+```
+val emailsWithRolesDf =
+   emailsWithFromPrefixDf.join(rolesDf,
+     emailsWithFromPrefixDf("fromEmailPrefix") ===
+     rolesDf("emailPrefix"))
+
+//[Position: string, Location: string, count: bigint]
+val rolesCountDf =
+  emailsWithRolesDf.groupBy("Position", "Location").
+    count().
+    orderBy($"count".desc)
+//[Employee,Unknown,53955], [N/A,Unknown,32640],
+//[Unknown,Unknown,31858],
+//[Manager,Risk Management Head,15619],
+//[Vice President,Unknown,14909]...
+```
+
+# What was brad.mckay's Position and Location?
+```
+val bradInfoDf =
+  emailsWithRolesDf.select("from", "Position", "Location").
+    where($"from" startsWith("brad.mckay"))
+```
+* Column methods: ===, !==, asc/desc, start/endsWith, isNull, substr,
+like, rlike (like with regex)...
+
+# MySQL JDBC
+```
+
+//http://spark.apache.org/docs/latest/sql-programming-guide.html
+//JDBC To Other Databases
+val props = new Properties()
+props.setProperty("user", "spark")
+props.setProperty("password", "spark-rocks!")
+props.setProperty("driver", "com.mysql.jdbc.Driver")
+
+val url = "jdbc:mysql://localhost:3306/spark"
+
+//java.sql.SQLException: No suitable driver
+//found for jdbc:mysql://localhost:3306/spark
+//Then:
+//SPARK_CLASSPATH=mysql-connector...jar spark-shell...
+rolesDf.write.mode("overwrite").jdbc(url, "roles", props)
+```
+
+# Resulting Database table
+```
+mysql> desc roles;
++-------------+------+------+-----+---------+-------+
+| Field       | Type | Null | Key | Default | Extra |
++-------------+------+------+-----+---------+-------+
+| emailPrefix | text | YES  |     | NULL    |       |
+| Name        | text | YES  |     | NULL    |       |
+| Position    | text | YES  |     | NULL    |       |
+| Location    | text | YES  |     | NULL    |       |
++-------------+------+------+-----+---------+-------+
+```
+
+# JDBC Read
+
+* Also: dbtable (e.g. select statement), partitionColumn, lowerBound, upperBound, numPartitions
+* For details see http://www.sparkexpert.com/2015/03/28/loading-database-data-into-spark-using-data-sources-api/
+
+# DataFrame from RDD of case classes
+
+# DataFrame from RDD using schema
 
 # References {.allowframebreaks}
