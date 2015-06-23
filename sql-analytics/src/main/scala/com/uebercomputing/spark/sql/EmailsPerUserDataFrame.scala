@@ -27,5 +27,8 @@ object EmailsPerUserDataFrame {
     //Array([kaminski-v,28465], [dasovich-j,28234], [kean-s,25351], [mann-k,23381],
     //[jones-t,19950], [shackleton-s,18687], [taylor-m,13875], [farmer-d,13032],
     //[germany-c,12436], [beck-s,11830])
+
+    //or
+    recordsDf.explode("mailFields", "user")((mailFields: Map[String, String]) => List(mailFields("UserName")))
   }
 }

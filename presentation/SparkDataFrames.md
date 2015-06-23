@@ -25,30 +25,29 @@
 
 * Complete re-write/superset of Shark announced April 2014
 * Not [Hive on Spark](https://issues.apache.org/jira/browse/HIVE-7292)
-* Leverages Spark Core infrastructure/RDD abstractions
-* Can mix procedural view (RDD) and relational view (DataFrame)
+* Can mix relational view (DataFrame - select,where...) with procedural view (RDD - map, flatMap...)
 * Inline user-defined functions (UDFs)
 * Separate library (in addition to Spark Core): spark-sql, spark-hive
 
 # Emails per user - RDD
 ```
 val mailRecordsAvroRdd =
-sc.newAPIHadoopFile("enron.avro",
-classOf[AvroKeyInputFormat[MailRecord]],
-classOf[AvroKey[MailRecord]],
-classOf[NullWritable], hadoopConf)
+   sc.newAPIHadoopFile("enron.avro",
+   classOf[AvroKeyInputFormat[MailRecord]],
+   classOf[AvroKey[MailRecord]],
+   classOf[NullWritable], hadoopConf)
 
 val recordsRdd = mailRecordsAvroRdd.map {
-  case(avroKey, _) => avroKey.datum()
+   case(avroKey, _) => avroKey.datum()
 }
 val tupleRdd =
-recordsRdd.map { mailRecord =>
-  val mailFields = mailRecord.getMailFields()
-  val user = mailFields.get("UserName")
-  (user, 1)
-}.reduceByKey(_ + _).
+ recordsRdd.map { mailRecord =>
+   val mailFields = mailRecord.getMailFields()
+   val user = mailFields.get("UserName")
+   (user, 1)
+ }.reduceByKey(_ + _).
   sortBy(((t: (String, Int)) => t._2),
-    ascending = false)
+     ascending = false)
 ```
 
 # Emails per user - DataFrame
@@ -64,6 +63,7 @@ import sqlContext.implicits._
 
 val recordsWithUserDf =
   recordsDf.withColumn("user", getUserUdf($"mailFields"))
+//or recordsDf.explode("mailFields","user")(...)
 
 recordsWithUserDf.groupBy("user").
   count().
@@ -74,7 +74,7 @@ recordsWithUserDf.groupBy("user").
 
 * Introduced in Spark 1.3 March 2015 (presentation uses 1.4.0)
 * Replacement/evolution of SchemaRDD
-* Inspired by data frames in [Python Data Analysis (pandas)](http://pandas.pydata.org/) and
+* ~Data frames in [Python Data Analysis (pandas)](http://pandas.pydata.org/) and
 [R](http://www.r-project.org/)
 * Distributed collection of Row objects (with known schema/columns)
 * Abstractions for projection (select), filter (where), join, aggregation (groupBy)
@@ -118,6 +118,9 @@ recordsWithUserDf.groupBy("user").
 val emails =
   sqlContext.read.format("parquet").load("enron.parquet")
 //.read.parquet/json/jdbc
+
+//from spark-packages.org
+import com.databricks.spark.avro._
 
 val rolesDf = sqlContext.read.
    format("com.databricks.spark.csv").
@@ -182,6 +185,7 @@ val rolesDf = sqlContext.read.
 
 # Inline User defined functions (UDFs) 1
 ```
+import org.apache.spark.sql.functions._
 import sqlContext.implicits._
 
 val stripDomainUdf = udf((emailAdx: String) => {
@@ -198,6 +202,8 @@ val stripDomainUdf = udf((emailAdx: String) => {
 
 # Inline User defined functions (UDFs) 2
 ```
+import org.apache.spark.sql.functions._
+
 val stripDomainFunc = (emailAdx: String) => {
   val prefixAndDomain = emailAdx.split("@")
   prefixAndDomain(0)
@@ -206,7 +212,6 @@ val stripDomainFunc = (emailAdx: String) => {
 val emailsWithFromPrefixDf1 =
   emailsDf.withColumn("fromEmailPrefix",
     callUDF(stripDomainFunc, StringType, col("from")))
-
 ```
 
 # Joining two data frames
@@ -239,7 +244,8 @@ like, rlike (like with regex)...
 # MySQL JDBC
 ```
 
-//http://spark.apache.org/docs/latest/sql-programming-guide.html
+//http://spark.apache.org/docs/latest/
+//sql-programming-guide.html
 //JDBC To Other Databases
 val props = new Properties()
 props.setProperty("user", "spark")
@@ -278,6 +284,9 @@ mysql> desc roles;
 //convert RDD to DataFrame - rddToDataFrameHolder
 import sqlContext.implicits.rddToDataFrameHolder
 
+case class Role(emailPrefix: String, name: String,
+  position: String, location: String)
+  
 val rolesRdd = sc.textFile("roles.csv")
 val rolesDf = rolesRdd.map(s => s.split(",")).
       map(lineArray => Role(lineArray(0), lineArray(1),
@@ -304,6 +313,26 @@ val rolesRowRdd = rolesRdd.map(s => s.split(",")).
       lineArray(2), lineArray(3)))
 val rolesDf =
    sqlContext.createDataFrame(rolesRowRdd, schema)
+```
+
+# DataFrame to RDD[Row]
+```
+val emailsDf =
+ sqlContext.read.parquet("/opt/rpm1/enron/parquet/out")
+val y2kDf = emailsDf.where(emailsDf("year") === 2000)
+
+//RDD[org.apache.spark.sql.Row], also .rdd,
+//flatMap, toJSON...
+val mailFieldSizesY2kRdd = y2kDf.map(row => {
+  val mailFields =
+    row.getAs[Map[String, String]]("mailFields")
+  mailFields.size
+})
+
+//DoubleRDDFunctions
+mailFieldSizesY2kRdd.stats()
+//(count: 196100, mean: 14.000347, stdev: 0.018618,
+// max: 15.000000, min: 14.000000)
 ```
 
 # References {.allowframebreaks}
