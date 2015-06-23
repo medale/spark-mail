@@ -274,7 +274,36 @@ mysql> desc roles;
 * For details see http://www.sparkexpert.com/2015/03/28/loading-database-data-into-spark-using-data-sources-api/
 
 # DataFrame from RDD of case classes
+```
+//convert RDD to DataFrame - rddToDataFrameHolder
+import sqlContext.implicits.rddToDataFrameHolder
 
-# DataFrame from RDD using schema
+val rolesRdd = sc.textFile("roles.csv")
+val rolesDf = rolesRdd.map(s => s.split(",")).
+      map(lineArray => Role(lineArray(0), lineArray(1),
+          lineArray(2), lineArray(3))).toDF()
+//rolesDf: org.apache.spark.sql.DataFrame =
+//[emailPrefix: string, name: string,
+//position: string, location: string]
+```
+
+# DataFrame from RDD using dynamic schema
+```
+import sqlContext.implicits.rddToDataFrameHolder
+val rolesRdd = sc.textFile("roles.csv")
+val types = List(("emailPrefix", StringType),
+  ("name", StringType), ("position", StringType),
+  ("location", StringType))
+val fields = types.map {
+  case (name, structType) =>
+    StructField(name, structType, nullable = false)
+}
+val schema = StructType(fields)
+val rolesRowRdd = rolesRdd.map(s => s.split(",")).
+  map(lineArray => Row(lineArray(0), lineArray(1),
+      lineArray(2), lineArray(3)))
+val rolesDf =
+   sqlContext.createDataFrame(rolesRowRdd, schema)
+```
 
 # References {.allowframebreaks}
