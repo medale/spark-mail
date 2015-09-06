@@ -9,16 +9,37 @@
 # What's Apache Spark?
 * Next generation large-scale data processing framework written in Scala
 * Replacement for Hadoop MapReduce?
-   * In-memory caching
-   * Advanced directed acyclic graph of computations - optimized
+
+    * In-memory caching
+    * Advanced directed acyclic graph of computations - optimized
+    * Rich Scala, Java, Python and R APIs - 2-5x less code than Hadoop M/R
 
 # Apache Spark Buzz
 ![Google Trends Apache Spark/Apache Hadoop August 2015](graphics/GoogleTrendsSparkHadoop-August2015.png)
 
 # Spark Ecosystem
+![Databricks Spark 1.4.1 @ecosystem_databricks_2015](graphics/SparkComponents-Databricks-2015-10-04.png)
 
-![Databricks Spark 1.4.1 @ecosystem_databricks_2015](graphics/SparkComponents-Databricks-2015-06-18.png)
+# Spark Lines of Code
+![ Spark LOC @armbrust_intro_2014](graphics/Spark-LOC-Armbrust-2014.png)
 
+# Spark Academic Papers
+* Spark: Cluster computing with working sets [@zaharia_spark_2010]
+* Resilient Distributed Datasets: A fault-tolerant abstraction for in-memory cluster computing [@zaharia_resilient_2012]
+* GraphX: A Resilient Distributed Graph System on Spark [@xin_graphx_2013]
+* Spark SQL: Relational data processing in Spark [@armbrust_spark_2015]
+* MLlib: Machine Learning in Apache Spark [@meng_mllib_2015]
+
+# Resilient Distributed Dataset (RDD)
+
+* Treat distributed, immutable data set as a collection
+* Resilient: Use RDD lineage to recompute failed partitions
+* Two forms of RDD operations:
+
+    * Transformations (applied lazily - optimized evaluation)
+    * Actions (cause transformations to be executed)
+
+* Rich functions on RDD abstraction [@zaharia_resilient_2012]
 
 # Combinator functions on Scala collections
 
@@ -291,3 +312,5 @@ implicit def rddToPairRDDFunctions[K, V](rdd: RDD[(K, V)])
 * sum
 * histogram
 ...
+
+# References {.allowframebreaks}
