@@ -7,12 +7,15 @@
 * Spark Code Examples: https://github.com/medale/spark-mail/
 
 # What's Apache Spark?
-* Next generation large-scale data processing framework written in Scala
+* Large-scale data processing framework written in Scala
 * Replacement for Hadoop MapReduce?
 
     * In-memory caching
     * Advanced directed acyclic graph of computations - optimized
-    * Rich Scala, Java, Python and R APIs - 2-5x less code than Hadoop M/R
+    * Rich high-level Scala, Java, Python and R APIs
+        * 2-5x less code than Hadoop M/R
+
+* Unified batch, SQL, streaming, graph and machine learning
 
 # Apache Spark Buzz
 ![Google Trends Apache Spark/Apache Hadoop August 2015](graphics/GoogleTrendsSparkHadoop-August2015.png)
@@ -30,10 +33,33 @@
 * Spark SQL: Relational data processing in Spark [@armbrust_spark_2015]
 * MLlib: Machine Learning in Apache Spark [@meng_mllib_2015]
 
+# Spark Clusters
+![Spark Cluster Managers @sparkwebsite_spark_2015](graphics/ClusterManager-2015-09-06.png)
+
+# Getting Spark
+
+* http://spark.apache.org/downloads.html
+    * Source
+    * Pre-built binaries for multiple versions of Hadoop
+* Standalone - run local (1 node) or slaves file
+* Hadoop YARN - install on cluster edge node, HADOOP_CONF_DIR
+* Apache Mesos
+* Hortonworks Data Platform - HDP includes Spark
+* Cloudera...
+
+# Spark in the Cloud
+* Amazon EC2 deploy script - standalone cluster/S3
+* Amazon Elastic MapReduce (EMR) - Spark install option
+* Google Compute Engine - Hadoop/Spark
+* Databricks Spark Clusters - Notebooks, Jobs, Dashboard
+
 # Resilient Distributed Dataset (RDD)
 
 * Treat distributed, immutable data set as a collection
-* Resilient: Use RDD lineage to recompute failed partitions
+    * Lineage - remember origin and transformations
+
+* Resilient: recompute failed partitions using lineage
+
 * Two forms of RDD operations:
 
     * Transformations (applied lazily - optimized evaluation)
@@ -41,9 +67,12 @@
 
 * Rich functions on RDD abstraction [@zaharia_resilient_2012]
 
-# Combinator functions on Scala collections
+# RDD from Hadoop Distributed File System (HDFS)
+![RDD partitions](graphics/SparkRdd.png)
 
-* Examples: map, flatMap, filter, reduce, fold, aggregate...
+# Scala Collection Combinators
+
+* Examples: map, flatMap, filter, reduce...
 
 # map
 
@@ -78,24 +107,12 @@ val list4 = words.map(_.length)
 ```
 
 # flatMap
-
-* ScalaDoc:
-```scala
-List[A]
-...
-def flatMap[B](f: (A) =>
-           GenTraversableOnce[B]): List[B]
-```
-
-* [GenTraversableOnce](http://www.scala-lang.org/api/2.10.4/index.html#scala.collection.GenTraversableOnce) - List, Array, Option...
-
-  * can be empty collection or None
-
-* flatMap takes each element in the GenTraversableOnce and puts it in
-order to output List[B]
-
-  * removes inner nesting - flattens
-  * output list can be smaller or empty (if intermediates were empty)
+* apply a function to every element
+* Output of applying function to each element is a "collection"
+    * Could be empty
+    * Could have 1 to many output elements
+* flatten - take each element in output "collection" and copy it to overall output
+    * remove one level of nesting (flatten)
 
 # flatMap Example
 ```scala
@@ -141,106 +158,8 @@ val withoutStopWords =
 //       lightning, rain)
 ```
 
-# reduce
-```scala
-List[A]
-...
-def reduce[A](op: (A, A) => A): A
-```
-* Creates one cumulative value using the specified associative binary operator.
-* op - A binary operator that must be associative.
-* returns - The result of applying op between all the elements if the list is nonempty.
-Result is same type as list type.
-* UnsupportedOperationException if this list is empty.
-
-# reduce Example
-```scala
-//beware of overflow if using default Int!
-val numberOfAttachments: List[Long] =
-  List(0, 3, 4, 1, 5)
-val totalAttachments =
-  numberOfAttachments.reduce((x, y) => x + y)
-//Order unspecified/non-deterministic, but one
-//execution could be:
-//0 + 3 = 3, 3 + 4 = 7,
-//7 + 1 = 8, 8 + 5 = 13
-
-val emptyList: List[Long] = Nil
-//UnsupportedOperationException
-emptyList.reduce((x, y) => x + y)
-```
-
-# fold
-```scala
-List[A]
-...
-def fold[A](z: A)(op: (A, A) => A): A
-```
-* Very similar to reduce but takes start value z (a neutral value, e.g.
-  0 for addition, 1 for multiplication, Nil for list concatenation)
-* returns start value z for empty list
-* Note: See also foldLeft/Right (return completely different type)
-```scala
- foldLeft[B](z: B)(f: (B, A) ⇒ B): B
-```
-
-# fold Example
-```scala
-val numbers = List(1, 4, 5, 7, 8, 11)
-val evenCount = numbers.fold(0) { (count, currVal) =>
-  println(s"Count: $count, value: $currVal")
-  if (currVal % 2 == 0) {
-    count + 1
-  } else {
-    count
-  }
-}
-Count: 0, value: 1
-Count: 0, value: 4
-Count: 1, value: 5
-Count: 1, value: 7
-Count: 1, value: 8
-Count: 2, value: 11
-evenCount: Int = 2
-```
-
-# aggregate
-```
-List[A]
-...
-def aggregate[B](z: B)(seqop: (B, A) => B,
-                       combop: (B, B) => B): B
-```
-* More general than fold or reduce. Can return different result type.
-* Apply seqop function to each partition of data.
-* Then apply combop function to combine all the results of seqop.
-* On a normal immutable list this is just a foldLeft with seqop (but on
-  a parallelized list both operations are called).
-
-# aggregate Example
-```scala
-val wordsAll = List("when", "shall", "we", "three",
-  "meet", "again", "in", "thunder", "lightning",
-  "or", "in", "rain")
-//Map(5 letter words ->3, 9->1, 2->4, 7->1, 4->3)
-val lengthDistro = wordsAll.aggregate(Map[Int, Int]())(
-  seqop = (distMap, currWord) =>
-  {
-    val length = currWord.length()
-    val newCount = distMap.getOrElse(length, 0) + 1
-    val newKv = (length, newCount)
-    distMap + newKv
-  },
-  combop = (distMap1, distMap2) => {
-    distMap1 ++ distMap2.map {
-      case (k, v) =>
-      (k, v + distMap1.getOrElse(k, 0))
-    }
-  })
-```
-
 # So what does this have to do with Apache Spark?
-* Resilient Distributed Dataset ([RDD](https://spark.apache.org/docs/1.3.0/api/scala/#org.apache.spark.rdd.RDD))
+* Resilient Distributed Dataset ([RDD](https://spark.apache.org/docs/1.4.1/api/scala/#org.apache.spark.rdd.RDD))
 * From API docs: "immutable, partitioned collection of elements that can be operated on in parallel"
 * map, flatMap, filter, reduce, fold, aggregate...
 
@@ -312,5 +231,18 @@ implicit def rddToPairRDDFunctions[K, V](rdd: RDD[(K, V)])
 * sum
 * histogram
 ...
+
+# Spark Web UI - Tour
+![Spark Web UI](graphics/SparkUi.png)
+
+# Learning Resources
+* https://github.com/medale/spark-mail
+* https://github.com/medale/spark-mail-docker
+* O'Reilly: Learning Spark, Advanced Analytics with Spark
+* EdX:
+    * Introduction to Big Data with Apache Spark
+    * Scalable Machine Learning
+* Coursera: 2 Scala MOOCs by Martin Odersky
+* Databricks: https://databricks.com/spark/developer-resources
 
 # References {.allowframebreaks}
