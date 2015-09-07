@@ -1,4 +1,4 @@
-% Apache Spark - The Scala Killer App?
+% Apache Spark - A Scala Killer App?
 % Markus Dale
 % 2015
 
@@ -41,11 +41,20 @@
 * http://spark.apache.org/downloads.html
     * Source
     * Pre-built binaries for multiple versions of Hadoop
-* Standalone - run local (1 node) or slaves file
-* Hadoop YARN - install on cluster edge node, HADOOP_CONF_DIR
+* Set JAVA_HOME to root of JDK installation
+* Local mode:
+    * Untar spark-xxx-.tgz
+    * cd spark-xxx/bin
+    * ./spark-shell
+
+# Spark with external cluster manager
+* Hadoop YARN - install on cluster edge node
+    * Set HADOOP_CONF_DIR (NameNode, ResourceManager)
+    * Hortonworks Data Platform - HDP includes Spark
+    * Cloudera...
+
 * Apache Mesos
-* Hortonworks Data Platform - HDP includes Spark
-* Cloudera...
+* Note: Driver must be able to communicate with executors (ports open!)
 
 # Spark in the Cloud
 * Amazon EC2 deploy script - standalone cluster/S3
@@ -55,7 +64,7 @@
 
 # Resilient Distributed Dataset (RDD)
 
-* Treat distributed, immutable data set as a collection
+* Treat distributed, **immutable** data set as a collection
     * Lineage - remember origin and transformations
 
 * Resilient: recompute failed partitions using lineage
@@ -70,16 +79,20 @@
 # RDD from Hadoop Distributed File System (HDFS)
 ![RDD partitions](graphics/SparkRdd.png)
 
-# Scala Collection Combinators
+# Background: Scala List Combinators
+* map
+* flatMap
+* filter
+* reduce...
 
-* Examples: map, flatMap, filter, reduce...
+=> Methods that take function(s) as their argument(s)
 
 # map
 
-* applies a given function to every element of a collection
-* returns collection of output of that function (one per original element)
-* input argument - same type as collection type
-* return type - can be any type
+* Method signature for List[A]
+    * map(f: (A) => B): List[B]
+* create a new List by applying function to each element of original collection
+* one input element - one output element (can be of different type)
 
 # map - Scala
 ```scala
@@ -107,11 +120,13 @@ val list4 = words.map(_.length)
 ```
 
 # flatMap
-* apply a function to every element
+* Method signature for List[A]
+    * flatMap(f: (A) => GenTraversableOnce[B]): List[B]
+* create a new List by applying function to each element
 * Output of applying function to each element is a "collection"
     * Could be empty
     * Could have 1 to many output elements
-* flatten - take each element in output "collection" and copy it to overall output
+* flatten - take each element in output "collection" and copy it to overall output List
     * remove one level of nesting (flatten)
 
 # flatMap Example
@@ -136,11 +151,8 @@ val macWords: Array[String] =
 ```
 
 # filter
-```scala
-List[A]
-...
-def filter(p: (A) => Boolean): List[A]
-```
+* Method signature for List[A]
+    * filter(p: (A) => Boolean): List[A]
 * selects all elements of this list which satisfy a predicate.
 * returns - a new list consisting of all elements of this list that satisfy the
           given predicate p. The order of the elements is preserved.
@@ -163,6 +175,39 @@ val withoutStopWords =
 * From API docs: "immutable, partitioned collection of elements that can be operated on in parallel"
 * map, flatMap, filter, reduce, fold, aggregate...
 
+# RDD Transformations vs. Actions
+* Transformations are evaluated lazily
+    * Build up lineage graph until action is invoked
+    * Optimize execution of lineage graph
+* Actions
+    * Cause any previously applied transformations to be executed at once
+
+# Some RDD Transformations
+* map, flatMap, filter
+* sample(withReplacement, fraction, [seed]): RDD[T]
+* distinct(): RDD[T]
+* union(otherDataset): RDD[T]
+* zip(other: RDD[U]): RDD[(T, U)]
+    * must have same number of partitions/elements per partition
+* coalesce(numPartitions)/repartition(numPartitions)
+
+# Some RDD Actions
+* reduce(f: (T, T) ⇒ T): T
+    * function must be commutative and associative
+* collect(): Array[T]
+    * materialize all RDD elements on driver (danger!)
+* count()
+* first()
+* take(n)
+* takeSample(withReplacement, num, [seed]): Array[T]
+
+# RDD Save Actions
+* saveAsTextFile(path)
+* saveAsSequenceFile(path)
+    * elements must implement Hadoop Writable
+* saveAsObjectFile(path)
+    * Uses Java Serialization (elements implement Java Serializable)
+
 # com.uebercomputing.analytics.basic.BasicRddFunctions
 ```scala
 //compiler can infer bodiesRdd type - reader clarity
@@ -181,34 +226,29 @@ val wordsRdd = bodyWordsRdd.filter(!stopWords.contains(_))
 println(s"There were ${wordsRdd.count()} words.")
 ```
 
-# Spark - RDD API
-* [RDD API](http://spark.apache.org/docs/1.3.0/api/scala/index.html#org.apache.spark.rdd.RDD)
-* Transforms - map, flatMap, filter, reduce, fold, aggregate...
-
-    * Lazy evaluation (not evaluated until action! Optimizations)
-
-* Actions - count, collect, first, take, saveAsTextFile...
+# Spark Scala API
+![Spark Scala API RDD](graphics/SparkRddScaladocs.png)
 
 # Spark - From RDD to PairRDDFunctions
-* If an RDD contains tuples (K,V) - can apply PairRDDFunctions
-* Uses implicit conversion of RDD to PairRDDFunctions
-* In 1.3 conversion is defined in RDD singleton object
-* In 1.2 and previous versions available by importing
-org.apache.spark.SparkContext._
+* If an RDD contains tuples (K,V)
+    * can apply PairRDDFunctions
+* Mechanism: implicit conversion from RDD to PairRDDFunctions
 
+# RDD to PairRDDFunctions Example - Ye Olde Word Count
 ```scala
-From 1.3.0 org.apache.spark.rdd.RDD (object):
-
-implicit def rddToPairRDDFunctions[K, V](rdd: RDD[(K, V)])
-(implicit kt: ClassTag[K], vt: ClassTag[V],
-  ord: Ordering[K] = null): PairRDDFunctions[K, V] = {
-  new PairRDDFunctions(rdd)
-}
-
+> val words = List("to","be","or","not","to","be")
+> val wordsRdd = sc.parallelize(words)
+> val wordCountRdd = wordsRdd.map(w => (w, 1))
+wordCountRdd: org.apache.spark.rdd.RDD[(String, Int)]
+> val wordSumRdd =
+    wordCountRdd.reduceByKey( (a,b) => a + b )
+> wordSumRdd.collect()
+res4: Array[(String, Int)] =
+    Array((not,1), (or,1), (be,2), (to,2))
 ```
 
 # PairRDDFunctions
-* keys, values - return RDD of keys/values
+* keys/values - return RDD of keys/values
 * mapValues - transform each value with a given function
 * flatMapValues - flatMap each value (0, 1 or more output per value)
 * groupByKey - RDD[(K, Iterable[V])]
@@ -231,6 +271,20 @@ implicit def rddToPairRDDFunctions[K, V](rdd: RDD[(K, V)])
 * sum
 * histogram
 ...
+
+# DoubleRDDFunctions example
+```scala
+> val heights = List(76, 54, 62, 65, 78, 48, 55, 60)
+> val heightsRdd = sc.parallelize(heights)
+org.apache.spark.rdd.RDD[Int]
+
+> heightsRdd.stats
+StatCounter = (count: 8, mean: 62.250000, stdev: 9.832980,
+  max: 78.000000, min: 48.000000)
+
+> heightsRdd.histogram(4)
+(Array(48.0, 55.5, 63.0, 70.5, 78.0),Array(3, 2, 1, 2))
+```
 
 # Spark Web UI - Tour
 ![Spark Web UI](graphics/SparkUi.png)
