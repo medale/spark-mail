@@ -16,6 +16,10 @@
         * 2-5x less code than Hadoop M/R
 
 * Unified batch, SQL, streaming, graph and machine learning
+* Interactive data exploration via spark-shell
+
+# Spark GraySort Record
+![Spark GraySort Results @xin_spark_2014](graphics/Spark-GraySort.png)
 
 # Apache Spark Buzz
 ![Google Trends Apache Spark/Apache Hadoop August 2015](graphics/GoogleTrendsSparkHadoop-August2015.png)
@@ -61,6 +65,73 @@
 * Amazon Elastic MapReduce (EMR) - Spark install option
 * Google Compute Engine - Hadoop/Spark
 * Databricks Spark Clusters - Notebooks, Jobs, Dashboard
+
+# Running Spark
+* Interactive (spark-shell)
+* Batch mode (spark-submit)
+
+# Interactive shell on Hadoop YARN
+```bash
+spark-shell --master yarn-client \
+  --num-executors 3 \
+  --driver-memory 4g \
+  --executor-memory 4g \
+  --executor-cores 4 \
+  --jars project.jar
+```
+
+spark-shell --help for all options
+
+# Inside Spark Shell - Spark Context
+```scala
+Welcome to
+   ____              __
+  / __/__  ___ _____/ /__
+ _\ \/ _ \/ _ `/ __/  '_/
+/___/ .__/\_,_/_/ /_/\_\   version 1.4.1
+   /_/
+
+Using Scala version 2.10.4 (Java HotSpot(TM)...)
+Type in expressions to have them evaluated.
+Type :help for more information.
+15/09/09 19:18:29 INFO SparkUI: Started SparkUI at http...
+Spark context available as sc.
+SQL context available as sqlContext.
+scala>
+```
+# Spark Context
+* Holds connection info to cluster, configuration
+* Read in data, for example:
+    * parallelize(seq, numPartitions)
+    * textFile(path)
+    * newAPIHadoopFile(path, inputFormatClass,
+         keyClass, valueClass, hadoopConf)
+
+# Spark Context in Scala
+```scala
+package com.spark
+
+import org.apache.spark.SparkConf
+import org.apache.spark.SparkContext
+...
+
+object MySparkJob {
+
+  def main(args: Array[String]): Unit = {
+    val sparkConf = new SparkConf().
+       setAppName("My Spark Job")
+    val sc = new SparkContext(sparkConf)
+    ...
+  }
+}
+```
+
+# Batch Mode - Spark Submit
+```bash
+spark-submit --class com.spark.MySparkJob \
+--master yarn-cluster [options] \
+<app jar> [app options]
+```
 
 # Resilient Distributed Dataset (RDD)
 
@@ -212,13 +283,14 @@ val withoutStopWords =
 ```scala
 //compiler can infer bodiesRdd type - reader clarity
 val bodiesRdd: RDD[String] =
-  analyticInput.mailRecordRdd.map { record =>
-  record.getBody
-}
+  mailRecordRdd.map { record => record.getBody }
+
 val bodyLinesRdd: RDD[String] =
   bodiesRdd.flatMap { body => body.split("\n") }
+
 val bodyWordsRdd: RDD[String] =
   bodyLinesRdd.flatMap { line => line.split("""\W+""") }
+
 val stopWords = List("in", "it", "let", "no", "or", "the")
 val wordsRdd = bodyWordsRdd.filter(!stopWords.contains(_))
 
@@ -238,10 +310,13 @@ println(s"There were ${wordsRdd.count()} words.")
 ```scala
 > val words = List("to","be","or","not","to","be")
 > val wordsRdd = sc.parallelize(words)
+
 > val wordCountRdd = wordsRdd.map(w => (w, 1))
 wordCountRdd: org.apache.spark.rdd.RDD[(String, Int)]
+
 > val wordSumRdd =
     wordCountRdd.reduceByKey( (a,b) => a + b )
+
 > wordSumRdd.collect()
 res4: Array[(String, Int)] =
     Array((not,1), (or,1), (be,2), (to,2))
@@ -286,8 +361,81 @@ StatCounter = (count: 8, mean: 62.250000, stdev: 9.832980,
 (Array(48.0, 55.5, 63.0, 70.5, 78.0),Array(3, 2, 1, 2))
 ```
 
-# Spark Web UI - Tour
-![Spark Web UI](graphics/SparkUi.png)
+# RDD Persistence
+* cache() == persist(StorageLevel.MEMORY_ONLY)
+* persist(storageLevel) - trade-off memory/CPU
+    * MEMORY_ONLY (recompute partitions that don't fit)
+    * MEMORY_ONLY_2 (also for all other options)
+    * MEMORY_ONLY_SER (much smaller memory footprint)
+    * MEMORY_AND_DISK (spill to local disk)
+    * MEMORY_AND_DISK_SER
+
+# Task Serialization
+* Serialize tasks from Driver to Executor
+    * Closure (function can reference vars outside of its declaration)
+    * vars must be objects or serializable classes
+    * Can call object methods (~ static method in Java)
+    * Can make copy of instance variables of a class
+    * Task not serializable: java.io.NotSerializableException
+
+# RDD Content Serialization
+* Move content of partition to another executor or driver
+    * e.g. shuffle, collect(), take(2)
+* Must serialize each object in RDD
+* Default: Java Serialization (slow)
+* Production: Use Kryo serialization (http://spark.apache.org/docs/latest/tuning.html#data-serialization)
+
+# Spark Web UI - Job with Cache
+![Spark Web UI - Job/DAG](graphics/SparkUi-Job.png)
+
+# Spark Web UI - Storage
+![Spark Web UI - Storage](graphics/SparkUi-Storage.png)
+
+# Spark SQL
+```scala
+import org.apache.spark.sql._
+import com.databricks.spark.avro._
+
+val recordsDf = sqlContext.avroFile("enron.avro")
+
+val uniqueFroms =
+   recordsDf.select("from").distinct.count()
+```
+
+* http://spark-packages.org/ - also MongoDB, Cassandra, HBase...
+
+# Spark Streaming
+```scala
+
+```
+
+# Spark GraphX
+```scala
+
+```
+
+# Spark MLLib
+* Classification and regression
+    * Support Vector Machines, logistic/linear regression
+    * Decision trees, random forests...
+* Clustering
+    * k-means
+    * latent Dirichlet allocation (LDA)
+* Dimensionality reduction
+    * Singular Value decomposition (SVD)
+    * Principal Component Analysis (PCA)
+* ...
+* See http://spark.apache.org/docs/latest/mllib-guide.html and
+http://spark.apache.org/docs/latest/ml-guide.html
+
+# Challenges
+* Task serialization
+* Parallelism - partitions
+    * coalese(numPartitions)
+    * repartition(numPartitions)
+* Parameter tuning (http://spark.apache.org/docs/latest/tuning.html)
+    * Broadcast (~ Hadoop Distributed Cache)
+    * Garbage Collection - Project Tungsten
 
 # Learning Resources
 * https://github.com/medale/spark-mail

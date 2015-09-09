@@ -348,7 +348,7 @@ import org.apache.avro.mapreduce.AvroKeyInputFormat
 import org.apache.hadoop.io.NullWritable
 import com.uebercomputing.mailrecord._
 import com.uebercomputing.mailrecord.Implicits.mailRecordToMailRecordOps
-import com.uebercomputing.mailparser.enronfiles.AvroMessageProcessor
+import com.uebercomputing.mailparser.enronfiles.MessageProcessor
 
 Ctrl-D
 ```
@@ -394,7 +394,7 @@ val tupleRdd: RDD[(String,String)] =
        AvroMessageProcessor.UserName)
   val folderNameOpt =
      mailRecord.getMailFieldOpt(
-       AvroMessageProcessor.FolderName)
+       MessageProcessor.FolderName)
 
   if (userNameOpt.isDefined &&
     folderNameOpt.isDefined) {

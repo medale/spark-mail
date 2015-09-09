@@ -37,7 +37,7 @@ import org.apache.avro.mapreduce.AvroKeyInputFormat
 import org.apache.hadoop.io.NullWritable
 import com.uebercomputing.mailrecord._
 import com.uebercomputing.mailrecord.Implicits.mailRecordToMailRecordOps
-import com.uebercomputing.mailparser.enronfiles.AvroMessageProcessor
+import com.uebercomputing.mailparser.enronfiles.MessageProcessor
 
 val hadoopConf = sc.hadoopConfiguration
 
@@ -56,10 +56,10 @@ val tupleRdd: RDD[(String,String)] =
  recordsRdd.flatMap { mailRecord =>
   val userNameOpt =
      mailRecord.getMailFieldOpt(
-       AvroMessageProcessor.UserName)
+       MessageProcessor.UserName)
   val folderNameOpt =
      mailRecord.getMailFieldOpt(
-       AvroMessageProcessor.FolderName)
+       MessageProcessor.FolderName)
 
   if (userNameOpt.isDefined &&
     folderNameOpt.isDefined) {
