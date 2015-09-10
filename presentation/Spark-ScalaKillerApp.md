@@ -18,7 +18,7 @@
 * Unified batch, SQL, streaming, graph and machine learning
 * Interactive data exploration via spark-shell
 
-# Spark GraySort Record
+# Spark - Fast and Efficient: GraySort Record
 ![Spark GraySort Results @xin_spark_2014](graphics/Spark-GraySort.png)
 
 # Apache Spark Buzz
@@ -41,7 +41,6 @@
 ![Spark Cluster Managers @sparkwebsite_spark_2015](graphics/ClusterManager-2015-09-06.png)
 
 # Getting Spark
-
 * http://spark.apache.org/downloads.html
     * Source
     * Pre-built binaries for multiple versions of Hadoop
@@ -52,6 +51,7 @@
     * ./spark-shell
 
 # Spark with external cluster manager
+* Spark Standalone cluster
 * Hadoop YARN - install on cluster edge node
     * Set HADOOP_CONF_DIR (NameNode, ResourceManager)
     * Hortonworks Data Platform - HDP includes Spark
@@ -99,6 +99,7 @@ Spark context available as sc.
 SQL context available as sqlContext.
 scala>
 ```
+
 # Spark Context
 * Holds connection info to cluster, configuration
 * Read in data, for example:
@@ -134,7 +135,6 @@ spark-submit --class com.spark.MySparkJob \
 ```
 
 # Resilient Distributed Dataset (RDD)
-
 * Treat distributed, **immutable** data set as a collection
     * Lineage - remember origin and transformations
 
@@ -159,7 +159,6 @@ spark-submit --class com.spark.MySparkJob \
 => Methods that take function(s) as their argument(s)
 
 # map
-
 * Method signature for List[A]
     * map(f: (A) => B): List[B]
 * create a new List by applying function to each element of original collection
@@ -194,10 +193,10 @@ val list4 = words.map(_.length)
 * Method signature for List[A]
     * flatMap(f: (A) => GenTraversableOnce[B]): List[B]
 * create a new List by applying function to each element
-* Output of applying function to each element is a "collection"
+* Output of applying function to each element is "iterable"
     * Could be empty
     * Could have 1 to many output elements
-* flatten - take each element in output "collection" and copy it to overall output List
+* flatten - take each element in output "iterable" and copy it to overall output List
     * remove one level of nesting (flatten)
 
 # flatMap Example
@@ -205,9 +204,6 @@ val list4 = words.map(_.length)
 val macbeth = """When shall we three meet again?
 |In thunder, lightning, or in rain?""".stripMargin
 val macLines = macbeth.split("\n")
-// macLines: Array[String] = Array(
-  When shall we three meet again?,
-  In thunder, lightning, or in rain?)
 
 //Non-word character split
 val macWordsNested: Array[Array[String]] =
@@ -404,15 +400,38 @@ val uniqueFroms =
 
 * http://spark-packages.org/ - also MongoDB, Cassandra, HBase...
 
-# Spark Streaming
+# Spark Streaming - DStreams
 ```scala
-
+val conf = new SparkConf().setMaster("local[2]").
+   setAppName("NetworkWordCount")
+val ssc = new StreamingContext(conf, Seconds(1))
+val lines = ssc.socketTextStream("localhost", 9999)
+val words = lines.flatMap(_.split(" "))
+...
 ```
+Example from http://spark.apache.org/docs/latest/streaming-programming-guide.html
 
 # Spark GraphX
+* Property graph
+    * directed multigraph
+    * user-defined objects attached to each vertex and edge
+* Logical representation:
 ```scala
-
+class Graph[VD, ED] {
+  val vertices: VertexRDD[VD]
+  val edges: EdgeRDD[ED]
+}
 ```
+
+# Spark GraphX Operations
+* mapVertices, mapEdges, reverse
+* subgraph (vertex/edge conditions)
+* groupEdges, joinVertices
+* collectNeighborIds
+* Graph Algorithms
+    * Page Rank
+    * Connected Components
+    * Triangle count
 
 # Spark MLLib
 * Classification and regression
