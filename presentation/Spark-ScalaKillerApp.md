@@ -12,7 +12,7 @@
 
     * In-memory caching
     * Advanced directed acyclic graph of computations - optimized
-    * Rich high-level Scala, Java, Python and R APIs
+    * Rich high-level Scala, Java, Python, R and SQL APIs
         * 2-5x less code than Hadoop M/R
 
 * Unified batch, SQL, streaming, graph and machine learning
@@ -170,8 +170,8 @@ def computeLength(w: String): Int = w.length
 
 val words = List("when", "shall", "we", "three",
   "meet", "again")
-val lengths = words.map(computeLength)
 
+val lengths = words.map(computeLength)
 > lengths  : List[Int] = List(4, 5, 2, 5, 4, 5)
 ```
 
@@ -275,11 +275,26 @@ val withoutStopWords =
 * saveAsObjectFile(path)
     * Uses Java Serialization (elements implement Java Serializable)
 
+# Reading Avro MailRecord objects
+```scala
+val hadoopConf = sc.hadoopConfiguration
+
+val mailRecordsAvroRdd =
+   sc.newAPIHadoopFile("enron.avro",
+      classOf[AvroKeyInputFormat[MailRecord]],
+      classOf[AvroKey[MailRecord]],
+      classOf[NullWritable], hadoopConf)
+
+val recordsRdd = mailRecordsAvroRdd.map {
+  case(avroKey, _) => avroKey.datum()
+}
+```
+
 # com.uebercomputing.analytics.basic.BasicRddFunctions
 ```scala
 //compiler can infer bodiesRdd type - reader clarity
 val bodiesRdd: RDD[String] =
-  mailRecordRdd.map { record => record.getBody }
+  recordsRdd.map { record => record.getBody }
 
 val bodyLinesRdd: RDD[String] =
   bodiesRdd.flatMap { body => body.split("\n") }
@@ -407,7 +422,9 @@ val conf = new SparkConf().setMaster("local[2]").
 val ssc = new StreamingContext(conf, Seconds(1))
 val lines = ssc.socketTextStream("localhost", 9999)
 val words = lines.flatMap(_.split(" "))
-...
+
+ssc.start()
+ssc.awaitTermination()
 ```
 Example from http://spark.apache.org/docs/latest/streaming-programming-guide.html
 
