@@ -4,8 +4,22 @@ jdk:
   - oraclejdk8
   - oraclejdk7
 
-before_install:
-  - pip install codecov
+install:
+  # From https://github.com/holdenk/spark-testing-base/blob/master/.travis.yml
+  # Install Python deps.
+  # The conda installation steps here are based on http://conda.pydata.org/docs/travis.html
+  - wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
+  # Useful for debugging any issues with conda
+  - conda info -a
+  - deps='pip requests nose sphinx pep8 coverage'
+  - conda create -p $HOME/py --yes $deps "python=2.7"
+  - export PATH=$HOME/py/bin:$PATH
+  - pip install --upgrade unittest2 codecov
 
 after_success:
   - codecov
