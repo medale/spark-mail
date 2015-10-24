@@ -1,13 +1,15 @@
 package com.uebercomputing.spark.sql
 
-import org.apache.spark.annotation.DeveloperApi
+import scala.reflect.runtime.universe
+
+import org.apache.spark.SparkConf
+import org.apache.spark.SparkContext
 import org.apache.spark.annotation.Experimental
-import org.apache.spark.sql.Row
+import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.functions.udf
 
 import com.uebercomputing.utils.DatePartitioner
 import com.uebercomputing.utils.PartitionByYear
-
-import org.apache.spark.sql.functions.udf
 
 /**
  *
@@ -15,7 +17,9 @@ import org.apache.spark.sql.functions.udf
 object ParquetPartitions {
 
   def main(args: Array[String]): Unit = {
-    val sqlContext = org.apache.spark.sql.test.TestSQLContext
+    val conf = new SparkConf().setMaster("local[2]").setAppName("test")
+    val sc = new SparkContext(conf)
+    val sqlContext = new SQLContext(sc)
     //assumes enron.parquet sym link points to valid file
 
     //or read.format("parquet").load("enron.parquet").option...
