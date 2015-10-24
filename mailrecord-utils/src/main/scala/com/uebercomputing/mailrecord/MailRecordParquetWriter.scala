@@ -3,11 +3,11 @@ package com.uebercomputing.mailrecord
 import java.io.Closeable
 import java.io.OutputStream
 import org.apache.avro.specific.SpecificDatumWriter
-import parquet.avro.AvroParquetWriter
+import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.hadoop.fs.Path
 import org.apache.commons.io.IOUtils
-import parquet.hadoop.metadata.CompressionCodecName
-import parquet.hadoop.ParquetWriter
+import org.apache.parquet.hadoop.metadata.CompressionCodecName
+import org.apache.parquet.hadoop.ParquetWriter
 
 class MailRecordParquetWriter extends Closeable {
 

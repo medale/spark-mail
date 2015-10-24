@@ -1,11 +1,11 @@
 package com.uebercomputing.mailrecord
 
 import java.io.Closeable
-import parquet.avro.AvroParquetReader
+import org.apache.parquet.avro.AvroParquetReader
 import org.apache.hadoop.fs.Path
-import parquet.hadoop.ParquetReader
+import org.apache.parquet.hadoop.ParquetReader
 import org.apache.commons.io.IOUtils
-import parquet.avro.AvroReadSupport
+import org.apache.parquet.avro.AvroReadSupport
 
 class MailRecordParquetReader extends Closeable {
 
