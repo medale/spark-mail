@@ -10,7 +10,7 @@ The Spark Mail project contains code for a tutorial on how to use Apache Spark t
 Tutorial on parsing Enron email to Avro and then explore the email set using Spark.
 
 # Building the project
-The Spark Mail project uses a Maven build. In order to avoid PermGen error,
+The Spark Mail project uses a Maven build. In order to avoid PermGen error (if using Java version < Java 8),
 add the following to your .bashrc/environment:
 
 ```
@@ -84,14 +84,14 @@ a file name!!!
 ## Obtaining/preparing the Enron dataset
 
 https://www.cs.cmu.edu/~./enron/ describes the Enron email dataset and provides
-a download link at https://www.cs.cmu.edu/~./enron/enron_mail_20110402.tgz
+a download link at https://www.cs.cmu.edu/~./enron/enron_mail_20150507.tgz. 
 
 This email set is a gzipped tar file of emails stored in directories. Once
 downloaded, extract via:
-    > tar xfz enron_mail_20110402.tgz   (or use tar xf as new tar autodectects compression)
+    > tar xfz enron_mail_20150507.tgz   (or use tar xf as new tar autodectects compression)
 
 This generates the following directory structure:
-* enron_mail_20110402
+* enron_mail_20150507
   * maildir
     * $userName subdirectories for each user
       * $folderName subdirectories per user
@@ -126,7 +126,15 @@ field.
 
 The [mailrecord-utils mailparser enronfiles Main class](https://github.com/medale/spark-mail/blob/master/mailrecord-utils/src/main/scala/com/uebercomputing/mailparser/enronfiles/AvroMain.scala)
 allows us to convert the directory/file-based Enron data set into one Avro files
-with all the corresponding MailRecord Avro records.
+with all the corresponding MailRecord Avro records. To run this class from the
+spark-mail root directory after doing a mvn clean install:
+
+```
+java -cp mailrecord-utils/target/mailrecord-utils-1.2.0-SNAPSHOT-shaded.jar \
+com.uebercomputing.mailparser.enronfiles.AvroMain \
+--mailDir /opt/local/datasets/enron/enron_mail_20150507/maildir \
+--avroOutput /opt/local/datasets/enron/mail-2015.avro
+```
 
 # Spark Analytics
 See spark-mail/analytics module source and test (in progress...)
