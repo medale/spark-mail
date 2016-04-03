@@ -29,6 +29,7 @@
 		<module>sql-analytics</module>
 		<module>pst-utils</module>
 		<module>streaming-analytics</module>
+		<module>parser</module>
 	</modules>
 
 	<properties>
