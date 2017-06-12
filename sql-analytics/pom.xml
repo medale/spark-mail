@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.uebercomputing</groupId>
 		<artifactId>spark-mail-parent</artifactId>
-		<version>1.2.0-SNAPSHOT</version>
+		<version>1.2.1-SNAPSHOT</version>
 	</parent>
 
 	<name>sql-analytics</name>
@@ -27,17 +27,17 @@
 		<dependency>
 			<groupId>com.databricks</groupId>
 			<artifactId>spark-avro_${scala.binary.version}</artifactId>
-			<version>1.0.0</version>
+			<version>3.2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.databricks</groupId>
 			<artifactId>spark-csv_${scala.binary.version}</artifactId>
-			<version>1.0.3</version>
+			<version>1.5.0</version>
 		</dependency>
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
-			<version>5.1.35</version>
+			<version>6.0.6</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
@@ -54,7 +54,6 @@
 		<dependency>
 			<groupId>com.jsuereth</groupId>
 			<artifactId>scala-arm_${scala.binary.version}</artifactId>
-			<version>1.4</version>
 		</dependency>
 		<dependency>
 			<groupId>com.github.scopt</groupId>
@@ -80,7 +79,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.holdenkarau</groupId>
-			<artifactId>spark-testing-base_2.10</artifactId>
+			<artifactId>spark-testing-base_${scala.binary.version}</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

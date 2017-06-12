@@ -1,11 +1,7 @@
 package com.uebercomputing.analytics.basic
 
+import com.uebercomputing.mailrecord.{ExecutionTimer, MailRecordAnalytic}
 import org.apache.log4j.Logger
-import org.apache.spark.SparkContext._
-import com.uebercomputing.mailrecord.ExecutionTimer
-import com.uebercomputing.mailrecord.Implicits.mailRecordToMailRecordOps
-import com.uebercomputing.mailrecord.MailRecordAnalytic
-import java.nio.charset.StandardCharsets
 
 /**
  * Run with two args:

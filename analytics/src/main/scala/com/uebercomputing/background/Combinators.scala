@@ -17,7 +17,7 @@ object Combinators {
 
     val macLines = macbeth.split("\n")
 
-    //Non-word character split
+    // Non-word character split
     val macWordsNested: Array[Array[String]] = macLines.map { line => line.split("""\W+""") }
 
     val macWords: Array[String] = macLines.flatMap { line => line.split("""\W+""") }
@@ -27,7 +27,7 @@ object Combinators {
     val stopWords = List("in", "it", "let", "no", "or", "the")
     val withoutStopWords = macWordsLower.filter(word => !stopWords.contains(word))
 
-    //beware of overflow if using default Int!
+    // beware of overflow if using default Int!
     val numberOfAttachments: List[Long] = List(0, 3, 4, 1, 5)
     val totalAttachments1 = numberOfAttachments.reduce((total, currVal) => {
       println(s"currValue: $currVal and total: $total")
@@ -36,7 +36,7 @@ object Combinators {
     val totalAttachments = numberOfAttachments.reduce((x, y) => x + y)
 
     val emptyList: List[Int] = Nil
-    //UnsupportedOperationException
+    // UnsupportedOperationException
     emptyList.reduce((x, y) => x + y)
 
     val numbers = List(1, 4, 5, 7, 8, 11)

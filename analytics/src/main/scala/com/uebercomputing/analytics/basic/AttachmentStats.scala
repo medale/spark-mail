@@ -1,7 +1,6 @@
 package com.uebercomputing.analytics.basic
 
 import org.apache.log4j.Logger
-import org.apache.spark.SparkContext.numericRDDToDoubleRDDFunctions
 
 import com.uebercomputing.mailrecord.ExecutionTimer
 import com.uebercomputing.mailrecord.Implicits.mailRecordToMailRecordOps

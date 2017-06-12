@@ -3,8 +3,6 @@ package com.uebercomputing.analytics.basic
 import org.apache.log4j.Logger
 import com.uebercomputing.mailrecord.MailRecordAnalytic
 import com.uebercomputing.mailrecord.ExecutionTimer
-import org.apache.spark.SparkContext.numericRDDToDoubleRDDFunctions
-import org.apache.spark.SparkContext._
 import com.uebercomputing.mailrecord.Implicits._
 import com.uebercomputing.mailrecord.AnalyticInput
 
@@ -71,7 +69,7 @@ object EmailAdxStats extends ExecutionTimer {
       (From, mailRecord.getFrom()) :: typeEmailAdxTuples
     }
 
-    //show how this is cached in UI (http://localhost:4040/storage)
+    // show how this is cached in UI (http://localhost:4040/storage)
     emailAdxPairRdd.cache()
 
     println(s"Total emails in RDD: ${analyticInput.mailRecordsRdd.count()}")

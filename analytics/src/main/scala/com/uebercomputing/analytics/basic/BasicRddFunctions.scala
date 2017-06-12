@@ -1,7 +1,6 @@
 package com.uebercomputing.analytics.basic
 
 import org.apache.log4j.Logger
-import org.apache.spark.SparkContext.numericRDDToDoubleRDDFunctions
 import com.uebercomputing.mailrecord.ExecutionTimer
 import com.uebercomputing.mailrecord.Implicits.mailRecordToMailRecordOps
 import com.uebercomputing.mailrecord.MailRecordAnalytic
@@ -29,7 +28,7 @@ object BasicRddFunctions extends ExecutionTimer {
     val additionalSparkProps = Map[String, String]()
     val analyticInput = MailRecordAnalytic.getAnalyticInput(appName, args, additionalSparkProps, LOGGER)
 
-    //compiler can infer bodiesRdd type - explicitly listed for example clarity
+    // compiler can infer bodiesRdd type - explicitly listed for example clarity
     val bodiesRdd: RDD[String] = analyticInput.mailRecordsRdd.map { record =>
       record.getBody
     }

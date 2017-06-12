@@ -14,8 +14,8 @@ object DataFrameFromRddWithKnownSchema {
     val sc = new SparkContext(sparkConf)
     val sqlContext = new org.apache.spark.sql.SQLContext(sc)
 
-    //convert RDD to DataFrame - rddToDataFrameHolder
-    import sqlContext.implicits.rddToDataFrameHolder
+    // convert RDD to DataFrame - rddToDataFrameHolder
+    import sqlContext.implicits._
 
     val rolesRdd = sc.textFile("roles.csv")
     val rolesDf = rolesRdd.map(s => s.split(",")).

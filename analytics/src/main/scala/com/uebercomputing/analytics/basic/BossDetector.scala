@@ -1,11 +1,8 @@
 package com.uebercomputing.analytics.basic
 
-import com.uebercomputing.mailrecord.MailRecordAnalytic
-import org.apache.log4j.Logger
-import scala.collection.JavaConversions._
-import org.apache.spark.SparkContext._
 import com.uebercomputing.mailrecord.Implicits._
-import com.uebercomputing.mailrecord.MailRecordOps
+import com.uebercomputing.mailrecord.{MailRecordAnalytic, MailRecordOps}
+import org.apache.log4j.Logger
 
 /**
  * Boss detector. Finds the users who have the lowest ratio of (cc) / (received).

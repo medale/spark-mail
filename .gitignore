@@ -32,3 +32,6 @@ enron.avro
 metastore_db/
 .cache-main
 .cache-tests
+
+.idea
+*.iml

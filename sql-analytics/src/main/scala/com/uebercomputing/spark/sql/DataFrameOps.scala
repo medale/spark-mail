@@ -16,15 +16,15 @@ object DataFrameOps {
     val conf = new SparkConf().setMaster("local[2]").setAppName("test")
     val sc = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
-    //assumes enron.parquet sym link points to valid file
+    // assumes enron.parquet sym link points to valid file
 
-    //or read.format("parquet").load("enron.parquet").option...
-    //[uuid: string, from: string, to: array<string>, cc: array<string>,
-    //bcc: array<string>, dateUtcEpoch: bigint, subject: string,
-    //mailFields: map<string,string>, body: string,
-    //attachments: array<struct<fileName:string,size:int,mimeType:string,data:binary>>]
+    // or read.format("parquet").load("enron.parquet").option...
+    // [uuid: string, from: string, to: array<string>, cc: array<string>,
+    // bcc: array<string>, dateUtcEpoch: bigint, subject: string,
+    // mailFields: map<string,string>, body: string,
+    // attachments: array<struct<fileName:string,size:int,mimeType:string,data:binary>>]
     val emailsDf = sqlContext.read.parquet("enron.parquet")
-    //[emailPrefix: string, Name: string, Position: string, Location: string]
+    // [emailPrefix: string, Name: string, Position: string, Location: string]
     val rolesDf = sqlContext.read.format("com.databricks.spark.csv").
       option("header", "true").load("roles.csv")
 
@@ -37,16 +37,16 @@ object DataFrameOps {
     val stripDomainUdf = udf(stripDomainFunc)
 
     val emailsWithFromPrefixDf1 = emailsDf.withColumn("fromEmailPrefix",
-      callUDF(stripDomainFunc, StringType, col("from")))
+      callUDF("stripDomainFunc", col("from")))
 
-    //if implicits._ => $ instead of emailsDf("...")
-    // SQLContext.implicits.StringToColumn(val sc: StringContext) { def $(
+    // if implicits._ => $ instead of emailsDf("...")
+    //  SQLContext.implicits.StringToColumn(val sc: StringContext) { def $(
     val emailsWithFromPrefixDf = emailsDf.withColumn("fromEmailPrefix", stripDomainUdf($"from"))
 
     val emailsWithRolesDf = emailsWithFromPrefixDf.join(rolesDf,
       emailsWithFromPrefixDf("fromEmailPrefix") === rolesDf("emailPrefix"))
 
-    //[Position: string, Location: string, count: bigint]
+    // [Position: string, Location: string, count: bigint]
     val rolesCountDf = emailsWithRolesDf.groupBy("Position", "Location").
       count().orderBy($"count".desc)
     /*
@@ -61,7 +61,7 @@ object DataFrameOps {
      * [Managing Director,Legal Department,2099], [President,Enron Online,1728]...
      */
 
-    //What was Bradley McKay's position and location?
+    // What was Bradley McKay's position and location?
     val bradInfoDf = emailsWithRolesDf.select("from", "Position", "Location").
       where($"from" startsWith ("brad.mckay"))
   }

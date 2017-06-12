@@ -1,8 +1,6 @@
 package com.uebercomputing.mailrecord
 
 import java.io.Closeable
-import java.io.OutputStream
-import org.apache.avro.specific.SpecificDatumWriter
 import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.hadoop.fs.Path
 import org.apache.commons.io.IOUtils
@@ -11,11 +9,12 @@ import org.apache.parquet.hadoop.ParquetWriter
 
 class MailRecordParquetWriter extends Closeable {
 
-  private var writer: AvroParquetWriter[MailRecord] = _
+  private var writer: ParquetWriter[MailRecord] = _
 
   def open(path: Path): Unit = {
-    writer = new AvroParquetWriter[MailRecord](path, MailRecord.getClassSchema,
-      CompressionCodecName.SNAPPY, ParquetWriter.DEFAULT_BLOCK_SIZE, ParquetWriter.DEFAULT_PAGE_SIZE)
+    writer = AvroParquetWriter.builder(path)
+      .withSchema(MailRecord.getClassSchema)
+      .withCompressionCodec(CompressionCodecName.SNAPPY).build()
   }
 
   def append(record: MailRecord): Unit = {

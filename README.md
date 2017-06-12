@@ -130,7 +130,7 @@ with all the corresponding MailRecord Avro records. To run this class from the
 spark-mail root directory after doing a mvn clean install:
 
 ```
-java -cp parser/target/parser-1.2.0-SNAPSHOT-shaded.jar \
+java -cp parser/target/parser-1.2.1-SNAPSHOT-shaded.jar \
 com.uebercomputing.mailparser.enronfiles.AvroMain \
 --mailDir /opt/local/datasets/enron/enron_mail_20150507/maildir \
 --avroOutput /opt/local/datasets/enron/mail-2015.avro
