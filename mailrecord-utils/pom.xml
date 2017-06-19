@@ -34,6 +34,10 @@
 			<artifactId>parquet-avro</artifactId>
 		</dependency>
 		<dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-client</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 		</dependency>
@@ -165,8 +169,6 @@
 							<jvmArgs>
 								<jvmArg>-Xms1024m</jvmArg>
 								<jvmArg>-Xmx1024m</jvmArg>
-								<jvmArg>-XX:PermSize=${PermGen}</jvmArg>
-								<jvmArg>-XX:MaxPermSize=${MaxPermGen}</jvmArg>
 							</jvmArgs>
 							<javacArgs>
 								<javacArg>-source</javacArg>

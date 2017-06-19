@@ -10,8 +10,8 @@ The Spark Mail project contains code for a tutorial on how to use Apache Spark t
 Tutorial on parsing Enron email to Avro and then explore the email set using Spark.
 
 # Building the project
-The Spark Mail project uses a Maven build. In order to avoid PermGen error (if using Java version < Java 8),
-add the following to your .bashrc/environment:
+The Spark Mail project uses a Maven build. Download, install and put mvn binary in your path. See [Apache Maven](http://maven.apache.org/) for
+details. In order to avoid PermGen error (if using Java version < Java 8), add the following to your .bashrc/environment:
 
 ```
 export MAVEN_OPTS="-Xmx2g -XX:MaxPermSize=512M -XX:ReservedCodeCacheSize=512m"
@@ -21,11 +21,10 @@ Compile times can be dramatically reduced by using the [Zinc Scala build server]
 Short overview and additional links at
 [this blog entry](http://uebercomputing.com/scala/2014/11/09/Incremental-Compilation-With-Zinc/).
 
-19MAR15: Exploring Spark SQL data frames and using very recently published com.databricks/spark-avro_2.10/1.0.0.
-
-See https://github.com/databricks/spark-avro. To build to local Maven repo:
-
-    sbt publishM2
+The tests use some of the generated Avro files. So to avoid build errors, build the project with skipping tests:
+```
+mvn clean install -DskipTests
+```
 
 
 # ETL (Extract Transform Load)
@@ -127,13 +126,53 @@ field.
 The [mailrecord-utils mailparser enronfiles Main class](https://github.com/medale/spark-mail/blob/master/mailrecord-utils/src/main/scala/com/uebercomputing/mailparser/enronfiles/AvroMain.scala)
 allows us to convert the directory/file-based Enron data set into one Avro files
 with all the corresponding MailRecord Avro records. To run this class from the
-spark-mail root directory after doing a mvn clean install:
+spark-mail root directory after doing a mvn clean install -DskipTests:
 
 ```
 java -cp parser/target/parser-1.2.1-SNAPSHOT-shaded.jar \
 com.uebercomputing.mailparser.enronfiles.AvroMain \
 --mailDir /opt/local/datasets/enron/enron_mail_20150507/maildir \
 --avroOutput /opt/local/datasets/enron/mail-2015.avro
+```
+
+To generate an Apache Parquet file from the emails run the following:
+
+```
+java -cp mailrecord-utils/target/mailrecord-utils-1.2.1-SNAPSHOT-shaded.jar \
+com.uebercomputing.mailparser.enronfiles.ParquetMain \
+  --mailDir /opt/rpm1/enron/enron_mail_20150507/maildir \
+  --parquetOutput /opt/rpm1/enron/enron_mail_20150507/mail.parquet
+```
+
+Using Parquet format, we can easily analyze using our local [spark-shell](http://spark.apache.org):
+
+```
+val mailDf = spark.read.parquet("/opt/rpm1/enron/enron_mail_20150507/mail.parquet")
+mailDf.printSchema
+root
+ |-- uuid: string (nullable = true)
+ |-- from: string (nullable = true)
+ |-- to: array (nullable = true)
+ |    |-- element: string (containsNull = true)
+ |-- cc: array (nullable = true)
+ |    |-- element: string (containsNull = true)
+ |-- bcc: array (nullable = true)
+ |    |-- element: string (containsNull = true)
+ |-- dateUtcEpoch: long (nullable = true)
+ |-- subject: string (nullable = true)
+ |-- mailFields: map (nullable = true)
+ |    |-- key: string
+ |    |-- value: string (valueContainsNull = true)
+ |-- body: string (nullable = true)
+ |-- attachments: array (nullable = true)
+ |    |-- element: struct (containsNull = true)
+ |    |    |-- fileName: string (nullable = true)
+ |    |    |-- size: integer (nullable = true)
+ |    |    |-- mimeType: string (nullable = true)
+ |    |    |-- data: binary (nullable = true)
+
+val doraMailsDf = mailDf.where($"from" === "dora.trevino@enron.com")
+doraMailsDf.count
 ```
 
 # Spark Analytics
