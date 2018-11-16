@@ -4,7 +4,6 @@ import com.uebercomputing.mailrecord.MailRecord
 import com.uebercomputing.mailrecord.MailRecordAvroWriter
 
 import java.io.OutputStream
-import java.util.UUID
 
 import org.apache.commons.io.IOUtils
 import org.apache.log4j.Logger
@@ -31,13 +30,11 @@ trait AvroMessageProcessor extends MessageProcessor {
    * Parses mailIn and, if filter is true, stores result as a mail record to the
    * output stream provided by calling the open method.
    *
-   * @return MailRecord as it was written to output stream (warning - this mail record will
-   * be reused for the next call to process)
+   * @return MailRecord as it was written to output stream
    */
   override def process(fileSystemMeta: FileSystemMetadata, mailIn: Source, filter: MailRecord => Boolean): MailRecord = {
     val parseMap = MessageParser(mailIn)
     val mailRecord = ParsedMessageToMailRecordConverter.convert(fileSystemMeta, parseMap)
-    val mailFields = mailRecord.getMailFields()
     recordWriter.append(mailRecord)
     recordsAppendedCount += 1
     mailRecord

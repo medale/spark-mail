@@ -1,37 +1,19 @@
+# IntelliJ
+.idea/
+*.iml
+*.iws
+build/
+
+# Spark artifacts
+spark-warehouse/
+metastore_db/
+derby.log
+*.parquet
+
+# General
 *~
 *.class
 *.log
-scalastyle-output.xml
 
 # sbt specific
-.cache
-.history
-.lib
-dist/*
 target
-lib_managed
-src_managed
-project/boot
-project/plugins/project
-
-# Scala-IDE specific
-.scala_dependencies
-.worksheet
-
-# Eclipse
-.classpath
-.project
-.settings
-
-msg.txt
-msg-spark.txt
-
-# This should be a link to the actual mail file
-enron.avro
-
-metastore_db/
-.cache-main
-.cache-tests
-
-.idea
-*.iml

@@ -11,74 +11,73 @@ import org.apache.log4j.Logger
  */
 object ParsedMessageToMailRecordConverter {
 
+  val DefaultFrom = "xunknown@unknown.com"
+  val DefaultSubject = "XUnkownSubject"
+  val DefaultDate = 0L
+
   private val logger = Logger.getLogger(ParsedMessageToMailRecordConverter.getClass)
 
-  private val mailRecordBuilder = MailRecord.newBuilder()
-
-  mailRecordBuilder.setMailFields(new java.util.HashMap[String, String])
-
   def convert(fileSystemMeta: FileSystemMetadata, map: Map[String, String]): MailRecord = {
-    val uuid = UUID.randomUUID()
-    mailRecordBuilder.setUuid(uuid.toString())
+    //MailRecord(var uuid: String, var from: String, var to: Option[Seq[String]] = None,
+    // var cc: Option[Seq[String]] = None, var bcc: Option[Seq[String]] = None,
+    // var dateUtcEpoch: Long, var subject: String,
+    // var mailFields: Option[Map[String, String]] = None,
+    // var body: String, var attachments: Option[Seq[Attachment]] = None
 
-    val fromOpt = map.get(MessageParser.From)
-    for (from <- fromOpt) {
-      mailRecordBuilder.setFrom(from)
-    }
+    val uuid = UUID.randomUUID().toString
+
+    val from = map.get(MessageParser.From).getOrElse(DefaultFrom)
+
     val toCommaSeparatedOpt = map.get(MessageParser.To)
-    for (toCommaSeparated <- toCommaSeparatedOpt) {
+    val tosOpt = toCommaSeparatedOpt.map {toCommaSeparated =>
       val tos = MessageUtils.parseCommaSeparated(toCommaSeparated)
-      mailRecordBuilder.setTo(tos)
+      tos
     }
     val ccCommaSeparatedOpt = map.get(MessageParser.Cc)
-    for (ccCommaSeparated <- ccCommaSeparatedOpt) {
+    val ccsOpt = ccCommaSeparatedOpt.map {ccCommaSeparated =>
       val ccs = MessageUtils.parseCommaSeparated(ccCommaSeparated)
-      mailRecordBuilder.setCc(ccs)
+      ccs
     }
-    val bccCommaSeparatedOpt = map.get(MessageParser.Bcc)
-    for (bccCommaSeparated <- bccCommaSeparatedOpt) {
+    val bccCommaSeparatedOpt = map.get(MessageParser.Cc)
+    val bccsOpt = bccCommaSeparatedOpt.map {bccCommaSeparated =>
       val bccs = MessageUtils.parseCommaSeparated(bccCommaSeparated)
-      mailRecordBuilder.setBcc(bccs)
+      bccs
     }
 
-    val subjectOpt = map.get(MessageParser.Subject)
-    for (subject <- subjectOpt) {
-      mailRecordBuilder.setSubject(subject)
-    }
+    val subject = map.get(MessageParser.Subject).getOrElse()
+
     val dateStrOpt = map.get(MessageParser.Date)
-    for (dateStr <- dateStrOpt) {
-      try {
-        val date = MessageUtils.parseDateAsUtcEpoch(dateStr)
-        mailRecordBuilder.setDateUtcEpoch(date)
-      } catch {
-        case e: ParseException => {
-          val errMsg = s"Invalid date $dateStr in $fileSystemMeta - using default epoch"
-          logger.warn(errMsg)
-          val date = 0L
-          mailRecordBuilder.setDateUtcEpoch(date)
+    val dateUtcEpoch = dateStrOpt match {
+      case Some(dateStr) => {
+        val dateTry = MessageUtils.parseDateAsUtcEpochTry(dateStr)
+        dateTry match {
+           case Success(date) => date
+           case Failure(ex) => {
+             val errMsg = s"Invalid date $dateStr in $fileSystemMeta - using default epoch"
+             logger.warn(errMsg)
+             DefaultDate
+           }
         }
       }
+      case None => DefaultDate
     }
+
     val bodyOpt = map.get(MessageParser.Body)
-    for (body <- bodyOpt) {
-      mailRecordBuilder.setBody(body)
-    }
 
     //add remaining fields that were parsed but don't
     //have an explicit field in the mail record
-    val mailFields = mailRecordBuilder.getMailFields
-    mailFields.clear()
+    var mailFields = Map[String,String]()
     for ((key, value) <- map) {
       if (!MessageProcessor.MailRecordFields.contains(key)) {
-        mailFields.put(key, value)
+        mailFields = mailFields + (key -> value)
       }
     }
 
-    mailFields.put(MessageProcessor.UserName, fileSystemMeta.userName)
-    mailFields.put(MessageProcessor.FolderName, fileSystemMeta.folderName)
-    mailFields.put(MessageProcessor.FileName, fileSystemMeta.fileName)
+    mailFields = mailFields + (MessageProcessor.UserName -> fileSystemMeta.userName)
+    mailFields = mailFields + (MessageProcessor.FolderName -> fileSystemMeta.folderName)
+    mailFields = mailFields + (MessageProcessor.FileName -> fileSystemMeta.fileName)
 
-    mailRecordBuilder.build()
+    MailRecord(uuid, from, tosOpt, ccsOpt, bccsOpt, dateUtcEpoch, subjectOpt)
   }
 
 }

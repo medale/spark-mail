@@ -1,27 +1,29 @@
 package com.uebercomputing.mailparser.enronfiles
 
 import org.joda.time.format.DateTimeFormat
-import org.joda.time.format.DateTimeFormatter
-import scala.collection.JavaConverters._
+
 import scala.util.control.NonFatal
-import org.apache.log4j.Logger
 import com.google.common.hash.Hashing
 import com.google.common.base.Charsets
+
+import scala.util.Failure
+import scala.util.Success
+import scala.util.Try
 
 object MessageUtils {
 
   private val DateFormatter = DateTimeFormat.forPattern("EEE, dd MMM yyyy HH:mm:ss Z (z)").withZoneUTC()
 
-  def parseDateAsUtcEpoch(dateStr: String): Long = {
+  def parseDateAsUtcEpochTry(dateStr: String): Try[Long] = {
     try {
-      DateFormatter.parseMillis(dateStr)
+      Success(DateFormatter.parseMillis(dateStr))
     } catch {
-      case NonFatal(e) => throw new ParseException(s"Bad date: $dateStr", e)
+      case NonFatal(e) => Failure(new ParseException(s"Bad date: $dateStr", e))
     }
   }
 
-  def parseCommaSeparated(commaSeparated: String): java.util.List[String] = {
-    commaSeparated.split(",").toList.asJava
+  def parseCommaSeparated(commaSeparated: String): List[String] = {
+    commaSeparated.split(",").toList
   }
 
   def getMd5Hash(message: String): String = {
