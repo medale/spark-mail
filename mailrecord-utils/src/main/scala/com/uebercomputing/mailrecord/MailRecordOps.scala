@@ -6,39 +6,38 @@ import org.joda.time.DateTimeZone
 
 case class MailRecordOps(mailRecord: MailRecord) {
 
-  def getAttachmentsOpt(): Option[List[Attachment]] = {
-    val attachments = mailRecord.getAttachments
-    getAsScalaListOption(attachments)
+  def getAttachmentsOpt(): Option[Seq[Attachment]] = {
+    val attachments = mailRecord.attachments
+    attachments
   }
 
-  def getToOpt(): Option[List[String]] = {
-    val to = mailRecord.getTo
-    getAsScalaListOption(to)
+  def getToOpt(): Option[Seq[String]] = {
+    val to = mailRecord.to
+    to
   }
 
-  def getCcOpt(): Option[List[String]] = {
-    val cc = mailRecord.getCc
-    getAsScalaListOption(cc)
+  def getCcOpt(): Option[Seq[String]] = {
+    val cc = mailRecord.cc
+    cc
   }
 
-  def getBccOpt(): Option[List[String]] = {
-    val bcc = mailRecord.getBcc
-    getAsScalaListOption(bcc)
+  def getBccOpt(): Option[Seq[String]] = {
+    val bcc = mailRecord.bcc
+    bcc
   }
 
   def getMailFieldsAsScala(): Map[String, String] = {
-    val mailFields = mailRecord.getMailFields
-    val mutableMap = mailFields.asScala
-    mutableMap.toMap
+    val mailFields = mailRecord.mailFields
+    mailFields.get
   }
 
   def getMailFieldOpt(key: String): Option[String] = {
-    val mailFields = mailRecord.getMailFields
-    Option(mailFields.get(key))
+    val mailFields = mailRecord.mailFields.get
+    mailFields.get(key)
   }
 
   def getDateUtc(): DateTime = {
-    val dateUtcEpoch = mailRecord.getDateUtcEpoch
+    val dateUtcEpoch = mailRecord.dateUtcEpoch
     new DateTime(dateUtcEpoch, DateTimeZone.UTC)
   }
 

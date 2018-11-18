@@ -2,7 +2,6 @@ package com.uebercomputing.mailrecord
 
 import org.joda.time.DateTime
 import org.apache.log4j.Logger
-import org.joda.time.Duration
 import com.uebercomputing.time.DateUtils
 
 trait ExecutionTimer {

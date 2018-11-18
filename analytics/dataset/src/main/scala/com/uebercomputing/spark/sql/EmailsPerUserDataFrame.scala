@@ -1,9 +1,8 @@
 package com.uebercomputing.spark.sql
 
-import org.apache.spark.SparkConf
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.udf
+
 import com.databricks.spark.avro._
 
 /**
@@ -11,17 +10,19 @@ import com.databricks.spark.avro._
 object EmailsPerUserDataFrame {
 
   def main(args: Array[String]): Unit = {
-    val conf = new SparkConf().setMaster("local[2]").setAppName("test")
-    val sc = new SparkContext(conf)
-    val sqlContext = new SQLContext(sc)
+    val spark = SparkSession.builder().
+      appName("test").
+      master("local[2]").
+      getOrCreate()
+
     // load file via Databricks' spark-avro library
-    val recordsDf = sqlContext.read.avro("enron.avro")
+    val recordsDf = spark.read.avro("enron.avro")
 
     val getUserUdf = udf((mailFields: Map[String, String]) => mailFields("UserName"))
 
     // if implicits._ => $ instead of recordsDf("...")
-    //  SQLContext.implicits.StringToColumn(val sc: StringContext) { def $(
-    import sqlContext.implicits._
+    //  spark.implicits.StringToColumn(val sc: StringContext) { def $(
+    import spark.implicits._
     val recordsWithUserDf = recordsDf.withColumn("user", getUserUdf($"mailFields"))
     //  groupBy - GroupedData.count - adds "count" column to resulting DF
     //  DF has user,count

@@ -16,7 +16,9 @@ object Dependencies {
      ("org.apache.parquet" % "parquet-avro" % parquetVersion),
      ("com.twitter" %% "chill-avro" % "0.9.3"),
      ("com.jsuereth" %% "scala-arm" % "2.0"),
-     ("com.github.scopt" %% "scopt" % "3.7.0")
+     ("com.github.scopt" %% "scopt" % "3.7.0"),
+     ("joda-time" % "joda-time" % "2.10.1"),
+     ("org.joda" % "joda-convert" % "2.1.2")
   )
 
   val sparkDependenciesBase = Seq(
@@ -27,7 +29,8 @@ object Dependencies {
     ("org.apache.spark" %% "spark-hive" % sparkVersion)
       .exclude("org.scalatest", "scalatest_2.11"),
     ("org.apache.spark" %% "spark-graphx" % sparkVersion)
-      .exclude("org.scalatest", "scalatest_2.11")
+      .exclude("org.scalatest", "scalatest_2.11"),
+    ("com.databricks" %% "spark-avro" % "4.0.0")
   )
 
   val sparkDependencies = sparkDependenciesBase.map(_ % "provided")

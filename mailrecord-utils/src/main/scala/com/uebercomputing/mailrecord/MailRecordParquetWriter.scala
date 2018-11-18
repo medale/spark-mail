@@ -13,7 +13,7 @@ class MailRecordParquetWriter extends Closeable {
 
   def open(path: Path): Unit = {
     writer = AvroParquetWriter.builder(path)
-      .withSchema(MailRecord.getClassSchema)
+      .withSchema(MailRecord.SCHEMA$)
       .withCompressionCodec(CompressionCodecName.SNAPPY).build()
   }
 

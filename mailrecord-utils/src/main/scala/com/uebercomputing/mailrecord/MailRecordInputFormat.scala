@@ -3,21 +3,15 @@ package com.uebercomputing.mailrecord
 import org.apache.avro.Schema
 import org.apache.avro.mapred.AvroKey
 import org.apache.avro.mapreduce.AvroRecordReaderBase
-import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce.InputSplit
-import org.apache.hadoop.mapreduce.Job
 import org.apache.hadoop.mapreduce.RecordReader
 import org.apache.hadoop.mapreduce.TaskAttemptContext
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.mapreduce.lib.input.FileSplit
 import org.apache.log4j.Logger
-import org.apache.hadoop.io.NullWritable
-import org.apache.avro.mapreduce.AvroKeyInputFormat
-import org.apache.avro.mapreduce.AvroKeyRecordReader
-import org.apache.hadoop.conf.Configuration
 
 object MailRecordInputFormat {
-  val MailRecordReaderSchema = MailRecord.getClassSchema()
+  val MailRecordReaderSchema = MailRecord.SCHEMA$
 }
 
 class MailRecordInputFormat extends FileInputFormat[AvroKey[MailRecord], FileSplit] {

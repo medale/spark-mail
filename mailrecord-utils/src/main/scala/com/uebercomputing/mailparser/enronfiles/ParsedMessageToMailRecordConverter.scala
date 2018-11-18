@@ -2,7 +2,11 @@ package com.uebercomputing.mailparser.enronfiles
 
 import com.uebercomputing.mailrecord.MailRecord
 import java.util.UUID
+
 import org.apache.log4j.Logger
+
+import scala.util.Failure
+import scala.util.Success
 
 /**
  * Takes file system metadata (user, folder name, file name)
@@ -11,9 +15,10 @@ import org.apache.log4j.Logger
  */
 object ParsedMessageToMailRecordConverter {
 
-  val DefaultFrom = "xunknown@unknown.com"
-  val DefaultSubject = "XUnkownSubject"
+  val DefaultFrom = "XUnknownFrom@unknown.com"
+  val DefaultSubject = "XUnknownSubject"
   val DefaultDate = 0L
+  val DefaultBody = "XUnknownBody"
 
   private val logger = Logger.getLogger(ParsedMessageToMailRecordConverter.getClass)
 
@@ -44,7 +49,7 @@ object ParsedMessageToMailRecordConverter {
       bccs
     }
 
-    val subject = map.get(MessageParser.Subject).getOrElse()
+    val subject = map.get(MessageParser.Subject).getOrElse(DefaultSubject)
 
     val dateStrOpt = map.get(MessageParser.Date)
     val dateUtcEpoch = dateStrOpt match {
@@ -53,7 +58,7 @@ object ParsedMessageToMailRecordConverter {
         dateTry match {
            case Success(date) => date
            case Failure(ex) => {
-             val errMsg = s"Invalid date $dateStr in $fileSystemMeta - using default epoch"
+             val errMsg = s"Invalid date $dateStr in $fileSystemMeta - using default epoch (due to ${ex})"
              logger.warn(errMsg)
              DefaultDate
            }
@@ -62,7 +67,7 @@ object ParsedMessageToMailRecordConverter {
       case None => DefaultDate
     }
 
-    val bodyOpt = map.get(MessageParser.Body)
+    val body = map.get(MessageParser.Body).getOrElse(DefaultBody)
 
     //add remaining fields that were parsed but don't
     //have an explicit field in the mail record
@@ -77,7 +82,9 @@ object ParsedMessageToMailRecordConverter {
     mailFields = mailFields + (MessageProcessor.FolderName -> fileSystemMeta.folderName)
     mailFields = mailFields + (MessageProcessor.FileName -> fileSystemMeta.fileName)
 
-    MailRecord(uuid, from, tosOpt, ccsOpt, bccsOpt, dateUtcEpoch, subjectOpt)
+    val mailRecord = MailRecord(uuid, from, tosOpt, ccsOpt, bccsOpt,
+      dateUtcEpoch, subject, Some(mailFields), body)
+    mailRecord
   }
 
 }

@@ -1,16 +1,12 @@
 package com.uebercomputing.mailrecord
 
-import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
+import org.apache.avro.mapred.AvroKey
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.mapreduce.lib.input.FileSplit
 import org.apache.log4j.Logger
-import org.apache.hadoop.conf.Configuration
-import org.apache.avro.mapred.AvroKey
-import org.apache.hadoop.mapreduce.Job
-import org.apache.hadoop.fs.Path
-import org.apache.hadoop.io.NullWritable
-import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
-import org.apache.avro.mapreduce.AvroJob
+import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
 
 case class AnalyticInput(val sc: SparkContext, val mailRecordsRdd: RDD[MailRecord], hadoopConfig: Configuration, config: Config) {}
 
@@ -54,8 +50,7 @@ object MailRecordAnalytic {
     val mailRecordsRdd = mailRecordsAvroRdd.map {
       case (mailRecordAvroKey, fileSplit) =>
         val mailRecord = mailRecordAvroKey.datum()
-        //make a copy - MailRecord gets reused
-        MailRecord.newBuilder(mailRecord).build()
+        mailRecord
     }
     mailRecordsRdd
   }

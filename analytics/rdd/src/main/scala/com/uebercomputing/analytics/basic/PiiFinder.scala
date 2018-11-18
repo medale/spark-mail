@@ -27,8 +27,8 @@ object PiiFinder extends ExecutionTimer {
     val additionalSparkProps = Map[String, String]()
     val analyticInput = MailRecordAnalytic.getAnalyticInput(appName, args, additionalSparkProps, LOGGER)
     val uuidBodyPairRdd = analyticInput.mailRecordsRdd.map { mailRecord =>
-      val uuid = mailRecord.getUuid()
-      val body = mailRecord.getBody()
+      val uuid = mailRecord.uuid
+      val body = mailRecord.body
       (uuid, body)
     }.coalesce(20)
     val piiRdd = uuidBodyPairRdd.filter { tuple =>

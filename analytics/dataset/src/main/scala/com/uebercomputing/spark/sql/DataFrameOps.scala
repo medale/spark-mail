@@ -2,9 +2,6 @@ package com.uebercomputing.spark.sql
 
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.types.StringType
-import org.apache.spark.SparkContext
-import org.apache.spark.SparkConf
 
 /**
  * http://spark-packages.org/package/databricks/spark-csv
@@ -13,9 +10,11 @@ import org.apache.spark.SparkConf
 object DataFrameOps {
 
   def main(args: Array[String]): Unit = {
-    val conf = new SparkConf().setMaster("local[2]").setAppName("test")
-    val sc = new SparkContext(conf)
-    val sqlContext = new SQLContext(sc)
+    val spark = SparkSession.builder().
+      appName("test").
+      master("local[2]").
+      getOrCreate()
+
     // assumes enron.parquet sym link points to valid file
 
     // or read.format("parquet").load("enron.parquet").option...
@@ -23,12 +22,12 @@ object DataFrameOps {
     // bcc: array<string>, dateUtcEpoch: bigint, subject: string,
     // mailFields: map<string,string>, body: string,
     // attachments: array<struct<fileName:string,size:int,mimeType:string,data:binary>>]
-    val emailsDf = sqlContext.read.parquet("enron.parquet")
+    val emailsDf = spark.read.parquet("enron.parquet")
     // [emailPrefix: string, Name: string, Position: string, Location: string]
-    val rolesDf = sqlContext.read.format("com.databricks.spark.csv").
+    val rolesDf = spark.read.format("com.databricks.spark.csv").
       option("header", "true").load("roles.csv")
 
-    import sqlContext.implicits._
+    import spark.implicits._
 
     val stripDomainFunc = (emailAdx: String) => {
       val prefixAndDomain = emailAdx.split("@")

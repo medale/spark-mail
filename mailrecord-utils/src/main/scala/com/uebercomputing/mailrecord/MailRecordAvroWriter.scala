@@ -26,7 +26,7 @@ class MailRecordAvroWriter extends Closeable {
     val datumWriter = new SpecificDatumWriter[MailRecord](classOf[MailRecord])
     mailRecordWriter = new DataFileWriter[MailRecord](datumWriter)
     mailRecordWriter.setCodec(CodecFactory.snappyCodec())
-    mailRecordWriter.create(MailRecord.getClassSchema(), out)
+    mailRecordWriter.create(MailRecord.SCHEMA$, out)
   }
 
   def append(record: MailRecord): Unit = {

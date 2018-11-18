@@ -97,7 +97,7 @@ lazy val mailrecordUtils = (project in file("mailrecord-utils"))
 lazy val analyticsBaseDir = "analytics"
 
 lazy val datasetAnalytics = (project in file(s"${analyticsBaseDir}/dataset"))
-  .dependsOn(mailrecord)
+  .dependsOn(mailrecordUtils)
   .configs(IntegrationTest)
   .settings(Defaults.itSettings: _*)
   .settings(combinedSettings: _*)
@@ -110,7 +110,7 @@ lazy val datasetAnalytics = (project in file(s"${analyticsBaseDir}/dataset"))
   )
 
 lazy val rddAnalytics = (project in file(s"${analyticsBaseDir}/rdd"))
-.dependsOn(mailrecord)
+.dependsOn(mailrecordUtils)
 .configs(IntegrationTest)
 .settings(Defaults.itSettings: _*)
 .settings(combinedSettings: _*)

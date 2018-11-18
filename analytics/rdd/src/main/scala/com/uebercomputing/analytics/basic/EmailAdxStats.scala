@@ -66,7 +66,7 @@ object EmailAdxStats extends ExecutionTimer {
           val (adxType, adx) = typeAdxTuple
           getAdxTuples(adxType, adx)
       }
-      (From, mailRecord.getFrom()) :: typeEmailAdxTuples
+      (From, mailRecord.from) :: typeEmailAdxTuples
     }
 
     // show how this is cached in UI (http://localhost:4040/storage)
@@ -90,7 +90,7 @@ object EmailAdxStats extends ExecutionTimer {
     logTotalTime(prefixMsg, LOGGER)
   }
 
-  def getAdxTuples(adxType: String, adx: List[String]): List[(String, String)] = {
+  def getAdxTuples(adxType: String, adx: Seq[String]): Seq[(String, String)] = {
     adx.map { addr =>
       (adxType, addr)
     }

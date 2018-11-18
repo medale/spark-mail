@@ -2,10 +2,7 @@ package com.uebercomputing.spark.sql
 
 import java.util.Properties
 
-import org.apache.spark.SparkConf
-import org.apache.spark.SparkContext
-import org.apache.spark.annotation.Experimental
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.SparkSession
 
 /**
  * sudo apt-get install mysql-server
@@ -18,11 +15,12 @@ import org.apache.spark.sql.SQLContext
 object MySqlJdbcDataFrame {
 
   def main(args: Array[String]): Unit = {
-    val conf = new SparkConf().setMaster("local[2]").setAppName("test")
-    val sc = new SparkContext(conf)
-    val sqlContext = new SQLContext(sc)
+    val spark = SparkSession.builder().
+      appName("test").
+      master("local[2]").
+      getOrCreate()
 
-    val rolesDf = sqlContext.read.format("com.databricks.spark.csv").
+    val rolesDf = spark.read.format("com.databricks.spark.csv").
       option("header", "true").load("roles.csv")
 
     //http://spark.apache.org/docs/latest/sql-programming-guide.html

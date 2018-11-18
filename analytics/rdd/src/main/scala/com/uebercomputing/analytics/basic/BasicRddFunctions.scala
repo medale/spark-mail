@@ -30,7 +30,7 @@ object BasicRddFunctions extends ExecutionTimer {
 
     // compiler can infer bodiesRdd type - explicitly listed for example clarity
     val bodiesRdd: RDD[String] = analyticInput.mailRecordsRdd.map { record =>
-      record.getBody
+      record.body
     }
     val bodyLinesRdd: RDD[String] = bodiesRdd.flatMap { body => body.split("\n") }
     val bodyWordsRdd: RDD[String] = bodyLinesRdd.flatMap { line => line.split("""\W+""") }

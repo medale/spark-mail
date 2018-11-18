@@ -1,22 +1,21 @@
 package com.uebercomputing.spark.sql
 
-import org.apache.spark.SparkConf
-import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD.numericRDDToDoubleRDDFunctions
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.SparkSession
 
 /**
  */
 object DataFrameToRdd {
 
   def main(args: Array[String]): Unit = {
-    val conf = new SparkConf().setMaster("local[2]").setAppName("test")
-    val sc = new SparkContext(conf)
-    val sqlContext = new SQLContext(sc)
-    val emailsDf = sqlContext.read.parquet("/opt/rpm1/enron/parquet/out")
+    val spark = SparkSession.builder().
+      appName("test").
+      master("local[2]").
+      getOrCreate()
+    val emailsDf = spark.read.parquet("/opt/rpm1/enron/parquet/out")
     val y2kDf = emailsDf.where(emailsDf("year") === 2000)
     // RDD[org.apache.spark.sql.Row], also .rdd, flatMap, toJSON...
-    import sqlContext.implicits._
+    import spark.implicits._
     val mailFieldSizesY2kRdd = y2kDf.map(row => {
       val mailFields = row.getAs[Map[String, String]]("mailFields")
       mailFields.size
