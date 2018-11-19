@@ -5,21 +5,21 @@ name := "spark-mail"
 
 //http://docs.oracle.com/javase/8/docs/technotes/tools/windows/javac.html
 //-Xlint enable all recommended warnings
-javacOptions in ThisBuild ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint", "-encoding", "UTF-8")
+ThisBuild / javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint", "-encoding", "UTF-8")
 //https://github.com/ThoughtWorksInc/sbt-best-practice/blob/master/scalac-options/src/main/scala/com/thoughtworks/sbtBestPractice/scalacOptions/ScalacWarnings.scala
 //scalac -help
 //-unchecked Enable detailed unchecked (erasure) warnings
 //-deprecation Emit warning and location for usages of deprecated APIs.
 //-feature Emit warning and location for usages of features that should be imported explicitly. (e.g. postfix)
-scalacOptions in ThisBuild := Seq("-target:jvm-1.8", "-unchecked", "-deprecation", "-feature")
+ThisBuild / scalacOptions := Seq("-target:jvm-1.8", "-unchecked", "-deprecation", "-feature")
 
 //the following three settings according to https://github.com/holdenk/spark-testing-base
-fork in ThisBuild in IntegrationTest := true
-parallelExecution in ThisBuild in IntegrationTest := false
+ThisBuild / IntegrationTest / fork := true
+ThisBuild / IntegrationTest / parallelExecution := false
 //for forked JVMs
-javaOptions in ThisBuild in IntegrationTest ++= Seq("-Xms512M", "-Xmx2048M", "-XX:MaxPermSize=2048M", "-XX:+CMSClassUnloadingEnabled")
+ThisBuild / IntegrationTest / javaOptions ++= Seq("-Xms512M", "-Xmx2048M", "-XX:MaxPermSize=2048M", "-XX:+CMSClassUnloadingEnabled")
 
-initialize := {
+ThisBuild / initialize := {
   val _ = initialize.value
   if (sys.props("java.specification.version") != "1.8") {
     sys.error("Java 8 is required for this project.")
@@ -27,10 +27,12 @@ initialize := {
 }
 
 // match Apache Spark Scala (see Spark pom.xml)
-scalaVersion in ThisBuild := "2.11.8"
+ThisBuild / scalaVersion := "2.11.8"
 
 //for scaladoc to link to external libraries (see https://www.scala-sbt.org/1.x/docs/Howto-Scaladoc.html)
-autoAPIMappings in ThisBuild := true
+ThisBuild / autoAPIMappings := true
+
+ThisBuild / resolvers += Resolver.mavenLocal
 
 //run sbt-assembly via: sbt assembly to build fat jar
 lazy val assemblyPluginSettings = Seq(
@@ -74,16 +76,7 @@ lazy val combinedSettings = miscSettings ++ assemblyPluginSettings
 // Project/module definitions                                             //
 ////////////////////////////////////////////////////////////////////////////
 
-//see https://github.com/sbt/sbt-avro for generating String
-lazy val mailrecord = project
-  .settings(combinedSettings: _*)
-  .settings(
-    libraryDependencies :=
-      commonDependencies
-  )
-
 lazy val mailrecordUtils = (project in file("mailrecord-utils"))
-  .dependsOn(mailrecord)
   .configs(IntegrationTest)
   .settings(Defaults.itSettings: _*)
   .settings(combinedSettings: _*)
@@ -125,7 +118,7 @@ lazy val rddAnalytics = (project in file(s"${analyticsBaseDir}/rdd"))
 //root just needs to aggregate all projects
 //when we use any sbt command it gets run for all subprojects also
 lazy val root = (project in file("."))
-  .aggregate(mailrecord, mailrecordUtils, datasetAnalytics, rddAnalytics)
+  .aggregate(mailrecordUtils, datasetAnalytics, rddAnalytics)
   .configs(IntegrationTest)
   .settings(Defaults.itSettings: _*)
   .settings(publish := {})

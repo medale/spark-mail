@@ -11,21 +11,38 @@ import resource.managed
 import com.uebercomputing.mailrecord.MailRecord
 
 /**
- * Invoke:
- * --mailDir /opt/rpm1/enron/enron_mail_20110402/maildir
- * --avroOutput /opt/rpm1/enron/enron_mail_20110402/mail.avro
- *
- * Create test avro file:
- * --mailDir src/test/resources/enron/maildir
- * --avroOutput enron-small.avro
- * --overwrite true
- *
- * Create small avro file by restricting users:
- * --mailDir /opt/rpm1/enron/enron_mail_20110402/maildir
- * --avroOutput /opt/rpm1/enron/enron-small.avro
- * --users allen-p,arnold-j,arora-h,beck-s,benson-r,blair-l,brawner-s,buy-r,campbell-l,carson-m,cash-m,dasovich-j,davis-d,dean-c,delainey-d,derrick-j,dickson-s,gay-r,geaccone-t,germany-c,griffith-j,grigsby-m,guzman-m,haedicke-m,hain-m,harris-s,hayslett-r,heard-m,hendrickson-s,hernandez-j,hodge-j,holst-k,horton-s,hyatt-k,kaminski-v,kean-s,keavey-p,keiser-k,king-j,lay-k
- * --overwrite true
- */
+  * Invoke command line:
+  * --mailDir ${HOME}/datasets/enron/raw/maildir
+  * --avroOutput ${HOME}/datasets/enron/mail.avro
+  *
+  * Create test avro file:
+  * --mailDir src/test/resources/enron/maildir
+  * --avroOutput enron-small.avro
+  * --overwrite true
+  *
+  * Create small avro file by restricting users:
+  * --mailDir /opt/rpm1/enron/enron_mail_20110402/maildir
+  * --avroOutput /opt/rpm1/enron/enron-small.avro
+  * --users allen-p,arnold-j,arora-h,beck-s,benson-r,blair-l,brawner-s,buy-r,campbell-l,carson-m,cash-m,dasovich-j,davis-d,dean-c,delainey-d,derrick-j,dickson-s,gay-r,geaccone-t,germany-c,griffith-j,grigsby-m,guzman-m,haedicke-m,hain-m,harris-s,hayslett-r,heard-m,hendrickson-s,hernandez-j,hodge-j,holst-k,horton-s,hyatt-k,kaminski-v,kean-s,keavey-p,keiser-k,king-j,lay-k
+  * --overwrite true
+  *
+  * Invoke from sbt shell:
+  *
+  * sbt (Note the double-quotes around arguments!)
+  * > mailrecordUtils/run "--mailDir" "/home/medale/datasets/enron/raw/maildir" "--avroOutput" "/home/medale/datasets/enron/mail.avro"
+  * > (choose number of AvroMain class - 1 in my case)
+  *
+  * Invoke from sbt console:
+  *
+  * sbt
+  * > mailrecordUtils/console
+  * import com.uebercomputing.mailparser.enronfiles.AvroMain
+  * val home = scala.sys.props("user.home")
+  * val mailDir = s"${home}/datasets/enron/raw/maildir"
+  * val avroOutput = s"${home}/datasets/enron/mail.avro"
+  * AvroMain.main(Array("--mailDir",mailDir,"--avroOutput",avroOutput))
+  *
+  */
 object AvroMain {
 
   val MailDirArg = "--mailDir"
@@ -85,23 +102,23 @@ object AvroMain {
 
       head("scopt", "3.x")
 
-      opt[String]("mailDir") optional () action { (mailDirArg, config) =>
+      opt[String]("mailDir") optional() action { (mailDirArg, config) =>
         config.copy(mailDir = Paths.get(mailDirArg))
       } validate { x =>
         val path = Paths.get(x)
         if (Files.exists(path) && Files.isReadable(path) && Files.isDirectory(path)) success
-        else failure("Option --mailDir must be readable directory")
+        else failure(s"Option --mailDir must be readable directory. Was ${x}.")
       } text ("mailDir is String with relative or absolute location of mail dir.")
 
-      opt[String]("users") optional () action { (x, config) =>
+      opt[String]("users") optional() action { (x, config) =>
         config.copy(users = x.split(",").toList)
       } text ("users is an optional argument as comma-separated list of users.")
 
-      opt[String]("avroOutput") optional () action { (x, config) =>
+      opt[String]("avroOutput") optional() action { (x, config) =>
         config.copy(avroOutput = new File(x))
       } text ("avroOutput is String with relative or absolute location of new avro output file.")
 
-      opt[Boolean]("overwrite") optional () action { (x, config) =>
+      opt[Boolean]("overwrite") optional() action { (x, config) =>
         config.copy(overwrite = x)
       } text ("explicit --overwrite true is needed to overwrite existing avro file.")
 

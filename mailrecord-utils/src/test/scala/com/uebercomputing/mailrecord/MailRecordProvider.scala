@@ -1,26 +1,29 @@
 package com.uebercomputing.mailrecord
 
-import java.util.HashMap
-import scala.collection.JavaConverters._
+import java.util.UUID
+
+import com.uebercomputing.mailparser.enronfiles.ParsedMessageToMailRecordConverter
 
 trait MailRecordProvider {
+
+  val DefaultUuid = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa").toString
+  val DefaultTo = Some(List(s"${DefaultUuid}@to.com"))
 
   def getMailRecord(uuid: String): MailRecord = {
     val mailRecord = getMailRecord()
     mailRecord.setUuid(uuid)
-    mailRecord.setSubject(s"Subject: ${uuid}")
-    mailRecord.setTo(List(s"${uuid}@to.com").asJava)
-    mailRecord.setFrom(s"${uuid}@from.com")
-    mailRecord.setDateUtcEpoch(42)
-    mailRecord.setBody(uuid)
     mailRecord
   }
 
   def getMailRecord(): MailRecord = {
-    val mailFields = new HashMap[String, String]()
-    mailFields.put("DescriptorNodeId", "1234")
-    val mailRecord = new MailRecord()
-    mailRecord.setMailFields(mailFields)
+    val mailFields = Map[String, String]("DescriptorNodeId" -> "1234")
+    val mailRecord = MailRecordOps(uuid = DefaultUuid,
+      subject = ParsedMessageToMailRecordConverter.DefaultSubject,
+      from = ParsedMessageToMailRecordConverter.DefaultFrom,
+      tosOpt = DefaultTo,
+      dateUtcEpoch = ParsedMessageToMailRecordConverter.DefaultDate,
+      body = DefaultUuid,
+      mailFieldsOpt = Some(mailFields))
     mailRecord
   }
 }

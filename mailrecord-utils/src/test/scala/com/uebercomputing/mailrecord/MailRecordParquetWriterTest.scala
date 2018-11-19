@@ -33,7 +33,7 @@ class MailRecordParquetWriterTest extends UnitTest with MailRecordProvider {
         val hasNext = reader.readNext()
         assert(hasNext)
         val record = reader.next()
-        assert(record.getUuid() === uuid)
+        assert(record.uuid === uuid)
       })
       reader.close()
     } finally {

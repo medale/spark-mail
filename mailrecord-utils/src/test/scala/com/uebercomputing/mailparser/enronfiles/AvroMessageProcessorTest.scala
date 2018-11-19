@@ -1,5 +1,6 @@
 package com.uebercomputing.mailparser.enronfiles
 
+import scala.collection.JavaConverters._
 import scala.io.Source
 import com.uebercomputing.test.AvroFileFixtureTest
 import resource.managed
@@ -18,20 +19,27 @@ class AvroMessageProcessorTest extends AvroFileFixtureTest {
       val noFilter = (m: MailRecord) => true
       val mailRecord = processor.process(fileSystemMetadata, msgSrc, noFilter)
 
-      val mailFields = mailRecord.getMailFields()
-      val actualFilename = mailFields.get(MessageProcessor.FileName)
-      assert(fileSystemMetadata.fileName === actualFilename.toString())
+      val mailFieldsOpt = Option(mailRecord.getMailFields)
+      mailFieldsOpt match {
+        case Some(mailFieldsJava) => {
+          val mailFields = mailFieldsJava.asScala
+          val actualFilename = mailFields(MessageProcessor.FileName)
+          assert(fileSystemMetadata.fileName === actualFilename)
 
-      val actualFolderName = mailFields.get(MessageProcessor.FolderName)
-      assert(fileSystemMetadata.folderName === actualFolderName.toString())
+          val actualFolderName = mailFields(MessageProcessor.FolderName)
+          assert(fileSystemMetadata.folderName === actualFolderName)
 
-      val actualUserName = mailFields.get(MessageProcessor.UserName)
-      assert(fileSystemMetadata.userName === actualUserName.toString())
+          val actualUserName = mailFields(MessageProcessor.UserName)
+          assert(fileSystemMetadata.userName === actualUserName)
 
-      assert("<19546475.1075853053633.JavaMail.evans@thyme>" === mailFields.get(MessageParser.MsgId).toString())
-      assert("chris.sebesta@enron.com" === mailRecord.getFrom().toString())
-      assert("RE: Alliant Energy - IES Utilities dispute re: Poi 2870 - Cherokee #1 TBS - July 99 thru April 2001"
-        === mailRecord.getSubject().toString())
+          assert("<19546475.1075853053633.JavaMail.evans@thyme>" === mailFields.get(MessageParser.MsgId).toString())
+          assert("chris.sebesta@enron.com" === mailRecord.from)
+          assert("RE: Alliant Energy - IES Utilities dispute re: Poi 2870 - Cherokee #1 TBS - July 99 thru April 2001"
+            === mailRecord.getSubject)
+        }
+        case _ => fail("Mail record did not have mailFields")
+      }
+
 
     }
     processor.close()

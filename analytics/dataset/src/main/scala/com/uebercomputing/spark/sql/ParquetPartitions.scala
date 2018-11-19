@@ -45,7 +45,7 @@ object ParquetPartitions {
  |    |    |-- data: binary (nullable = false)
      */
     val getYearUdf = udf((dateUtcEpoch: Long) => {
-      val yearList = DatePartitioner.getDatePartion(PartitionByYear, dateUtcEpoch)
+      val yearList = DatePartitioner.getDatePartition(PartitionByYear, dateUtcEpoch)
       yearList(0)
     })
     val emailsWithYearDf = emailsDf.withColumn("year", getYearUdf(emailsDf("dateUtcEpoch")))

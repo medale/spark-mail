@@ -1,6 +1,5 @@
 package com.uebercomputing.test
 
-import java.io.File
 import java.nio.file.Files
 import java.nio.file.{ Path => NioPath }
 import org.apache.hadoop.fs.FileSystem

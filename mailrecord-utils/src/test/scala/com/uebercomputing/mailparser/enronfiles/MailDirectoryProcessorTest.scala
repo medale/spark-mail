@@ -4,8 +4,6 @@ import java.nio.file.Paths
 
 import scala.io.Source
 
-import org.junit.runner.RunWith
-
 import com.uebercomputing.mailrecord.MailRecord
 import com.uebercomputing.test.UnitTest
 

@@ -46,7 +46,7 @@ case object NoDatePartition extends DatePartitionType {
 
 object DatePartitioner {
 
-  def getDatePartion(partitionType: DatePartitionType, utcOffsetInMillis: Long): List[String] = {
+  def getDatePartition(partitionType: DatePartitionType, utcOffsetInMillis: Long): List[String] = {
     val date = new DateTime(utcOffsetInMillis, DateTimeZone.UTC)
     partitionType.getDatePartition(date)
   }

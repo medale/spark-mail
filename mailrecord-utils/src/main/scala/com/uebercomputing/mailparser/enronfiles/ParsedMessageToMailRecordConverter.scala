@@ -3,8 +3,10 @@ package com.uebercomputing.mailparser.enronfiles
 import com.uebercomputing.mailrecord.MailRecord
 import java.util.UUID
 
+import com.uebercomputing.mailrecord.MailRecordOps
 import org.apache.log4j.Logger
 
+import scala.collection.JavaConverters._
 import scala.util.Failure
 import scala.util.Success
 
@@ -82,7 +84,13 @@ object ParsedMessageToMailRecordConverter {
     mailFields = mailFields + (MessageProcessor.FolderName -> fileSystemMeta.folderName)
     mailFields = mailFields + (MessageProcessor.FileName -> fileSystemMeta.fileName)
 
-    val mailRecord = MailRecord(uuid, from, tosOpt, ccsOpt, bccsOpt,
+    val builder = MailRecord.newBuilder()
+    builder.setUuid(uuid)
+    builder.setFrom(from)
+    tosOpt.foreach { tos =>
+      builder.setTo(tos.asJava)
+    }
+    val mailRecord = MailRecordOps(uuid, from, tosOpt, ccsOpt, bccsOpt,
       dateUtcEpoch, subject, Some(mailFields), body)
     mailRecord
   }

@@ -8,7 +8,7 @@ class DatePartitionerTest extends UnitTest {
     val partitionType = PartitionByDay
     val utcOffsetInMillis: Long = 0
     val expectedParts = List("1970", "01", "01")
-    val parts = DatePartitioner.getDatePartion(partitionType, utcOffsetInMillis)
+    val parts = DatePartitioner.getDatePartition(partitionType, utcOffsetInMillis)
     assert(expectedParts === parts)
   }
 
@@ -16,7 +16,7 @@ class DatePartitionerTest extends UnitTest {
     val partitionType = PartitionByMonth
     val utcOffsetInMillis = 0
     val expectedParts = List("1970", "01")
-    val parts = DatePartitioner.getDatePartion(partitionType, utcOffsetInMillis)
+    val parts = DatePartitioner.getDatePartition(partitionType, utcOffsetInMillis)
     assert(expectedParts === parts)
   }
 
@@ -24,7 +24,7 @@ class DatePartitionerTest extends UnitTest {
     val partitionType = PartitionByYear
     val utcOffsetInMillis = 0
     val expectedParts = List("1970")
-    val parts = DatePartitioner.getDatePartion(partitionType, utcOffsetInMillis)
+    val parts = DatePartitioner.getDatePartition(partitionType, utcOffsetInMillis)
     assert(expectedParts === parts)
   }
 

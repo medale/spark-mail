@@ -14,7 +14,7 @@ object PathUtils {
 
   /**
    * Get a list of all files/paths in parentPath directory. If the path is invalid
-   * an warning gets logged and an empty List is returned. Otherwise, list of files
+   * a warning gets logged and an empty List is returned. Otherwise, list of files
    * is returned. Uses nio2 with hopes that it can deal with file ending with .
    */
   def listChildPaths(parentPath: Path): List[Path] = {

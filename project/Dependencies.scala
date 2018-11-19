@@ -9,16 +9,21 @@ object Dependencies {
   val hadoopVersion = "2.7.3"
   val parquetVersion = "1.8.3"
   val avroVersion = "1.7.7"
+  val log4jVersion = "1.2.17"
+  //end of Spark version match
 
   val commonDependencies = Seq(
      ("org.scala-lang" % "scala-library" % scalaVersionStr),
+     ("com.uebercomputing" % "sparkmail-mailrecord" % "1.0.0"),
      ("org.apache.avro" % "avro" % avroVersion),
      ("org.apache.parquet" % "parquet-avro" % parquetVersion),
      ("com.twitter" %% "chill-avro" % "0.9.3"),
      ("com.jsuereth" %% "scala-arm" % "2.0"),
      ("com.github.scopt" %% "scopt" % "3.7.0"),
      ("joda-time" % "joda-time" % "2.10.1"),
-     ("org.joda" % "joda-convert" % "2.1.2")
+     ("org.joda" % "joda-convert" % "2.1.2"),
+     ("commons-io" % "commons-io" % "2.4"),
+     ("log4j" % "log4j" % log4jVersion)
   )
 
   val sparkDependenciesBase = Seq(

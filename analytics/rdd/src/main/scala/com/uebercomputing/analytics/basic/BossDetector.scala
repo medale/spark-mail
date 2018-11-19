@@ -24,10 +24,10 @@ object BossDetector {
     val analyticInput = MailRecordAnalytic.getAnalyticInput(appName, args, additionalSparkProps, LOGGER)
 
     val addressTuples = analyticInput.mailRecordsRdd.flatMap { mailRecord =>
-      val toList = mailRecord.to.getOrElse(Nil).toList
-      val ccList = mailRecord.cc.getOrElse(Nil).toList
+      val toList = mailRecord.getToOpt.getOrElse(Nil).toList
+      val ccList = mailRecord.getCcOpt().getOrElse(Nil).toList
 
-      val tuples = (mailRecord.from, "FROM") ::
+      val tuples = (mailRecord.getFrom, "FROM") ::
         toList
         .map(addr => (addr, "TO")) ++
         ccList

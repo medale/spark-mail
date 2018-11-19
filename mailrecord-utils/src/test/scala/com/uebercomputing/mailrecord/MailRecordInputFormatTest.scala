@@ -1,24 +1,20 @@
 package com.uebercomputing.mailrecord
 
-import java.nio.file.{ Path => NioPath }
-import org.scalatest.fixture.FunSuite
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
-import com.uebercomputing.test.AvroMailRecordsFileProvider
-import com.uebercomputing.test.AvroFileTestInfo
-import org.apache.hadoop.fs.{ Path => HadoopPath }
-import com.uebercomputing.mailparser.enronfiles.MailDirectoryProcessor
-import com.uebercomputing.mailparser.enronfiles.AvroMessageProcessor
 import java.nio.file.Paths
-import org.apache.commons.io.IOUtils
+
+import com.uebercomputing.mailparser.enronfiles.AvroMessageProcessor
+import com.uebercomputing.mailparser.enronfiles.MailDirectoryProcessor
+import com.uebercomputing.test.AvroFileTestInfo
+import com.uebercomputing.test.AvroMailRecordsFileProvider
 import org.apache.hadoop.mapreduce.Job
+import org.apache.hadoop.mapreduce.TaskAttemptID
+import org.apache.hadoop.mapreduce.TaskID
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.mapreduce.lib.input.FileSplit
 import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl
-import org.apache.hadoop.mapreduce.TaskAttemptID
-import org.apache.hadoop.mapreduce.TaskID
+import org.scalatest.fixture.FunSuite
+import org.scalatest.junit.JUnitRunner
 
-@RunWith(classOf[JUnitRunner])
 class MailRecordInputFormatTest extends FunSuite with AvroMailRecordsFileProvider {
 
   val mailDir = Paths.get("src/test/resources/enron/maildir")
@@ -55,7 +51,7 @@ class MailRecordInputFormatTest extends FunSuite with AvroMailRecordsFileProvide
     while (reader.nextKeyValue()) {
       val avroKey = reader.getCurrentKey()
       val storageRecord = avroKey.datum()
-      val from = storageRecord.getFrom
+      val from = storageRecord.from
       froms += from
 
       val currFileSplit = reader.getCurrentValue

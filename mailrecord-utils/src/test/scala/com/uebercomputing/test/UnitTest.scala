@@ -1,11 +1,8 @@
 package com.uebercomputing.test
 
 import org.scalatest.FunSuite
+import org.scalatest.Matchers
 
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
-
-@RunWith(classOf[JUnitRunner])
-class UnitTest extends FunSuite {
+class UnitTest extends FunSuite with Matchers {
 
 }

@@ -2,35 +2,21 @@ spark-mail
 ==========
 
 # Overview
-The Spark Mail project contains code for a tutorial on how to use Apache Spark to analyze email data. That data comes from two different sources:
-
-1. The Enron Email dataset from Carnegie Mellon University (file-based)
-1. We had planned on using public domain emails released by [Jeb Bush from his time as Florida governor PST files](http://www.jebemails.com/email/search). However, these data sets were retracted due to [PII](http://en.wikipedia.org/wiki/Personally_identifiable_information) concerns as described in [Jeb Bush Releases Personal Data(http://thinkprogress.org/election/2015/02/10/3621569/oops-jeb-bush-releases-personal-data-publishing-emails-interest-transparency/).
-
-Tutorial on parsing Enron email to Avro and then explore the email set using Spark.
+The Spark Mail project contains code for a tutorial on how Apache Spark could be used to analyze email data. As data
+we use the [Enron Email dataset from Carnegie Mellon University](https://www.cs.cmu.edu/~./enron/). We show how to
+ETL (Extract Transform Load)the original file-per-email dataset into Apache Avro and Apache Parquet formats and then 
+explore the email set using Spark.
 
 # Building the project
-The Spark Mail project uses a Maven build. Download, install and put mvn binary in your path. See [Apache Maven](http://maven.apache.org/) for
-details. In order to avoid PermGen error (if using Java version < Java 8), add the following to your .bashrc/environment:
-
-```
-export MAVEN_OPTS="-Xmx2g -XX:MaxPermSize=512M -XX:ReservedCodeCacheSize=512m"
-```
-
-Compile times can be dramatically reduced by using the [Zinc Scala build server](https://github.com/typesafehub/zinc).
-Short overview and additional links at
-[this blog entry](http://uebercomputing.com/scala/2014/11/09/Incremental-Compilation-With-Zinc/).
-
-The tests use some of the generated Avro files. So to avoid build errors, build the project with skipping tests:
-```
-mvn clean install -DskipTests
-```
-
+The Spark Mail project uses an sbt build. See https://www.scala-sbt.org/ for how to download and install sbt.
 
 # ETL (Extract Transform Load)
-Both original datasets do not lend themselves to scalable processing. The Enron file set has over 500,000 files. Especially, when processing them with the Hadoop default FileInputFormat we would create over 500,000 input splits. Furthermore, we don't want our analytic code to have to deal with the parsing.
+The original dataset does not lend itself to scalable processing. The file set has over 500,000 files. Especially, 
+when processing them with the Hadoop default FileInputFormat we would create over 500,000 input splits. Furthermore, 
+we don't want our analytic code to have to deal with the parsing.
 
-Therefore we parse the input once and aggregate the emails into the following [MailRecord format in Avro IDL](https://github.com/medale/spark-mail/blob/master/mailrecord/src/main/avro/com/uebercomputing/mailrecord/MailRecord.avdl):
+Therefore we parse the input once and aggregate the emails into the following 
+[MailRecord format in Avro IDL](https://github.com/medale/spark-mail/blob/master/mailrecord/src/main/avro/com/uebercomputing/mailrecord/MailRecord.avdl):
 
 ```
 @version("1.0.0")
@@ -112,11 +98,11 @@ attachments. These files all have the following layout:
 
 Some headers like To, Cc and Bcc or Subject can also be multiline values.
 
-### Parsing Enron Email set into Apache Avro binary format
+### Parsing Enron Email set into Apache Avro and Apache Parquet binary formats
 
 This data set at 423MB compressed is small but using the default small files
 format to process this via FileInputFormat creates over 500,000 splits to be
-processed. By doing some preprocesing and storing all the file artifacts in
+processed. By doing some pre-processing and storing all the file artifacts in
 Apache Avro records we can make the analytics processing more effective.
 
 We parse out specific headers like Message-ID (uuid), From (from) etc. and store

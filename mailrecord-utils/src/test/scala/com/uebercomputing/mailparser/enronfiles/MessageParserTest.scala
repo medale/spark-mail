@@ -6,7 +6,6 @@ import scala.io.Source
 import scala.util.control.NonFatal
 
 import org.apache.commons.io.IOUtils
-import org.junit.runner.RunWith
 
 import com.uebercomputing.test.UnitTest
 
