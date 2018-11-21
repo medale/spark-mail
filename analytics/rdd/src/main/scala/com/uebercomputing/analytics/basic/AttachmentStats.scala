@@ -11,12 +11,6 @@ import com.uebercomputing.mailrecord.MailRecordAnalytic
  *
  * Enron:
  * --avroMailInput /opt/rpm1/enron/enron_mail_20110402/mail.avro --master local[4]
- *
- * JebBush (all)
- * --avroMailInput /opt/rpm1/jebbush/avro-monthly --master local[4]
- *
- * JebBush (1999)
- * --avroMailInput /opt/rpm1/jebbush/avro-monthly/1999 --master local[4]
  */
 object AttachmentStats extends ExecutionTimer {
 

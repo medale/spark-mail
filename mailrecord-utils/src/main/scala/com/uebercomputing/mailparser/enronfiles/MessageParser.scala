@@ -49,11 +49,10 @@ object MessageParser {
       messageParts.updated(Body, body)
     }
 
-    //scalariform makes lines too long for scalastyle!
-    // format: OFF
-    def parseRawHelper(lines: Iterator[String], messageParts: Map[String, String], lastKey: Option[String]):
+    def parseRawHelper(lines: Iterator[String],
+                       messageParts: Map[String, String],
+                       lastKey: Option[String]):
       Map[String, String] = {
-   // format: ON
       if (lines.hasNext) {
         val line = lines.next().trim()
         line match {

@@ -1,1 +1,0 @@
-pandoc -t beamer --latex-engine=xelatex --no-tex-ligatures --biblio ApacheSpark.bib SparkMailPresentation.md -o SparkMailPresentation.pdf

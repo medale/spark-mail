@@ -11,7 +11,7 @@ import scala.annotation.tailrec
 
 /**
   * Invoke:
-  * java -cp mailrecord-utils/target/mailrecord-utils-1.2.1-SNAPSHOT-shaded.jar \
+  * java -cp mailrecord-utils/target/mailrecord-utils-{version}-shaded.jar \
   * com.uebercomputing.mailparser.enronfiles.ParquetMain \
   * --mailDir /opt/rpm1/enron/enron_mail_20150507/maildir \
   * --parquetOutput /opt/rpm1/enron/enron_mail_20150507/mail.parquet

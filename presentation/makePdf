@@ -1,0 +1,2 @@
+DOCNAME=ApacheSparkThroughEmail
+pandoc -t beamer --latex-engine=xelatex --no-tex-ligatures ${DOCNAME}.md -o ${DOCNAME}.pdf
