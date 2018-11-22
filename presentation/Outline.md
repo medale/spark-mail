@@ -1,4 +1,4 @@
-# Data Science for big datasets
+# Data Science for Big Datasets
 * vertical scaling - big iron (graphics)
 * horizontal scaling - parallel/distributed computing (graphics)
 
@@ -45,3 +45,4 @@
 
 # API
 
+# Colon Cancer
