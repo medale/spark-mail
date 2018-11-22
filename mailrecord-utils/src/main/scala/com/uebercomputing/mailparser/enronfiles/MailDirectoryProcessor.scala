@@ -83,10 +83,8 @@ abstract class MailDirectoryProcessor(mailDirectory: Path, userNamesToProcess: L
         process(fileSystemMetadata, Source.fromInputStream(mailIn)(utf8Codec), filter)
       } catch {
         case e: Exception =>
-          // scalastyle:off
           val msg = s"Unable to process ${mailDirectory.toAbsolutePath().toString()}/${userName}/${folderName}/${fileName} due to $e"
           logger.warn(msg)
-          // scalastyle:on
           throw new ParseException(msg)
       }
     }

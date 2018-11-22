@@ -46,3 +46,17 @@
 # API
 
 # Colon Cancer
+
+# Miscellaneous - to incorporate
+```
+docker pull jupyter/all-spark-notebook
+
+# Must match Spark version on notebook - see https://github.com/jupyter/docker-stacks/tree/master/all-spark-notebook
+$SPARK_HOME/sbin/start-master.sh --host 192.168.1.15
+$SPARK_HOME/sbin/start-slave.sh spark://192.168.1.15:7077
+
+docker run -p 8888:8888 -v /home/medale/datasets/enron/:/home/medale/datasets/enron --net=host \
+   --pid=host -e TINI_SUBREAPER=true \
+   -e SPARK_OPTS='--master=spark://192.168.1.15:7077 --executor-memory=8g' \
+   jupyter/all-spark-notebook
+```
