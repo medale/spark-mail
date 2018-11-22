@@ -24,7 +24,7 @@
 * Java Objects - large
 * Kryo serialization for data exchange/shuffle operations
 * Garbage collection - slow
-* Offheap memory storage - DataFrames and Datasets
+* Managed memory storage - DataFrames and Datasets
 
 # Datasets
 * Sources, typing

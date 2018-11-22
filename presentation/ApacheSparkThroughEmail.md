@@ -29,3 +29,13 @@
 # Hadoop Ecosystem
 
 ![Some Frameworks Around Hadoop](graphics/HadoopEcosystem.png)
+
+# Apache Spark Components
+
+![](graphics/SparkComponents.png)
+\tiny Source: Spark: The Definitive Guide
+
+# Colon Cancer
+* Screening saves lives! ![](graphics/Chemo.png){width=100px}
+     * Colonoscopy - talk to your doc
+* [Colorectal Cancer Alliance](https://www.ccalliance.org/)

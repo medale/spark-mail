@@ -26,6 +26,16 @@ object Dependencies {
      ("log4j" % "log4j" % log4jVersion)
   )
 
+  val hadoopDependencies = Seq(
+    ("org.apache.hadoop" % "hadoop-common" % hadoopVersion % "provided")
+      .exclude("commons-beanutils", "commons-beanutils")
+      .exclude("commons-beanutils", "commons-beanutils-core")
+      .exclude("com.fasterxml.jackson.core", "jackson-core")
+      .exclude("com.fasterxml.jackson.core", "jackson-annotations")
+      .exclude("com.fasterxml.jackson.core", "jackson-databind")
+      .exclude("org.slf4j", "slf4j-api")
+  )
+
   val sparkDependenciesBase = Seq(
     ("org.apache.spark" %% "spark-core" % sparkVersion)
       .exclude("org.scalatest", "scalatest_2.11"),

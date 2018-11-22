@@ -1,4 +1,3 @@
-import sbt.Keys.mappings
 import Dependencies._
 
 name := "spark-mail"
@@ -33,6 +32,10 @@ ThisBuild / scalaVersion := "2.11.8"
 ThisBuild / autoAPIMappings := true
 
 ThisBuild / resolvers += Resolver.mavenLocal
+
+//https://stackoverflow.com/questions/18838944/how-to-add-provided-dependencies-back-to-run-test-tasks-classpath
+ThisBuild / run in Compile := Defaults.runTask(fullClasspath in Compile, mainClass in (Compile, run), runner in (Compile, run)).evaluated
+ThisBuild / runMain in Compile := Defaults.runMainTask(fullClasspath in Compile, runner in(Compile, run)).evaluated
 
 //run sbt-assembly via: sbt assembly to build fat jar
 lazy val assemblyPluginSettings = Seq(
@@ -83,6 +86,7 @@ lazy val mailrecordUtils = (project in file("mailrecord-utils"))
   .settings(
     libraryDependencies :=
       commonDependencies ++
+      hadoopDependencies ++
       sparkDependencies ++
         testDependencies
   )
