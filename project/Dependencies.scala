@@ -2,7 +2,7 @@ import sbt._
 
 object Dependencies {
 
-  val sparkVersion = "2.3.2"
+  val sparkVersion = "2.4.0"
 
   //match Spark's pom for these dependencies!
   val scalaVersionStr = "2.11.8"
@@ -36,6 +36,7 @@ object Dependencies {
       .exclude("org.slf4j", "slf4j-api")
   )
 
+  //Avro, CSV - https://spark-packages.org/
   val sparkDependenciesBase = Seq(
     ("org.apache.spark" %% "spark-core" % sparkVersion)
       .exclude("org.scalatest", "scalatest_2.11"),
@@ -45,7 +46,8 @@ object Dependencies {
       .exclude("org.scalatest", "scalatest_2.11"),
     ("org.apache.spark" %% "spark-graphx" % sparkVersion)
       .exclude("org.scalatest", "scalatest_2.11"),
-    ("com.databricks" %% "spark-avro" % "4.0.0")
+    ("com.databricks" %% "spark-avro" % "4.0.0"),
+    ("com.databricks" %% "spark-csv" % "1.5.0")
   )
 
   val sparkDependencies = sparkDependenciesBase.map(_ % "provided")
