@@ -9,7 +9,13 @@ import com.uebercomputing.test.UnitTest
 
 class MailDirectoryProcessorTest extends UnitTest {
 
-  val mailDirPath = Paths.get("src/test/resources/enron/maildir")
+  val mailDirPath = {
+    //directory that this path is being run from
+    val cwd = scala.sys.props("user.dir")
+    val moduleDir = "mailrecord-utils"
+    Paths.get(cwd, moduleDir, "src/test/resources/enron/maildir")
+  }
+
   val noFilter = (m: MailRecord) => true
 
   test("All 13 mail messages under mail directory should get processed") {
@@ -20,12 +26,11 @@ class MailDirectoryProcessorTest extends UnitTest {
     assert(messagesProcessed === 13)
   }
 
-  test("bad mail directory should result in parse exception") {
-    val invalidMailDir = Paths.get("src/test/scala")
-    val dirProc = new MailDirectoryProcessor(
-      invalidMailDir, Nil) with InMemoryMailMessageProcessor
-    intercept[ParseException] {
-      dirProc.processMailDirectory(noFilter)
+  test("bad mail directory should result in illegal argument exception") {
+    val invalidMailDir = Paths.get("/totally/bogus/path")
+    intercept[IllegalArgumentException] {
+      new MailDirectoryProcessor(
+        invalidMailDir, Nil) with InMemoryMailMessageProcessor
     }
   }
 

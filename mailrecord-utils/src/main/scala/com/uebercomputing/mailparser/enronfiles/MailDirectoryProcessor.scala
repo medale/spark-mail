@@ -9,7 +9,13 @@ import com.uebercomputing.io.Utf8Codec
 import resource.managed
 import com.uebercomputing.mailrecord.MailRecord
 
+/**
+  * @param mailDirectory - the start directory that should contain userName/folders subdirs. Must exist!
+  * @param userNamesToProcess - if non-nil, use to filter for only these user names.
+  */
 abstract class MailDirectoryProcessor(mailDirectory: Path, userNamesToProcess: List[String] = Nil) extends MessageProcessor {
+
+  require(Files.exists(mailDirectory) && Files.isDirectory(mailDirectory))
 
   private val logger = Logger.getLogger(classOf[MailDirectoryProcessor])
 

@@ -1,7 +1,6 @@
 package com.uebercomputing.mailrecord
 
 import java.io.Closeable
-import org.apache.parquet.avro.AvroParquetReader
 import org.apache.hadoop.fs.Path
 import org.apache.parquet.hadoop.ParquetReader
 import org.apache.commons.io.IOUtils

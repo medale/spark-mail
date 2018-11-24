@@ -8,15 +8,25 @@ ETL (Extract Transform Load)the original file-per-email dataset into Apache Avro
 explore the email set using Spark.
 
 # Building the project
-The Spark Mail project uses an sbt build. See https://www.scala-sbt.org/ for how to download and install sbt.
+The Spark Mail project uses an sbt build. See https://www.scala-sbt.org/ for how to download and install sbt. It has a
+dependency on the https://github.com/medale/spark-mailrecord project. See below instructions on how to build that project
+in the ETL section.
+
+Then:
+```bash
+# from mail-spark directory
+# build "fat" jar with classes and all dependencies under 
+# mailrecords-utils/target/scala-2.11/mailrecord-utils-{version}-fat.jar
+sbt assembly
+```
 
 # ETL (Extract Transform Load)
-The original dataset does not lend itself to scalable processing. The file set has over 500,000 files. Especially, 
+The original dataset does not lend itself to scalable processing. The file set has over 500,000 small files. Especially, 
 when processing them with the Hadoop default FileInputFormat we would create over 500,000 input splits. Furthermore, 
 we don't want our analytic code to have to deal with the parsing.
 
 Therefore we parse the input once and aggregate the emails into the following 
-[MailRecord format in Avro IDL](https://github.com/medale/spark-mail/blob/master/mailrecord/src/main/avro/com/uebercomputing/mailrecord/MailRecord.avdl):
+[MailRecord format in Apache Avro IDL](https://github.com/medale/spark-mailrecord/blob/master/src/main/avro/com/uebercomputing/mailrecord/MailRecord.avdl):
 
 ```
 @version("1.0.0")
@@ -43,22 +53,29 @@ protocol MailRecordProtocol {
 }
 ```
 
+The MailRecord Apache Avro IDL file and the Java MailRecord and Attachment classes generated from it are a dependency
+for spark-mail that needs to be found in your local Maven repository (it is not available via the online Maven repo).
+This requires [Apache Maven](https://maven.apache.org/). To build this dependency and publish it to your local Maven 
+repository (default ~/.m2/repository) do the following:
+
+```
+git clone https://github.com/medale/spark-mailrecord.git
+cd spark-mailrecord
+mvn clean install
+```
+
 # Enron Email Dataset
 
 ## Note to Windows Users
 The Enron email dataset used (see below) contains files that end with a dot
-(e.g. enron_mail_20110402/maildir/lay-k/inbox/1.).
+(e.g. ~/maildir/lay-k/inbox/1.).
 
 The unit tests used actual emails from this dataset. This caused problems for
 using Git from Eclipse. Checking the source code out from command line git
-appeared to work.
+works.
 
-However, the original code used the File classes listFiles() to do directory listings.
-This also suffered from the problem that at least some versions of Windows
-report files of the form FILE_NAME. (i.e. ending with dot) as just FILE_NAME
-(no dot at the end). The unit tests failed on Windows. An attempt to fix this
-by [using java.nio.file APIs instead](https://github.com/medale/spark-mail/issues/4)
-also did not work.
+However, on Windows these Unit tests fail because the files ending with . were
+not processed correctly.
 
 ### Workaround:
 Renamed the test files with a .txt extension. That fixes the unit tests.
@@ -98,7 +115,7 @@ attachments. These files all have the following layout:
 
 Some headers like To, Cc and Bcc or Subject can also be multiline values.
 
-### Parsing Enron Email set into Apache Avro and Apache Parquet binary formats
+### Parsing Enron Email set into Apache Parquet binary format
 
 This data set at 423MB compressed is small but using the default small files
 format to process this via FileInputFormat creates over 500,000 splits to be
@@ -109,31 +126,41 @@ We parse out specific headers like Message-ID (uuid), From (from) etc. and store
 all the other headers in a mailFields map. We also store the body in its own
 field.
 
+#### Avro Parser
 The [mailrecord-utils mailparser enronfiles Main class](https://github.com/medale/spark-mail/blob/master/mailrecord-utils/src/main/scala/com/uebercomputing/mailparser/enronfiles/AvroMain.scala)
-allows us to convert the directory/file-based Enron data set into one Avro files
+allows us to convert the directory/file-based Enron data set into one Avro file
 with all the corresponding MailRecord Avro records. To run this class from the
-spark-mail root directory after doing a mvn clean install -DskipTests:
+spark-mail root directory
 
 ```
-java -cp parser/target/parser-1.2.1-SNAPSHOT-shaded.jar \
-com.uebercomputing.mailparser.enronfiles.AvroMain \
---mailDir /opt/local/datasets/enron/enron_mail_20150507/maildir \
---avroOutput /opt/local/datasets/enron/mail-2015.avro
+sbt
+> mailrecordUtils/console
+val mailDir = "/datasets/enron/raw/maildir"
+val avroOutput = "/datasets/enron/mail.avro"
+val args = Array("--mailDir", mailDir,
+                 "--avroOutput", avroOutput)
+com.uebercomputing.mailparser.enronfiles.AvroMain.main(args)
 ```
 
+#### Parquet Parser
 To generate an Apache Parquet file from the emails run the following:
 
 ```
-java -cp mailrecord-utils/target/mailrecord-utils-1.2.1-SNAPSHOT-shaded.jar \
-com.uebercomputing.mailparser.enronfiles.ParquetMain \
-  --mailDir /opt/rpm1/enron/enron_mail_20150507/maildir \
-  --parquetOutput /opt/rpm1/enron/enron_mail_20150507/mail.parquet
+sbt
+> mailrecordUtils/console
+val mailDir = "/datasets/enron/raw/maildir"
+val parquetOutput = "/datasets/enron/mail.parquet"
+val args = Array("--mailDir", mailDir,
+                 "--parquetOutput", parquetOutput)
+com.uebercomputing.mailparser.enronfiles.ParquetMain.main(args)
 ```
 
-Using Parquet format, we can easily analyze using our local [spark-shell](http://spark.apache.org):
+Using Parquet format, we can easily analyze using our local [spark-shell](http://spark.apache.org).
+All examples use the Parquet format. To use a DataFrame with Avro see 
+https://spark-packages.org/package/databricks/spark-avro.
 
 ```
-val mailDf = spark.read.parquet("/opt/rpm1/enron/enron_mail_20150507/mail.parquet")
+val mailDf = spark.read.parquet("/datasets/enron/mail.parquet")
 mailDf.printSchema
 root
  |-- uuid: string (nullable = true)
@@ -162,18 +189,5 @@ doraMailsDf.count
 ```
 
 # Spark Analytics
-See spark-mail/analytics module source and test (in progress...)
+* See spark-mail/analytics/dataset and spark-mail/analytics/rdd for Scala code.
 
-# Enron Email As PST
-* http://info.nuix.com/Enron.html
-
-Note: Used pst file of bill_rapp.zip downloaded from nuix.com for testing.
-
-# Public domain emails from Jeb Bush's time as Florida governor
-
-## Background:
-On December 13, 2014, [the Washington Post reported](http://www.washingtonpost.com/blogs/post-politics/wp/2014/12/13/jeb-bush-to-write-e-book-and-release-250000-e-mails/) that former Florida governor Jeb Bush plans to release over 250,000 emails from his time as Florida governor.
-
-The American Bridge PAC had [requested the emails via public records request](http://americanbridgepac.org/happy-holidays-here-are-thousands-of-jeb-bushs-emails/) and listed the links below at http://americanbridgepac.org/jeb-bushs-gubernatorial-email-archive/. [Jeb Bush's website had the raw PST files also](http://www.jebemails.com/email/search). However due to PII and malware concerns, the raw PST files were retracted.
-
-See [PST Processing Page](PstProcessing.md) for next steps.

@@ -15,7 +15,7 @@ object PathUtils {
   /**
    * Get a list of all files/paths in parentPath directory. If the path is invalid
    * a warning gets logged and an empty List is returned. Otherwise, list of files
-   * is returned. Uses nio2 with hopes that it can deal with file ending with .
+   * is returned.
    */
   def listChildPaths(parentPath: Path): List[Path] = {
     val dirStreamTry: Try[DirectoryStream[Path]] = Try(Files.newDirectoryStream(parentPath))

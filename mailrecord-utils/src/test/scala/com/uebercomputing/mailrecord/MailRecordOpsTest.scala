@@ -15,7 +15,8 @@ class MailRecordOpsTest extends UnitTest with MailRecordProvider {
     import com.uebercomputing.mailrecord.Implicits._
 
     val mailRecord = getMailRecord()
+    //getToOpt is on MailRecordOps
     val toOpt = mailRecord.getToOpt()
-    assert(toOpt.isEmpty)
+    assert(toOpt.isDefined)
   }
 }

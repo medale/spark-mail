@@ -11,7 +11,7 @@ import resource.managed
 import com.uebercomputing.mailrecord.MailRecord
 
 /**
-  * Invoke command line:
+  * Arguments:
   * --mailDir ${HOME}/datasets/enron/raw/maildir
   * --avroOutput ${HOME}/datasets/enron/mail.avro
   *
@@ -26,21 +26,15 @@ import com.uebercomputing.mailrecord.MailRecord
   * --users allen-p,arnold-j,arora-h,beck-s,benson-r,blair-l,brawner-s,buy-r,campbell-l,carson-m,cash-m,dasovich-j,davis-d,dean-c,delainey-d,derrick-j,dickson-s,gay-r,geaccone-t,germany-c,griffith-j,grigsby-m,guzman-m,haedicke-m,hain-m,harris-s,hayslett-r,heard-m,hendrickson-s,hernandez-j,hodge-j,holst-k,horton-s,hyatt-k,kaminski-v,kean-s,keavey-p,keiser-k,king-j,lay-k
   * --overwrite true
   *
-  * Invoke from sbt shell:
-  *
-  * sbt (Note the double-quotes around arguments!)
-  * > mailrecordUtils/run "--mailDir" "/home/medale/datasets/enron/raw/maildir" "--avroOutput" "/home/medale/datasets/enron/mail.avro"
-  * > (choose number of AvroMain class - 1 in my case)
-  *
-  * Invoke from sbt console:
+  * Invoke for full email set from sbt console:
   *
   * sbt
   * > mailrecordUtils/console
-  * import com.uebercomputing.mailparser.enronfiles.AvroMain
-  * val home = scala.sys.props("user.home")
-  * val mailDir = s"${home}/datasets/enron/raw/maildir"
-  * val avroOutput = s"${home}/datasets/enron/mail.avro"
-  * AvroMain.main(Array("--mailDir",mailDir,"--avroOutput",avroOutput))
+  val mailDir = "/datasets/enron/raw/maildir"
+  val avroOutput = "/datasets/enron/mail.avro"
+  val args = Array("--mailDir",mailDir,
+                   "--avroOutput",avroOutput)
+  com.uebercomputing.mailparser.enronfiles.AvroMain.main(args)
   *
   */
 object AvroMain {

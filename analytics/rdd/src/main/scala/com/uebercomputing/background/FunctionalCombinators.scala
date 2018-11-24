@@ -1,6 +1,9 @@
 package com.uebercomputing.background
 
-object Combinators {
+/**
+  * Used throughout Scala collections, also available on RDDs!
+  */
+object FunctionalCombinators {
 
   def main(args: Array[String]): Unit = {
     def computeLength(w: String): Int = w.length

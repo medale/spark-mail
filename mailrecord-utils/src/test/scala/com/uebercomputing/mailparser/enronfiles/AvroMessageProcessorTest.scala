@@ -23,17 +23,25 @@ class AvroMessageProcessorTest extends AvroFileFixtureTest {
       mailFieldsOpt match {
         case Some(mailFieldsJava) => {
           val mailFields = mailFieldsJava.asScala
-          val actualFilename = mailFields(MessageProcessor.FileName)
-          assert(fileSystemMetadata.fileName === actualFilename)
 
-          val actualFolderName = mailFields(MessageProcessor.FolderName)
-          assert(fileSystemMetadata.folderName === actualFolderName)
+          val fieldNames = Seq(MessageProcessor.FileName, MessageProcessor.FolderName, MessageProcessor.UserName)
+          val expectedValues = Seq(fileSystemMetadata.fileName, fileSystemMetadata.folderName, fileSystemMetadata.userName)
 
-          val actualUserName = mailFields(MessageProcessor.UserName)
-          assert(fileSystemMetadata.userName === actualUserName)
+          val keyExpectedValues = fieldNames.zip(expectedValues)
+          keyExpectedValues.foreach { case (key, expectedValue) =>
+            val actualValueOpt = mailFields.get(key)
+            actualValueOpt match {
+              case Some(actualValue) => {
+                assert(actualValue === expectedValue)
+              }
+              case None => fail(s"mailFields did not contain ${MessageProcessor.FileName} key")
+            }
+          }
 
-          assert("<19546475.1075853053633.JavaMail.evans@thyme>" === mailFields.get(MessageParser.MsgId).toString())
-          assert("chris.sebesta@enron.com" === mailRecord.from)
+          assert(mailFields.isDefinedAt(MessageParser.MsgId))
+          assert("<19546475.1075853053633.JavaMail.evans@thyme>" === mailFields(MessageParser.MsgId))
+
+          assert("chris.sebesta@enron.com" === mailRecord.getFrom)
           assert("RE: Alliant Energy - IES Utilities dispute re: Poi 2870 - Cherokee #1 TBS - July 99 thru April 2001"
             === mailRecord.getSubject)
         }
