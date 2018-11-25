@@ -9,6 +9,21 @@ import scala.util.Try
 
 /**
   * An analytic that determines the top N email senders (using "from" field).
+  *
+  * To run:
+  * <ol>
+  *    <li>sbt assembly</li>
+  *    <li>spark-shell --jars analytics/dataset/target/scala-2.11/dataset-2.0.0-SNAPSHOT-fat.jar</li>
+  *    <li>spark-submit</li>
+  * </ol>
+  *
+  * <pre>
+  *   sbt
+  *   > datasetAnalytics/console
+  *   > import com.uebercomputing.spark.dataset.TopNEmailMessageSenders
+  *   > val args = Array("7", "/datasets/enron/enron-small.parquet")
+  *   > TopNEmailMessageSenders.main(args)
+  * </pre>
   */
 object TopNEmailMessageSenders {
 
@@ -43,6 +58,29 @@ object TopNEmailMessageSenders {
       }
     } catch {
       case t: Throwable => Failure(t)
+    }
+  }
+
+  /**
+    * Expects invocation with at least two or more args:
+    * ... 10 file0 file1 etc.
+    * @param args
+    */
+  def main(args: Array[String]): Unit = {
+    val spark = SparkSession.builder().appName("TopNEmailMessageSenders").
+      master("local[2]").getOrCreate()
+    val n = args.head.toInt
+    val parquetFiles = args.tail
+    val topNTry = findTopNEmailMessageSendersTry(spark, parquetFiles, n)
+
+    topNTry match {
+      case Success(topN) => {
+        val out = topN.map { case (from, count) => s"${from}: ${count}"}.mkString("\n")
+        println(out)
+      }
+      case Failure(ex) => {
+        println(s"Unable to find top ${n} due to ${ex}")
+      }
     }
   }
 }
