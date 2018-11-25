@@ -95,11 +95,10 @@ downloaded, extract via:
     > tar xfz enron_mail_20150507.tar.gz   (or use tar xf as new tar autodectects compression)
 
 This generates the following directory structure:
-* enron_mail_20150507
-  * maildir
-    * $userName subdirectories for each user
-      * $folderName subdirectories per user
-        * mail messages in folder or additional subfolders
+* maildir
+     * $userName subdirectories for each user
+     * $folderName subdirectories per user
+          * mail messages in folder or additional subfolders
 
 This directory structure contains over 500,000 small mail files without
 attachments. These files all have the following layout:

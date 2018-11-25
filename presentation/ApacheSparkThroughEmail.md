@@ -5,6 +5,7 @@
 # Intro, Slides And Code
 * Slides: https://github.com/medale/spark-mail/blob/master/presentation/ApacheSparkThroughEmail.pdf
 * Spark Code Examples: https://github.com/medale/spark-mail/
+     * README.md describes how to get and parse Enron email dataset
 
 
 # Data Science for Small Dataset
@@ -54,11 +55,22 @@
 \tiny Source: Apache Spark website
 
 
-# DataFrameReader: Built-in Data Formats
-
-`val records = spark.read.parquet...`:
-
+# SparkSession: Entry to cluster
 * `spark`: [spark.sql.SparkSession](https://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.sql.SparkSession)
+
+```scala
+//SparkSession provided by notebook as spark
+val records = spark.read.
+   parquet("/datasets/enron/enron-small.parquet")
+
+//In regular code for spark-submit 
+//com.uebercomputing.spark.dataset.TopNEmailMessageSenders
+val spark = SparkSession.builder().
+   appName("TopNEmailMessageSenders").
+   master("local[2]").getOrCreate()
+```
+
+# DataFrameReader: Input for structured data
 * `spark.read`: [spark.sql.DataFrameReader](https://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.sql.DataFrameReader)
      * jdbc
      * json
@@ -72,7 +84,7 @@
 ![Jobs and Tasks](graphics/SparkJobsNotebook1.png)
 
 
-# Combining work per stage - shuffle
+# Stages: Pipeline work per stage - shuffle
 
 ![Stages](graphics/Notebook1Job2Dag.png)
 
@@ -83,12 +95,17 @@
 
 
 # Parallelism and Partitioning
-
+* Goldilocks - not too many, not too few
 * Initial parallelism - number of input "blocks"
-* Shuffle - `spark.`
+* Shuffle - `spark.sql.shuffle.partitions` configuration
 
 
-# Colon Cancer
+# Explode, Shuffle Partitions, UDF, Parquet partition
+
+*  See [Apache Spark Through Email Notebook 3](../notebooks/html/ApacheSparkThroughEmail3.html)
+
+
+# And now for something completely different: Colon Cancer
 * Screening saves lives! ![](graphics/Chemo.png){width=100px}
      * Colonoscopy - talk to your doc
 * [Colorectal Cancer Alliance](https://www.ccalliance.org/)
@@ -96,4 +113,7 @@
 
 # Questions?
 
-![medale@asymmetrik.com](graphics/AsymmetrikPingPong.png)
+![medale@asymmetrik.com](graphics/AsymmetrikPingPong.png){width=100px}
+
+* [Baltimore Scala Meetup](https://www.meetup.com/Baltimore-Scala/)
+* [Spark Mail repo https://github.com/medale/spark-mail/](https://github.com/medale/spark-mail)
