@@ -4,26 +4,23 @@ spark-mail
 # Overview
 The Spark Mail project contains code for a tutorial on how Apache Spark could be used to analyze email data. As data
 we use the [Enron Email dataset from Carnegie Mellon University](https://www.cs.cmu.edu/~./enron/). We show how to
-ETL (Extract Transform Load)the original file-per-email dataset into Apache Avro and Apache Parquet formats and then 
+ETL (Extract Transform Load) the original file-per-email dataset into Apache Avro and Apache Parquet formats and then 
 explore the email set using Spark.
 
 # Building the project
-The Spark Mail project uses an sbt build. See https://www.scala-sbt.org/ for how to download and install sbt. It has a
-dependency on the https://github.com/medale/spark-mailrecord project. See below instructions on how to build that project
-in the ETL section.
+The Spark Mail project uses an sbt build. See https://www.scala-sbt.org/ for how to download and install sbt.
 
-Then:
+Then from mail-spark directory:
 ```bash
-# from mail-spark directory
 # build "fat" jar with classes and all dependencies under 
 # mailrecords-utils/target/scala-2.11/mailrecord-utils-{version}-fat.jar
 sbt assembly
 ```
 
 # ETL (Extract Transform Load)
-The original dataset does not lend itself to scalable processing. The file set has over 500,000 small files. Especially, 
-when processing them with the Hadoop default FileInputFormat we would create over 500,000 input splits. Furthermore, 
-we don't want our analytic code to have to deal with the parsing.
+The original dataset does not lend itself to scalable processing. The file set has over 500,000 small files. This would 
+create over 500,000 input splits/initial partitions. Furthermore, we don't want our analytic code to have to deal with 
+the parsing.
 
 Therefore we parse the input once and aggregate the emails into the following 
 [MailRecord format in Apache Avro IDL](https://github.com/medale/spark-mailrecord/blob/master/src/main/avro/com/uebercomputing/mailrecord/MailRecord.avdl):
@@ -53,8 +50,10 @@ protocol MailRecordProtocol {
 }
 ```
 
-The MailRecord Apache Avro IDL file and the Java MailRecord and Attachment classes generated from it are a dependency
-for spark-mail that needs to be found in your local Maven repository (it is not available via the online Maven repo).
+For convenience the Java MailRecord and Attachment classes generated from the MailRecord Apache Avro IDL file were 
+copied under `mailrecord-utils/src/main/java/com/uebercomputing/mailrecord/MailRecord.java and Attachment.java`.
+
+If you wanted to update the original AVDL file and regenerate new Java files, use the following to build.
 This requires [Apache Maven](https://maven.apache.org/). To build this dependency and publish it to your local Maven 
 repository (default ~/.m2/repository) do the following:
 
@@ -62,6 +61,9 @@ repository (default ~/.m2/repository) do the following:
 git clone https://github.com/medale/spark-mailrecord.git
 cd spark-mailrecord
 mvn clean install
+
+# Update current Java definitions in spark-mail
+cp -R spark-mailrecord/src/main/java/com spark-mail/mailrecord-utils/src/main/java
 ```
 
 # Enron Email Dataset
@@ -86,11 +88,11 @@ a file name!!!
 ## Obtaining/preparing the Enron dataset
 
 https://www.cs.cmu.edu/~./enron/ describes the Enron email dataset and provides
-a download link at https://www.cs.cmu.edu/~./enron/enron_mail_20150507.tgz. 
+a download link at https://www.cs.cmu.edu/~./enron/enron_mail_20150507.tar.gz. 
 
 This email set is a gzipped tar file of emails stored in directories. Once
 downloaded, extract via:
-    > tar xfz enron_mail_20150507.tgz   (or use tar xf as new tar autodectects compression)
+    > tar xfz enron_mail_20150507.tar.gz   (or use tar xf as new tar autodectects compression)
 
 This generates the following directory structure:
 * enron_mail_20150507
@@ -193,7 +195,7 @@ doraMailsDf.count
 
 # Exploring via Jupyter with Apache Toree Scala notebooks
 
-* Copy notebooks from spark-mail/notebooks to /home/jovyan/work to make them available from Docker notebook
+* Copy notebooks from *spark-mail/notebooks* to */home/jovyan/work* to make them available from Docker notebook
 
 * See Docker documentation at https://docs.docker.com/install/ for install on your OS
 * We will be using the latest jupyter/all-spark-notebook which ran Spark 2.4.0 as of Nov 24, 2018

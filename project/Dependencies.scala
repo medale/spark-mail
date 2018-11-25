@@ -12,9 +12,12 @@ object Dependencies {
   val log4jVersion = "1.2.17"
   //end of Spark version match
 
+  //Note: This used to include
+  //     ("com.uebercomputing" % "sparkmail-mailrecord" % "1.0.0")
+  //but we just copied the generated .java files to mailrecord-utils
+  //for ease of build (sparkmail-mailrecord built with Maven)
   val commonDependencies = Seq(
      ("org.scala-lang" % "scala-library" % scalaVersionStr),
-     ("com.uebercomputing" % "sparkmail-mailrecord" % "1.0.0"),
      ("org.apache.avro" % "avro" % avroVersion),
      ("org.apache.parquet" % "parquet-avro" % parquetVersion),
      ("com.twitter" %% "chill-avro" % "0.9.3"),

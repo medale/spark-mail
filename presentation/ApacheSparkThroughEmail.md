@@ -2,7 +2,7 @@
 % Markus Dale
 % Nov 2018
 
-# Slides And Code
+# Intro, Slides And Code
 * Slides: https://github.com/medale/spark-mail/blob/master/presentation/ApacheSparkThroughEmail.pdf
 * Spark Code Examples: https://github.com/medale/spark-mail/
 
@@ -43,20 +43,23 @@
 \tiny Source: Spark: The Definitive Guide
 
 
-# Hello, Email World!
+# Hello, Spark Email World!
 * Jupyter Notebook with Apache Toree
 * See [ApacheSparkThroughEmail1](../notebooks/html/ApacheSparkThroughEmail1.html)
 
 
-# A Spark Application - Driver, Executors, Tasks, Cluster Managers
+# Cluster Manager, Driver, Executors, Tasks
 
 ![](graphics/SparkApplication.png)
-\tiny Source: Spark: The Definitive Guide
+\tiny Source: Apache Spark website
 
 
 # DataFrameReader: Built-in Data Formats
-* [spark.sql.SparkSession](https://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.sql.SparkSession)
-* [spark.sql.DataFrameReader](https://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.sql.DataFrameReader)
+
+`val records = spark.read.parquet...`:
+
+* `spark`: [spark.sql.SparkSession](https://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.sql.SparkSession)
+* `spark.read`: [spark.sql.DataFrameReader](https://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.sql.DataFrameReader)
      * jdbc
      * json
      * parquet
