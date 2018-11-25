@@ -46,7 +46,7 @@
 
 # Hello, Spark Email World!
 * Jupyter Notebook with Apache Toree
-* See [ApacheSparkThroughEmail1](../notebooks/html/ApacheSparkThroughEmail1.html)
+* See [Notebook ../notebooks/html/ApacheSparkThroughEmail1.html](../notebooks/html/ApacheSparkThroughEmail1.html)
 
 
 # Cluster Manager, Driver, Executors, Tasks
@@ -91,7 +91,7 @@ val spark = SparkSession.builder().
 
 # Where clause, Column methods, Built-in functions
 
-* See [Apache Spark Through Email Notebook 2](../notebooks/html/ApacheSparkThroughEmail2.html)
+* See [Notebook ../notebooks/html/ApacheSparkThroughEmail2.html](../notebooks/html/ApacheSparkThroughEmail2.html)
 
 
 # Parallelism and Partitioning
@@ -102,7 +102,7 @@ val spark = SparkSession.builder().
 
 # Explode, Shuffle Partitions, UDF, Parquet partition
 
-*  See [Apache Spark Through Email Notebook 3](../notebooks/html/ApacheSparkThroughEmail3.html)
+*  See [Notebook ../notebooks/html/ApacheSparkThroughEmail3.html](../notebooks/html/ApacheSparkThroughEmail3.html)
 
 
 # And now for something completely different: Colon Cancer
@@ -115,5 +115,5 @@ val spark = SparkSession.builder().
 
 ![medale@asymmetrik.com](graphics/AsymmetrikPingPong.png){width=100px}
 
-* [Baltimore Scala Meetup](https://www.meetup.com/Baltimore-Scala/)
+* [Baltimore Scala Meetup https://www.meetup.com/Baltimore-Scala/](https://www.meetup.com/Baltimore-Scala/)
 * [Spark Mail repo https://github.com/medale/spark-mail/](https://github.com/medale/spark-mail)
