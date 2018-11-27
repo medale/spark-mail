@@ -8,6 +8,11 @@
      * README.md describes how to get and parse Enron email dataset
 
 
+# Goals
+
+![Intro to Apache Spark](graphics/Goal.png)
+
+
 # Data Science for Small Dataset
 
 ![Laptop](graphics/Laptop.png)

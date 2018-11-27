@@ -13,6 +13,13 @@
      * Spark, Docker notebook setup
 
 
+# Goals
+* Scalable data processing
+* Spark structured processing
+* Spark concepts - RDD, Dataset/DataFrame, partitions
+* Notebooks, Spark UI
+
+
 # Data Science for Small Dataset
 * Laptop
 * Explore subset, develop approaches/algorithms, find *features*
