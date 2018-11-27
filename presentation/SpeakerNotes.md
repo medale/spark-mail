@@ -134,6 +134,6 @@
 # Questions?
 * medale@asymmetrik.com
 * Ping Pong
-* Baltimore Scala meetup - January
+* Baltimore Scala meetup - January 10
 * Spark mail repo for getting/parsing Enron data, 
 presentations, code, notebooks

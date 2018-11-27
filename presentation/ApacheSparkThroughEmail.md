@@ -1,5 +1,5 @@
 % Apache Spark Through Email
-% Markus Dale
+% Markus Dale, medale@asymmetrik.com
 % Nov 2018
 
 # Intro, Slides And Code
@@ -15,12 +15,12 @@
 
 # Data Science for Larger Dataset
 
-![Standalone Server](graphics/StandaloneServer1.png)
+![Standalone Server](graphics/StandaloneServer1.png){height=80%}
 
 
 # Data Science for Larger Dataset (Vertical Scaling)
 
-![Beefed-up Server](graphics/VerticalScaling.png)
+![Beefed-up Server](graphics/VerticalScaling.png){height=80%}
 
 
 # Data Science for Large Datasets (Horizontal Scaling)
@@ -86,7 +86,7 @@ val spark = SparkSession.builder().
 
 # Stages: Pipeline work per stage - shuffle
 
-![Stages](graphics/Notebook1Job2Dag.png)
+![Stages](graphics/Notebook1Job2Dag.png){height=80%}
 
 
 # Where clause, Column methods, Built-in functions
@@ -113,7 +113,8 @@ val spark = SparkSession.builder().
 
 # Questions?
 
-![medale@asymmetrik.com](graphics/AsymmetrikPingPong.png){width=100px}
+![](graphics/Farley.png){width=100px}\ ![](graphics/AsymmetrikPingPong.png){width=100px}
 
+* medale@asymmetrik.com
 * [Baltimore Scala Meetup https://www.meetup.com/Baltimore-Scala/](https://www.meetup.com/Baltimore-Scala/)
 * [Spark Mail repo https://github.com/medale/spark-mail/](https://github.com/medale/spark-mail)

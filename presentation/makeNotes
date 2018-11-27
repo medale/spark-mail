@@ -1,2 +1,2 @@
 DOCNAME=SpeakerNotes
-pandoc -t beamer --latex-engine=xelatex --no-tex-ligatures ${DOCNAME}.md -o ${DOCNAME}.pdf
+pandoc -t beamer --pdf-engine=xelatex ${DOCNAME}.md -o ${DOCNAME}.pdf -V theme:metropolis

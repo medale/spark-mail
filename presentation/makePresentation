@@ -1,2 +1,3 @@
+# Updated for pandoc 2.4
 DOCNAME=ApacheSparkThroughEmail
-pandoc -t beamer --latex-engine=xelatex --no-tex-ligatures ${DOCNAME}.md -o ${DOCNAME}.pdf
+pandoc -t beamer --pdf-engine=xelatex ${DOCNAME}.md -o ${DOCNAME}.pdf -V theme:metropolis  -V colortheme:default
