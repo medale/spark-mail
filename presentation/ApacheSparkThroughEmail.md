@@ -116,5 +116,6 @@ val spark = SparkSession.builder().
 ![](graphics/Farley.png){width=100px}\ ![](graphics/AsymmetrikPingPong.png){width=100px}
 
 * medale@asymmetrik.com
+* [Infrequent blog/past presentations http://uebercomputing.com/](http://uebercomputing.com/)
 * [Baltimore Scala Meetup https://www.meetup.com/Baltimore-Scala/](https://www.meetup.com/Baltimore-Scala/)
 * [Spark Mail repo https://github.com/medale/spark-mail/](https://github.com/medale/spark-mail)
