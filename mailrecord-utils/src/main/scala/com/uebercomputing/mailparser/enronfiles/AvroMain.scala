@@ -21,8 +21,8 @@ import com.uebercomputing.mailrecord.MailRecord
   * --overwrite true
   *
   * Create small avro file by restricting users:
-  * --mailDir /opt/rpm1/enron/enron_mail_20110402/maildir
-  * --avroOutput /opt/rpm1/enron/enron-small.avro
+  * --mailDir /datasets/enron/raw//maildir
+  * --avroOutput /datasets/enron/enron-small.avro
   * --users allen-p,arnold-j,arora-h,beck-s,benson-r,blair-l,brawner-s,buy-r,campbell-l,carson-m,cash-m,dasovich-j,davis-d,dean-c,delainey-d,derrick-j,dickson-s,gay-r,geaccone-t,germany-c,griffith-j,grigsby-m,guzman-m,haedicke-m,hain-m,harris-s,hayslett-r,heard-m,hendrickson-s,hernandez-j,hodge-j,holst-k,horton-s,hyatt-k,kaminski-v,kean-s,keavey-p,keiser-k,king-j,lay-k
   * --overwrite true
   *

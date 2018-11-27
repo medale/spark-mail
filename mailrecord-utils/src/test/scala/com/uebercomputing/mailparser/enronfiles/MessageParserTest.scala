@@ -130,7 +130,7 @@ class MessageParserTest extends UnitTest {
   ignore("process 163") {
     //fixed by implicit utf-8 codec - add specific test!
     //TODO
-    val in = new FileInputStream("/opt/rpm1/enron/enron_mail_20110402/maildir/kean-s/california___working_group/163.txt")
+    val in = new FileInputStream("/datasets/enron/raw/maildir/kean-s/california___working_group/163.txt")
     val msg = IOUtils.toString(in)
     val mailIn = Source.fromString(msg)
     val map = MessageParser(mailIn)

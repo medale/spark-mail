@@ -49,7 +49,7 @@ object ParquetPartitions {
       yearList(0)
     })
     val emailsWithYearDf = emailsDf.withColumn("year", getYearUdf(emailsDf("dateUtcEpoch")))
-    emailsWithYearDf.write.format("parquet").partitionBy("year").save("/opt/rpm1/enron/parquet/out")
+    emailsWithYearDf.write.format("parquet").partitionBy("year").save("/datasets/enron/parquet/out")
     /*_common_metadata  year=0001  year=1986  year=1999  year=2002  year=2007  year=2024
 _metadata         year=0002  year=1997  year=2000  year=2004  year=2012  year=2043
 _SUCCESS          year=1980  year=1998  year=2001  year=2005  year=2020  year=2044

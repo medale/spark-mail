@@ -12,7 +12,7 @@ object DataFrameToRdd {
       appName("test").
       master("local[2]").
       getOrCreate()
-    val emailsDf = spark.read.parquet("/opt/rpm1/enron/parquet/out")
+    val emailsDf = spark.read.parquet("/datasets/enron/parquet/out")
     val y2kDf = emailsDf.where(emailsDf("year") === 2000)
     // RDD[org.apache.spark.sql.Row], also .rdd, flatMap, toJSON...
     import spark.implicits._
