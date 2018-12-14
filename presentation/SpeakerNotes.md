@@ -64,7 +64,7 @@
 # Hello, Spark Email World!
 * Jupyter Notebook with Apache Toree
 * Comment out spark.close, Restart & run all
-* See [ApacheSparkThroughEmail1](../notebooks/html/ApacheSparkThroughEmail1.html)
+* See [ApacheSparkThroughEmail1](https://medale.github.io/spark-mail/notebooks/html/ApacheSparkThroughEmail1.html)
 
 
 # Cluster Manager, Driver, Executors, Tasks
