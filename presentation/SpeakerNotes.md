@@ -124,6 +124,11 @@
 * Restart & run all
 
 
+# Spark APIs - DataFrameReader, Dataset, Column, functions
+* Show Spark Scala API docs
+* Show Spark documentation
+
+
 # Parallelism and Partitioning
 * Goldilocks - not too many, not too few
      * Too many tasks - scheduling overhead, little work

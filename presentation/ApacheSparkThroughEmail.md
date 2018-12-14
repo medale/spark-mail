@@ -99,6 +99,12 @@ val spark = SparkSession.builder().
 * See [Notebook ../notebooks/html/ApacheSparkThroughEmail2.html](../notebooks/html/ApacheSparkThroughEmail2.html)
 
 
+# Spark APIs - DataFrameReader, Dataset, Column, functions
+
+![](graphics/DataFrameReader.png){height=40%}\ ![](graphics/DatasetApi.png){height=40%}
+![](graphics/Column.png){height=40%}\ ![](graphics/FunctionApi.png){height=40%}
+
+
 # Parallelism and Partitioning
 * Goldilocks - not too many, not too few
 * Initial parallelism - number of input "blocks"
