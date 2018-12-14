@@ -51,7 +51,7 @@
 
 # Hello, Spark Email World!
 * Jupyter Notebook with Apache Toree
-* See [Notebook ../notebooks/html/ApacheSparkThroughEmail1.html](../notebooks/html/ApacheSparkThroughEmail1.html)
+* See [Notebook ../notebooks/html/ApacheSparkThroughEmail1.html](https://medale.github.io/spark-mail/notebooks/html/ApacheSparkThroughEmail1.html)
 
 
 # Cluster Manager, Driver, Executors, Tasks
@@ -96,7 +96,7 @@ val spark = SparkSession.builder().
 
 # Where clause, Column methods, Built-in functions
 
-* See [Notebook ../notebooks/html/ApacheSparkThroughEmail2.html](../notebooks/html/ApacheSparkThroughEmail2.html)
+* See [Notebook ../notebooks/html/ApacheSparkThroughEmail2.html](https://medale.github.io/spark-mail/notebooks/html/ApacheSparkThroughEmail2.html)
 
 
 # Spark APIs - DataFrameReader, Dataset, Column, functions
@@ -113,7 +113,7 @@ val spark = SparkSession.builder().
 
 # Explode, Shuffle Partitions, UDF, Parquet partition
 
-*  See [Notebook ../notebooks/html/ApacheSparkThroughEmail3.html](../notebooks/html/ApacheSparkThroughEmail3.html)
+*  See [Notebook ../notebooks/html/ApacheSparkThroughEmail3.html](https://medale.github.io/spark-mail/notebooks/html/ApacheSparkThroughEmail3.html)
 
 
 # And now for something completely different: Colon Cancer
