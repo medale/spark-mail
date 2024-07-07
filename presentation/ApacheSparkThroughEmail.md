@@ -1,6 +1,6 @@
 % Apache Spark Through Email
 % Markus Dale, medale@asymmetrik.com
-% Nov 2018
+% July 2024
 
 # Intro, Slides And Code
 * Slides: https://github.com/medale/spark-mail/blob/master/presentation/ApacheSparkThroughEmail.pdf
@@ -16,12 +16,6 @@
 # Data Science for Small Dataset
 
 ![Laptop](graphics/Laptop.png)
-
-
-# Data Science for Larger Dataset
-
-![Standalone Server](graphics/StandaloneServer1.png){height=80%}
-
 
 # Data Science for Larger Dataset (Vertical Scaling)
 

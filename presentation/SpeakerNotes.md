@@ -1,6 +1,6 @@
 % Apache Spark Through Email
 % Markus Dale
-% Nov 2018
+% July 2024
 
 # Intro, Slides And Code
 * mostly Java, big data with Hadoop
@@ -23,10 +23,6 @@
 # Data Science for Small Dataset
 * Laptop
 * Explore subset, develop approaches/algorithms, find *features*
-
-
-# Data Science for Larger Dataset
-* Standalone server - more memory, faster CPU, more storage
 
 
 # Data Science for Larger Dataset (Vertical Scaling)
