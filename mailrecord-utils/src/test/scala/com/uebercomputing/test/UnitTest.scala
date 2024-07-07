@@ -1,8 +1,6 @@
 package com.uebercomputing.test
 
-import org.scalatest.FunSuite
-import org.scalatest.Matchers
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
-class UnitTest extends FunSuite with Matchers {
-
-}
+class UnitTest extends AnyFunSuite with Matchers {}

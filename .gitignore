@@ -17,3 +17,4 @@ derby.log
 # sbt specific
 target
 .attach_pid*
+.bsp

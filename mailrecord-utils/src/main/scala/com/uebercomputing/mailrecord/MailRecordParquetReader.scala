@@ -1,10 +1,10 @@
 package com.uebercomputing.mailrecord
 
 import java.io.Closeable
-import org.apache.hadoop.fs.Path
-import org.apache.parquet.hadoop.ParquetReader
 import org.apache.commons.io.IOUtils
+import org.apache.hadoop.fs.Path
 import org.apache.parquet.avro.AvroReadSupport
+import org.apache.parquet.hadoop.ParquetReader
 
 class MailRecordParquetReader extends Closeable {
 
@@ -17,9 +17,8 @@ class MailRecordParquetReader extends Closeable {
   }
 
   /**
-   * Must call readNext to read next mail record. If it exists (true),
-   * the record can be obtained by then calling next(). If false,
-   * next will return null.
+   * Must call readNext to read next mail record. If it exists (true), the record can be obtained by then calling
+   * next(). If false, next will return null.
    */
   def readNext(): Boolean = {
     mailRecord = reader.read()
@@ -27,8 +26,7 @@ class MailRecordParquetReader extends Closeable {
   }
 
   /**
-   * Must call readNext to advance to next record.
-   * Check for true/false. If false, mailRecord will be null.
+   * Must call readNext to advance to next record. Check for true/false. If false, mailRecord will be null.
    */
   def next(): MailRecord = {
     mailRecord
@@ -37,4 +35,5 @@ class MailRecordParquetReader extends Closeable {
   override def close(): Unit = {
     IOUtils.closeQuietly(reader)
   }
+
 }

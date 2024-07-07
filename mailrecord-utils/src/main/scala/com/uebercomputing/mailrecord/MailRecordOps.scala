@@ -1,40 +1,47 @@
 package com.uebercomputing.mailrecord
 
-import scala.collection.JavaConverters._
+import java.util.{List => JavaList}
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
-import java.util.{List => JavaList}
+import scala.jdk.CollectionConverters._
 
 object MailRecordOps {
 
   /**
-    * Converts Scala values to Java MailRecord implementation generated from
-    * Avro avdl.
-    *
-    * @param uuid
-    * @param from
-    * @param tosOpt
-    * @param ccsOpt
-    * @param bccsOpt
-    * @param dateUtcEpoch
-    * @param subject
-    * @param mailFieldsOpt
-    * @param body
-    * @param attachmentsOpt
-    * @return new MailRecord with param values
-    */
-  def apply(uuid: String, from: String, tosOpt: Option[Seq[String]] = None,
-    ccsOpt: Option[Seq[String]] = None, bccsOpt: Option[Seq[String]] = None,
-    dateUtcEpoch: Long, subject: String,
-    mailFieldsOpt: Option[Map[String, String]] = None,
-    body: String, attachmentsOpt: Option[Seq[Attachment]] = None): MailRecord = {
+   * Converts Scala values to Java MailRecord implementation generated from Avro avdl.
+   *
+   * @param uuid
+   * @param from
+   * @param tosOpt
+   * @param ccsOpt
+   * @param bccsOpt
+   * @param dateUtcEpoch
+   * @param subject
+   * @param mailFieldsOpt
+   * @param body
+   * @param attachmentsOpt
+   * @return
+   *   new MailRecord with param values
+   */
+  def apply(
+      uuid: String,
+      from: String,
+      tosOpt: Option[Seq[String]] = None,
+      ccsOpt: Option[Seq[String]] = None,
+      bccsOpt: Option[Seq[String]] = None,
+      dateUtcEpoch: Long,
+      subject: String,
+      mailFieldsOpt: Option[Map[String, String]] = None,
+      body: String,
+      attachmentsOpt: Option[Seq[Attachment]] = None
+    ): MailRecord = {
 
     val builder = MailRecord.newBuilder()
     builder.setUuid(uuid)
     builder.setFrom(from)
-    tosOpt.foreach (tos =>builder.setTo(tos.asJava))
-    ccsOpt.foreach( ccs => builder.setCc(ccs.asJava))
-    bccsOpt.foreach( bccs => builder.setBcc(bccs.asJava))
+    tosOpt.foreach(tos => builder.setTo(tos.asJava))
+    ccsOpt.foreach(ccs => builder.setCc(ccs.asJava))
+    bccsOpt.foreach(bccs => builder.setBcc(bccs.asJava))
     builder.setDateUtcEpoch(dateUtcEpoch)
     builder.setSubject(subject)
     mailFieldsOpt.foreach(mailFields => builder.setMailFields(mailFields.asJava))
@@ -44,6 +51,7 @@ object MailRecordOps {
     val mailRecord = builder.build()
     mailRecord
   }
+
 }
 
 case class MailRecordOps(mailRecord: MailRecord) {
@@ -85,12 +93,11 @@ case class MailRecordOps(mailRecord: MailRecord) {
   }
 
   /**
-   * Returns Some[scala.collection.immutable.List[T]] if javaList is not null,
-   * None otherwise (thanks, Jeff!)
+   * Returns Some[scala.collection.immutable.List[T]] if javaList is not null, None otherwise (thanks, Jeff!)
    */
   private def getAsScalaListOption[T](javaList: JavaList[T]): Option[List[T]] = {
-    Option(javaList).map {
-      java => java.asScala.toList
+    Option(javaList).map { java =>
+      java.asScala.toList
     }
   }
 

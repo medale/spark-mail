@@ -2,14 +2,12 @@ package com.uebercomputing.mailrecord
 
 import java.io.Closeable
 import java.io.InputStream
-
 import org.apache.avro.file.DataFileStream
 import org.apache.avro.specific.SpecificDatumReader
 import org.apache.commons.io.IOUtils
 
 /**
- * Used to read MailRecord objects from an Avro
- * collection file.
+ * Used to read MailRecord objects from an Avro collection file.
  */
 class MailRecordAvroReader extends Closeable {
 
@@ -31,4 +29,5 @@ class MailRecordAvroReader extends Closeable {
   override def close(): Unit = {
     IOUtils.closeQuietly(mailRecordStream)
   }
+
 }

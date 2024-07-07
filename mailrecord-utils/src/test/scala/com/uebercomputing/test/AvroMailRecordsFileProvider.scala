@@ -1,19 +1,20 @@
 package com.uebercomputing.test
 
+import java.nio.file.{Path => NioPath}
 import java.nio.file.Files
-import java.nio.file.{ Path => NioPath }
-import org.apache.hadoop.fs.FileSystem
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{ Path => HadoopPath }
-import org.apache.hadoop.fs.FSDataOutputStream
 import org.apache.commons.io.IOUtils
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{Path => HadoopPath}
+import org.apache.hadoop.fs.FileSystem
+import org.apache.hadoop.fs.FSDataOutputStream
 
 case class AvroFileTestInfo(
-  val localPath: NioPath,
-  val fileSystem: FileSystem,
-  val hadoopPath: HadoopPath,
-  val out: FSDataOutputStream,
-  val hadoopConf: Configuration)
+    val localPath: NioPath,
+    val fileSystem: FileSystem,
+    val hadoopPath: HadoopPath,
+    val out: FSDataOutputStream,
+    val hadoopConf: Configuration
+  )
 
 trait AvroMailRecordsFileProvider {
 
@@ -47,4 +48,5 @@ trait AvroMailRecordsFileProvider {
     val fileSys = FileSystem.get(hadoopConf)
     fileSys
   }
+
 }

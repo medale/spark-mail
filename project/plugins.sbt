@@ -1,22 +1,27 @@
-//sbt plugins - https://dl.bintray.com/sbt/sbt-plugin-releases/
-//Note: SBT runs with scala 2.12 - we can use 2.12 for sbt-assembly
-//invoke via: sbt assembly
-addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.14.9")
+//sbt plugins - https://central.sonatype.com
 
-//invoke via: sbt scalastyle
-addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "1.0.0")
+// invoke via: whatDependsOn <org> <module> <revision>
+// e.g. whatDependsOn commons-beanutils commons-beanutils-core 1.9.4
+addDependencyTreePlugin
 
-//invoke via: sbt editsource:edit/clean
-addSbtPlugin("org.clapper" %% "sbt-editsource" % "1.0.0")
+// invoke via: sbt assembly
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "2.2.0")
 
-//invoke via: dependencyTree
-//invoke via: whatDependsOn <org> <module> <revision>
-//whatDependsOn commons-beanutils commons-beanutils-core 1.8.0
-addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.9.2")
+// invoke via: sbt scalafix
+addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % "0.12.1")
 
-//sbt <config-scope>:packageBin
-//sbt packageZipTarball
-addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.3.12")
+// invoke via: sbt scalafmtAll
+addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.5.2")
+
+// invoke via: sbt packageZipTarball
+addSbtPlugin("com.github.sbt" % "sbt-native-packager" % "1.10.0")
 
 //sbt avroScalaGenerateSpecific
-addSbtPlugin("com.julianpeeters" % "sbt-avrohugger" % "2.0.0-RC14")
+addSbtPlugin("com.julianpeeters" % "sbt-avrohugger" % "2.8.3")
+
+// https://github.com/rtimush/sbt-updates
+// invoke via: dependencyUpdates
+// invoke via: dependencyUpdatesReport (default output target/dependency-updates.txt)
+// dependencyUpdatesFilter -= moduleFilter(organization = "org.scala-lang")
+addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.6.4")
+

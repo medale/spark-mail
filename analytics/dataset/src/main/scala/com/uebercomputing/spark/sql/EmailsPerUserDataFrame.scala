@@ -3,20 +3,15 @@ package com.uebercomputing.spark.sql
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.udf
 
-import com.databricks.spark.avro._
-
 /**
  */
 object EmailsPerUserDataFrame {
 
   def main(args: Array[String]): Unit = {
-    val spark = SparkSession.builder().
-      appName("test").
-      master("local[2]").
-      getOrCreate()
+    val spark = SparkSession.builder().appName("test").master("local[2]").getOrCreate()
 
     // load file via Databricks' spark-avro library
-    val recordsDf = spark.read.avro("enron.avro")
+    val recordsDf = spark.read.format("avro").load("enron.avro")
 
     val getUserUdf = udf((mailFields: Map[String, String]) => mailFields("UserName"))
 
@@ -35,4 +30,5 @@ object EmailsPerUserDataFrame {
     // or
     recordsDf.explode("mailFields", "user")((mailFields: Map[String, String]) => List(mailFields("UserName")))
   }
+
 }

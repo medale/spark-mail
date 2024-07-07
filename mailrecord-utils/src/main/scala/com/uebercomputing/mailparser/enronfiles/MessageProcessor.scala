@@ -12,5 +12,10 @@ object MessageProcessor {
 
 abstract class MessageProcessor {
 
-  def process(fileSystemData: FileSystemMetadata, mailIn: Source, filter: MailRecord => Boolean): MailRecord
+  def process(
+      fileSystemData: FileSystemMetadata,
+      mailIn: Source,
+      filter: MailRecord => Boolean
+    ): MailRecord
+
 }

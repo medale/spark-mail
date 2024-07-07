@@ -1,14 +1,11 @@
 package com.uebercomputing.mailparser.enronfiles
 
+import org.apache.commons.codec.digest.DigestUtils
 import org.joda.time.format.DateTimeFormat
-
-import scala.util.control.NonFatal
-import com.google.common.hash.Hashing
-import com.google.common.base.Charsets
-
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
+import scala.util.control.NonFatal
 
 object MessageUtils {
 
@@ -27,8 +24,8 @@ object MessageUtils {
   }
 
   def getMd5Hash(message: String): String = {
-    val hashString = Hashing.md5().hashString(message, Charsets.UTF_8)
-    val md5Hash = hashString.toString()
-    md5Hash
+    val md5HashHex = DigestUtils.md5Hex(message)
+    md5HashHex
   }
+
 }

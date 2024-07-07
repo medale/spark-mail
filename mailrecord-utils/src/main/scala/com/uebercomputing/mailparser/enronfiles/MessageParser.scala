@@ -22,25 +22,23 @@ object MessageParser {
 
   private val emptyKeyRE = """(.*?):[\s]*""".r
   private val keyValueRE = """(.*?): (.*)""".r
-  private val mailAddressHeaders = List(To,Cc,Bcc)
+  private val mailAddressHeaders = List(To, Cc, Bcc)
 
   /**
-   * Returns parsed mail message as key/value pairs. mailAddressHeaders are
-   * potentially comma-separated mail addresses (if more than one addressee).
+   * Returns parsed mail message as key/value pairs. mailAddressHeaders are potentially comma-separated mail addresses
+   * (if more than one addressee).
    */
   def apply(src: Source): Map[String, String] = {
-    val lines = src.getLines
+    val lines = src.getLines()
     parseRaw(lines)
   }
 
   /**
-   * Returns a map containing parsed message headers using the original header
-   * used in mail message. For example, the line "Subject: Test" would create
-   * a key "Subject" and a value of "Test".
+   * Returns a map containing parsed message headers using the original header used in mail message. For example, the
+   * line "Subject: Test" would create a key "Subject" and a value of "Test".
    *
-   * Some headers may take up multiple lines. We create one line key/value pairs
-   * by replacing the newline with a space. A blank line denotes the end of the
-   * header section and all subsequent lines are stored under the key "Body".
+   * Some headers may take up multiple lines. We create one line key/value pairs by replacing the newline with a space.
+   * A blank line denotes the end of the header section and all subsequent lines are stored under the key "Body".
    */
   def parseRaw(lines: Iterator[String]): Map[String, String] = {
 
@@ -49,10 +47,11 @@ object MessageParser {
       messageParts.updated(Body, body)
     }
 
-    def parseRawHelper(lines: Iterator[String],
-                       messageParts: Map[String, String],
-                       lastKey: Option[String]):
-      Map[String, String] = {
+    def parseRawHelper(
+        lines: Iterator[String],
+        messageParts: Map[String, String],
+        lastKey: Option[String]
+      ): Map[String, String] = {
       if (lines.hasNext) {
         val line = lines.next().trim()
         line match {
@@ -74,7 +73,8 @@ object MessageParser {
                 val isBody = false
                 parseRawHelper(lines, messageParts.updated(key, newValue), lastKey)
               }
-              case None => throw ParseException("Found line matching multiheader line but no previous header key or body")
+              case None =>
+                throw ParseException("Found line matching multiheader line but no previous header key or body")
             }
           }
         }
@@ -84,4 +84,5 @@ object MessageParser {
     }
     parseRawHelper(lines, Map.empty[String, String], None)
   }
+
 }

@@ -1,10 +1,10 @@
 package com.uebercomputing.mailparser.enronfiles
 
-import scala.collection.JavaConverters._
-import scala.io.Source
-import com.uebercomputing.test.AvroFileFixtureTest
-import resource.managed
 import com.uebercomputing.mailrecord.MailRecord
+import com.uebercomputing.test.AvroFileFixtureTest
+import scala.io.Source
+import scala.jdk.CollectionConverters._
+import scala.util.Using
 
 class AvroMessageProcessorTest extends AvroFileFixtureTest {
 
@@ -13,7 +13,7 @@ class AvroMessageProcessorTest extends AvroFileFixtureTest {
   test("sunny day conversion from neal-s 99.") { testInfo =>
     val processor = new MessageProcessor with AvroMessageProcessor
     processor.open(testInfo.out)
-    for (testFileIn <- managed(getClass().getResourceAsStream(TestFileUrl))) {
+    Using(getClass.getResourceAsStream(TestFileUrl)) { testFileIn =>
       val msgSrc = Source.fromInputStream(testFileIn)
       val fileSystemMetadata = getFileSystemMetadata(TestFileUrl)
       val noFilter = (m: MailRecord) => true
@@ -25,7 +25,8 @@ class AvroMessageProcessorTest extends AvroFileFixtureTest {
           val mailFields = mailFieldsJava.asScala
 
           val fieldNames = Seq(MessageProcessor.FileName, MessageProcessor.FolderName, MessageProcessor.UserName)
-          val expectedValues = Seq(fileSystemMetadata.fileName, fileSystemMetadata.folderName, fileSystemMetadata.userName)
+          val expectedValues =
+            Seq(fileSystemMetadata.fileName, fileSystemMetadata.folderName, fileSystemMetadata.userName)
 
           val keyExpectedValues = fieldNames.zip(expectedValues)
           keyExpectedValues.foreach { case (key, expectedValue) =>
@@ -42,12 +43,13 @@ class AvroMessageProcessorTest extends AvroFileFixtureTest {
           assert("<19546475.1075853053633.JavaMail.evans@thyme>" === mailFields(MessageParser.MsgId))
 
           assert("chris.sebesta@enron.com" === mailRecord.getFrom)
-          assert("RE: Alliant Energy - IES Utilities dispute re: Poi 2870 - Cherokee #1 TBS - July 99 thru April 2001"
-            === mailRecord.getSubject)
+          assert(
+            "RE: Alliant Energy - IES Utilities dispute re: Poi 2870 - Cherokee #1 TBS - July 99 thru April 2001"
+              === mailRecord.getSubject
+          )
         }
         case _ => fail("Mail record did not have mailFields")
       }
-
 
     }
     processor.close()
@@ -55,7 +57,7 @@ class AvroMessageProcessorTest extends AvroFileFixtureTest {
     val fileSys = testInfo.fileSystem
     assert(fileSys.exists(testInfo.hadoopPath))
     val fileStatus = fileSys.getFileStatus(testInfo.hadoopPath)
-    val len = fileStatus.getLen()
+    val len = fileStatus.getLen
     assert(len > 0)
   }
 
@@ -64,7 +66,7 @@ class AvroMessageProcessorTest extends AvroFileFixtureTest {
     val userName = pathParts(2)
     val folderName = pathParts(3)
     val fileName = pathParts(4)
-    FileSystemMetadata(userName, folderName,
-      fileName)
+    FileSystemMetadata(userName, folderName, fileName)
   }
+
 }

@@ -1,8 +1,8 @@
 package com.uebercomputing.background
 
 /**
-  * Used throughout Scala collections, also available on RDDs!
-  */
+ * Used throughout Scala collections, also available on RDDs!
+ */
 object FunctionalCombinators {
 
   def main(args: Array[String]): Unit = {
@@ -54,26 +54,26 @@ object FunctionalCombinators {
     println(s"Even count was $evenCount")
 
     val str = "this:is:a:string"
-    val count = str.foldLeft(0)((count, ch) => if (ch == ':') (count + 1) else count)
+    val count = str.foldLeft(0)((count, ch) => if (ch == ':') count + 1 else count)
 
-    val wordsAll = List("when", "shall", "we", "three", "meet", "again",
-      "in", "thunder", "lightning", "or", "in", "rain")
+    val wordsAll =
+      List("when", "shall", "we", "three", "meet", "again", "in", "thunder", "lightning", "or", "in", "rain")
     // expected: (4 -> 3), (2 -> 4), (5 -> 3), (7 -> 1), (9 -> 1)
     // actual: Map(5 -> 3, 9 -> 1, 2 -> 4, 7 -> 1, 4 -> 3)
     val lengthDistro = wordsAll.aggregate(Map[Int, Int]())(
-      seqop = (distMap, currWord) =>
-        {
-          val length = currWord.length()
-          val newCount = distMap.getOrElse(length, 0) + 1
-          val newKv = (length, newCount)
-          distMap + newKv
-        },
+      seqop = (distMap, currWord) => {
+        val length = currWord.length()
+        val newCount = distMap.getOrElse(length, 0) + 1
+        val newKv = (length, newCount)
+        distMap + newKv
+      },
       combop = (distMap1, distMap2) => {
-        distMap1 ++ distMap2.map {
-          case (k, v) =>
-            (k, v + distMap1.getOrElse(k, 0))
+        distMap1 ++ distMap2.map { case (k, v) =>
+          (k, v + distMap1.getOrElse(k, 0))
         }
-      })
+      }
+    )
     println(lengthDistro)
   }
+
 }

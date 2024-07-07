@@ -1,11 +1,11 @@
 package com.uebercomputing.mailrecord
 
 import com.uebercomputing.test.UnitTest
+import java.io.File
+import java.util.UUID
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
-import java.io.File
-import java.util.UUID
 
 class MailRecordParquetWriterTest extends UnitTest with MailRecordProvider {
 

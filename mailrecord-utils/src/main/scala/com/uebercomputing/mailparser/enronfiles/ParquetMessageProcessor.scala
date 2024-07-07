@@ -1,16 +1,15 @@
 package com.uebercomputing.mailparser.enronfiles
 
 import com.uebercomputing.mailrecord.MailRecord
+import com.uebercomputing.mailrecord.MailRecordParquetWriter
 import org.apache.commons.io.IOUtils
+import org.apache.hadoop.fs.Path
 import org.apache.log4j.Logger
 import scala.io.Source
-import com.uebercomputing.mailrecord.MailRecordParquetWriter
-import org.apache.hadoop.fs.Path
 
 /**
- * A Message processor trait to save output in Parquet format
- * as MailRecord records. Mixed in with MailDirectoryProcessor
- * (see ParquetMain).
+ * A Message processor trait to save output in Parquet format as MailRecord records. Mixed in with
+ * MailDirectoryProcessor (see ParquetMain).
  */
 trait ParquetMessageProcessor extends MessageProcessor {
 
@@ -25,12 +24,17 @@ trait ParquetMessageProcessor extends MessageProcessor {
   }
 
   /**
-   * Parses mailIn and, if filter is true, stores result as a mail record to the
-   * output stream provided by calling the open method.
+   * Parses mailIn and, if filter is true, stores result as a mail record to the output stream provided by calling the
+   * open method.
    *
-   * @return MailRecord as it was written to output stream
+   * @return
+   *   MailRecord as it was written to output stream
    */
-  override def process(fileSystemMeta: FileSystemMetadata, mailIn: Source, filter: MailRecord => Boolean): MailRecord = {
+  override def process(
+      fileSystemMeta: FileSystemMetadata,
+      mailIn: Source,
+      filter: MailRecord => Boolean
+    ): MailRecord = {
     val parseMap = MessageParser(mailIn)
     val mailRecord = ParsedMessageToMailRecordConverter.convert(fileSystemMeta, parseMap)
     recordWriter.append(mailRecord)
@@ -38,7 +42,8 @@ trait ParquetMessageProcessor extends MessageProcessor {
     mailRecord
   }
 
-  def close() {
+  def close(): Unit = {
     IOUtils.closeQuietly(recordWriter)
   }
+
 }

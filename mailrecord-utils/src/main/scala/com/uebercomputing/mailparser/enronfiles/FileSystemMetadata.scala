@@ -1,3 +1,7 @@
 package com.uebercomputing.mailparser.enronfiles
 
-case class FileSystemMetadata(val userName: String, val folderName: String, val fileName: String)
+case class FileSystemMetadata(
+    userName: String,
+    folderName: String,
+    fileName: String
+  )

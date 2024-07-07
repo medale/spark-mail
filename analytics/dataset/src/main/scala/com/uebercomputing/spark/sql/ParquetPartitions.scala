@@ -1,26 +1,22 @@
 package com.uebercomputing.spark.sql
 
-import org.apache.spark.sql.functions.udf
 import com.uebercomputing.utils.DatePartitioner
 import com.uebercomputing.utils.PartitionByYear
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.functions.udf
 
 /**
- *
  */
 object ParquetPartitions {
 
   def main(args: Array[String]): Unit = {
-    val spark = SparkSession.builder().
-      appName("test").
-      master("local[2]").
-      getOrCreate()
+    val spark = SparkSession.builder().appName("test").master("local[2]").getOrCreate()
 
-    //assumes enron.parquet sym link points to valid file
+    // assumes enron.parquet sym link points to valid file
 
-    //or read.format("parquet").load("enron.parquet").option...
+    // or read.format("parquet").load("enron.parquet").option...
     val emailsDf = spark.read.parquet("enron.parquet")
-    emailsDf.printSchema
+    emailsDf.printSchema()
     /*
  root
  |-- uuid: string (nullable = false)
@@ -54,7 +50,8 @@ object ParquetPartitions {
 _metadata         year=0002  year=1997  year=2000  year=2004  year=2012  year=2043
 _SUCCESS          year=1980  year=1998  year=2001  year=2005  year=2020  year=2044
 part-r-00001.gz.parquet in each
-*/
+     */
 
   }
+
 }

@@ -1,13 +1,10 @@
 package com.uebercomputing.mailparser.enronfiles
 
+import com.uebercomputing.test.UnitTest
 import java.io.FileInputStream
-
+import org.apache.commons.io.IOUtils
 import scala.io.Source
 import scala.util.control.NonFatal
-
-import org.apache.commons.io.IOUtils
-
-import com.uebercomputing.test.UnitTest
 
 class MessageParserTest extends UnitTest {
 
@@ -16,7 +13,9 @@ class MessageParserTest extends UnitTest {
   test("parseRaw for multiline Subject") {
     val subject = """Subject: RE: Alliant Energy - IES Utilities dispute re: Poi 2870 - Cherokee
                   |#1 TBS - July 99 thru April 2001""".stripMargin
-    val expected = Map("Subject" -> "RE: Alliant Energy - IES Utilities dispute re: Poi 2870 - Cherokee #1 TBS - July 99 thru April 2001")
+    val expected = Map(
+      "Subject" -> "RE: Alliant Energy - IES Utilities dispute re: Poi 2870 - Cherokee #1 TBS - July 99 thru April 2001"
+    )
 
     assertResult(expected) {
       val lines = Source.fromString(subject).getLines()
@@ -78,7 +77,8 @@ class MessageParserTest extends UnitTest {
       "X-Folder" -> """\LBLAIR (Non-Privileged)\Blair, Lynn\Acctg - Customer Issues on Billing""",
       "X-Origin" -> "Blair-L",
       "X-FileName" -> "LBLAIR (Non-Privileged).pst",
-      "Body" -> "No, Alliant only agreed to pay.  I am still working with Dari and Shelly on a letter to be sent.  Thanks,  Raetta")
+      "Body" -> "No, Alliant only agreed to pay.  I am still working with Dari and Shelly on a letter to be sent.  Thanks,  Raetta"
+    )
 
     val lines = Source.fromString(message).getLines()
     val actual = MessageParser.parseRaw(lines)
@@ -109,7 +109,9 @@ class MessageParserTest extends UnitTest {
     }
     assert(actual("Body").startsWith("The following"))
     assert(actual("X-FileName") === "klay (Non-Privileged).pst")
-    assert(actual("To") === "babbio@verizon.com, j58391@aol.com, ghh@telcordia.com, kenneth.lay@enron.com, slitvack@deweyballantine.com, kjewett@kpcb.com, lsalhany@lifefx.com")
+    assert(
+      actual("To") === "babbio@verizon.com, j58391@aol.com, ghh@telcordia.com, kenneth.lay@enron.com, slitvack@deweyballantine.com, kjewett@kpcb.com, lsalhany@lifefx.com"
+    )
     assert(actual.size === 16)
   }
 
@@ -128,8 +130,8 @@ class MessageParserTest extends UnitTest {
   }
 
   ignore("process 163") {
-    //fixed by implicit utf-8 codec - add specific test!
-    //TODO
+    // fixed by implicit utf-8 codec - add specific test!
+    // TODO
     val in = new FileInputStream("/datasets/enron/raw/maildir/kean-s/california___working_group/163.txt")
     val msg = IOUtils.toString(in)
     val mailIn = Source.fromString(msg)

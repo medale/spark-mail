@@ -7,6 +7,6 @@ object Implicits {
   /**
    * Provides extra Scala-centric utility method on top of mail record object.
    */
-  implicit def mailRecordToMailRecordOps(mailRecord: MailRecord) = MailRecordOps(mailRecord)
+  implicit def mailRecordToMailRecordOps(mailRecord: MailRecord): MailRecordOps = MailRecordOps(mailRecord)
 
 }

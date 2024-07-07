@@ -2,31 +2,23 @@ import sbt._
 
 object Dependencies {
 
-  val sparkVersion = "2.4.0"
+  val sparkVersion = "3.5.1"
 
   //match Spark's pom for these dependencies!
-  val scalaVersionStr = "2.11.8"
-  val hadoopVersion = "2.7.3"
-  val parquetVersion = "1.8.3"
-  val avroVersion = "1.7.7"
-  val log4jVersion = "1.2.17"
+  val scalaVersionStr = "2.13.14"
+  val hadoopVersion = "3.3.4"
+  val parquetVersion = "1.13.1"
+  val avroVersion = "1.11.2"
+  val log4jVersion = "2.20.0"
   //end of Spark version match
 
-  //Note: This used to include
-  //     ("com.uebercomputing" % "sparkmail-mailrecord" % "1.0.0")
-  //but we just copied the generated .java files to mailrecord-utils
-  //for ease of build (sparkmail-mailrecord built with Maven)
   val commonDependencies = Seq(
      ("org.scala-lang" % "scala-library" % scalaVersionStr),
      ("org.apache.avro" % "avro" % avroVersion),
      ("org.apache.parquet" % "parquet-avro" % parquetVersion),
-     ("com.twitter" %% "chill-avro" % "0.9.3"),
-     ("com.jsuereth" %% "scala-arm" % "2.0"),
-     ("com.github.scopt" %% "scopt" % "3.7.0"),
-     ("joda-time" % "joda-time" % "2.10.1"),
-     ("org.joda" % "joda-convert" % "2.1.2"),
-     ("commons-io" % "commons-io" % "2.4"),
-     ("log4j" % "log4j" % log4jVersion)
+     ("com.github.scopt" %% "scopt" % "4.1.0"),
+     ("commons-io" % "commons-io" % "2.13.0"),
+     ("org.apache.logging.log4j" % "log4j-slf4j2-impl" % log4jVersion)
   )
 
   val hadoopDependencies = Seq(
@@ -39,26 +31,25 @@ object Dependencies {
       .exclude("org.slf4j", "slf4j-api")
   )
 
-  //Avro, CSV - https://spark-packages.org/
+  //Avro - https://spark-packages.org/
   val sparkDependenciesBase = Seq(
     ("org.apache.spark" %% "spark-core" % sparkVersion)
-      .exclude("org.scalatest", "scalatest_2.11"),
+      .exclude("org.scalatest", "scalatest_2.13"),
     ("org.apache.spark" %% "spark-sql" % sparkVersion)
-      .exclude("org.scalatest", "scalatest_2.11"),
+      .exclude("org.scalatest", "scalatest_2.13"),
     ("org.apache.spark" %% "spark-hive" % sparkVersion)
-      .exclude("org.scalatest", "scalatest_2.11"),
+      .exclude("org.scalatest", "scalatest_2.13"),
     ("org.apache.spark" %% "spark-graphx" % sparkVersion)
-      .exclude("org.scalatest", "scalatest_2.11"),
-    ("com.databricks" %% "spark-avro" % "4.0.0"),
-    ("com.databricks" %% "spark-csv" % "1.5.0")
+      .exclude("org.scalatest", "scalatest_2.13"),
+    ("org.apache.spark" %% "spark-avro" % "3.5.1")
   )
 
   val sparkDependencies = sparkDependenciesBase.map(_ % "provided")
 
   //test and integration test dependencies/scope
   val testDependencies = Seq(
-    ("org.scalatest" %% "scalatest" % "3.0.5" % "it,test")
+    ("org.scalatest" %% "scalatest" % "3.2.19" % "test")
   )
 
-  val sparkTestDependencies = Seq(("com.holdenkarau" %% "spark-testing-base" % "2.3.1_0.10.0" % "it,test"))
+  val sparkTestDependencies = Seq(("com.holdenkarau" %% "spark-testing-base" % "3.5.1_1.5.3" % "test"))
 }

@@ -8,12 +8,18 @@ ETL (Extract Transform Load) the original file-per-email dataset into Apache Avr
 explore the email set using Spark.
 
 # Building the project
-The Spark Mail project uses an sbt build. See https://www.scala-sbt.org/ for how to download and install sbt.
+The Spark Mail project uses an sbt build. See https://www.scala-sbt.org/ for how to download and install sbt. Or
+install via sdkman (https://sdkman.io/):
+
+```bash
+curl -s "https://get.sdkman.io" | bash
+sdk install sbt
+```
 
 Then from mail-spark directory:
 ```bash
 # build "fat" jar with classes and all dependencies under 
-# mailrecords-utils/target/scala-2.11/mailrecord-utils-{version}-fat.jar
+# mailrecords-utils/target/scala-2.13/mailrecord-utils-{version}-fat.jar
 sbt assembly
 ```
 
