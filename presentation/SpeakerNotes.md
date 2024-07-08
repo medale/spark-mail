@@ -5,7 +5,7 @@
 # Intro, Slides And Code
 * mostly Java, big data with Hadoop
 * big data with Spark, Databricks, Scala
-* Now Asymmetrik - Scala, Spark, Elasticsearch, Akka...
+* Now Asymmetrik/BlueHalo - Scala, Akka...
 * Slides: https://github.com/medale/spark-mail/blob/master/presentation/ApacheSparkThroughEmail.pdf
 * Spark Code Examples: https://github.com/medale/spark-mail/
 * README.md 
@@ -14,7 +14,7 @@
 
 
 # Goals
-* Scalable data processing
+* Scalable data processing (batch processing)
 * Spark structured processing
 * Spark concepts - RDD, Dataset/DataFrame, partitions
 * Notebooks, Spark UI

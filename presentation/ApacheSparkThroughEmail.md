@@ -36,6 +36,12 @@
 
 ![Some Frameworks Around Hadoop](graphics/HadoopEcosystem.png)
 
+# Apache Spark API
+* Scala
+* Java
+* Python
+* R
+* => Project Tungsten code generation
 
 # Apache Spark Components
 
@@ -58,9 +64,10 @@
 * `spark`: [spark.sql.SparkSession](https://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.sql.SparkSession)
 
 ```scala
-//SparkSession provided by notebook as spark
+//SparkSession provided by notebook or shell as spark
+val homeDir = sys.props("user.home")
 val records = spark.read.
-   parquet("/datasets/enron/enron-small.parquet")
+   parquet(s"$homeDir/datasets/enron/enron-small.parquet")
 
 //In regular code for spark-submit 
 //com.uebercomputing.spark.dataset.TopNEmailMessageSenders
@@ -77,7 +84,12 @@ val spark = SparkSession.builder().
      * text...
      * Also: https://spark-packages.org - Avro, Redshift, MongoDB...
 
-
+# Transformations vs. Actions
+* Transformation: returns a new RDD (nothing gets executed)
+     * `read`, `cache`, `filter`...
+* Actions: trigger execution, catalyst query optimizer, Tungsten code generation
+     * `count`, `write`, `
+* 
 # Scaling Behind the Scenes
 
 ![Jobs and Tasks](graphics/SparkJobsNotebook1.png)
@@ -110,6 +122,11 @@ val spark = SparkSession.builder().
 *  See [Notebook ../notebooks/html/ApacheSparkThroughEmail3.html](https://medale.github.io/spark-mail/notebooks/html/ApacheSparkThroughEmail3.html)
 
 
+# Apache Parquet/Apache Arrow
+* Avro - record-oriented data format
+* Parquet - column-oriented data format by page
+* Arrow - share memory for Python (https://spark.apache.org/docs/latest/api/python/user_guide/sql/arrow_pandas.html)
+
 # And now for something completely different: Colon Cancer
 * Screening saves lives! ![](graphics/Chemo.png){width=100px}
      * Colonoscopy - talk to your doc
@@ -120,7 +137,6 @@ val spark = SparkSession.builder().
 
 ![](graphics/Farley.png){width=100px}\ ![](graphics/AsymmetrikPingPong.png){width=100px}
 
-* medale@asymmetrik.com
+* markus.dale@bluehalo.com
 * [Infrequent blog/past presentations http://uebercomputing.com/](http://uebercomputing.com/)
-* [Baltimore Scala Meetup https://www.meetup.com/Baltimore-Scala/](https://www.meetup.com/Baltimore-Scala/)
 * [Spark Mail repo https://github.com/medale/spark-mail/](https://github.com/medale/spark-mail)

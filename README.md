@@ -96,12 +96,25 @@ a file name!!!
 https://www.cs.cmu.edu/~./enron/ describes the Enron email dataset and provides
 a download link at https://www.cs.cmu.edu/~./enron/enron_mail_20150507.tar.gz. 
 
+Create an `enron` directory and define the `ENRON_HOME` environment variable to point
+to that directory. In the example below we define `ENRON_DIR` as `$HOME/datasets/enron`.
+Under `ENRON_DIR` we create a `raw` directory ($ENRON_DIR/raw), where we copy the tar gz.
+
 This email set is a gzipped tar file of emails stored in directories. Once
-downloaded, extract via:
-    > tar xfz enron_mail_20150507.tar.gz   (or use tar xf as new tar autodectects compression)
+downloaded and moved to `$ENRON_HOME/raw` we extract it which creates a `maildir` subdirectory
+as `$ENRON_HOME/raw/maildir`:
+
+```bash
+mkidr -p $HOME/datasets/enron
+export ENRON_HOME=$HOME/datasets/enron
+mkdir $ENRON_HOME/raw 
+cd $ENRON_HOME/raw
+mv ~/Downloads/enron_mail_20150507.tar.gz .
+tar xfz enron_mail_20150507.tar.gz
+```
 
 This generates the following directory structure:
-* maildir
+* $ENRON_HOME/raw/maildir
      * $userName subdirectories for each user
      * $folderName subdirectories per user
           * mail messages in folder or additional subfolders
@@ -142,8 +155,9 @@ spark-mail root directory
 ```
 sbt
 > mailrecordUtils/console
-val mailDir = "/datasets/enron/raw/maildir"
-val avroOutput = "/datasets/enron/mail.avro"
+val homeDir = sys.props("user.home")
+val mailDir = s"$homeDir/datasets/enron/raw/maildir"
+val avroOutput = s"$homeDir/datasets/enron/mail.avro"
 val args = Array("--mailDir", mailDir,
                  "--avroOutput", avroOutput)
 com.uebercomputing.mailparser.enronfiles.AvroMain.main(args)
@@ -155,8 +169,9 @@ To generate an Apache Parquet file from the emails run the following:
 ```
 sbt
 > mailrecordUtils/console
-val mailDir = "/datasets/enron/raw/maildir"
-val parquetOutput = "/datasets/enron/mail.parquet"
+val homeDir = sys.props("user.home")
+val mailDir = s"$homeDir/datasets/enron/raw/maildir"
+val parquetOutput = s"$homeDir/datasets/enron/mail.parquet"
 val args = Array("--mailDir", mailDir,
                  "--parquetOutput", parquetOutput)
 com.uebercomputing.mailparser.enronfiles.ParquetMain.main(args)
@@ -167,7 +182,8 @@ All examples use the Parquet format. To use a DataFrame with Avro see
 https://spark-packages.org/package/databricks/spark-avro.
 
 ```
-val mailDf = spark.read.parquet("/datasets/enron/mail.parquet")
+val homeDir = sys.props("user.home")
+val mailDf = spark.read.parquet(s"$homeDir/datasets/enron/mail.parquet")
 mailDf.printSchema
 root
  |-- uuid: string (nullable = true)
@@ -214,9 +230,13 @@ spark.driver.memory              4g
 spark.executor.memory            4g
 ```
 
-* Install Apache Toree/Jupyter Notebook
+* Install Apache Toree/Jupyter Notebook to virtual environment (uses Python 3)
 ```bash
+mkdir ~/dev
+python -m venv ~/dev/jupyter
 pip install --upgrade toree
+sudo mkdir /usr/local/share/jupyter
+sudo chown $USER /usr/local/share/jupyter
 jupyter toree install --spark_home=$SPARK_HOME
 pip install notebook
 jupyter notebook

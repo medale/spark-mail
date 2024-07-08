@@ -37,8 +37,6 @@ ThisBuild / initialize := {
 // for scaladoc to link to external libraries (see https://www.scala-sbt.org/1.x/docs/Howto-Scaladoc.html)
 ThisBuild / autoAPIMappings := true
 
-ThisBuild / resolvers += Resolver.mavenLocal
-
 // https://github.com/sbt/sbt-assembly
 ThisBuild / Compile / run := Defaults.runTask(Compile / fullClasspath, Compile / run / mainClass, Compile / run / runner).evaluated
 ThisBuild / Compile / runMain := Defaults.runTask(Compile / fullClasspath, Compile / run / mainClass, Compile / run / runner).evaluated
