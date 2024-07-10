@@ -13,7 +13,7 @@
 ![Intro to Apache Spark](graphics/Goal.png)
 
 
-# Data Science for Small Dataset
+# Data Science for Small Dataset/Exploratory Data Analysis (EDA)
 
 ![Laptop](graphics/Laptop.png)
 
@@ -27,7 +27,7 @@
 ![Multiple cooperating Servers](graphics/HorizontalScaling.png)
 
 
-# Big Data Framework - Apache Hadoop
+# Early Big Data Framework - Apache Hadoop
 
 ![HDFS, MapReduce](graphics/Hadoop.png)
 
@@ -35,6 +35,19 @@
 # Hadoop Ecosystem
 
 ![Some Frameworks Around Hadoop](graphics/HadoopEcosystem.png)
+
+# Running Spark
+* Local
+     * Download from https://spark.apache.org, untar, add to PATH
+     * SDKMAN - `curl -s "https://get.sdkman.io" | bash`
+          * `sdk install spark`
+     * `spark-shell` or `pyspark`
+* Standalone cluster, Hadoop YARN
+     * Need shared file system or common datastore (e.g. AWS S3) 
+* Cloud-based managed:
+     * AWS EMR
+     * GCP Dataproc
+     * Databricks on Azure, GCP or AWS
 
 # Apache Spark API
 * Scala
@@ -50,9 +63,10 @@
 
 
 # Hello, Spark Email World!
-* Jupyter Notebook with Apache Toree
-* See [Notebook ../notebooks/html/ApacheSparkThroughEmail1.html](https://medale.github.io/spark-mail/notebooks/html/ApacheSparkThroughEmail1.html)
-
+```bash
+spark-shell --master "local[4]" --driver-memory 8G
+```
+* Jupyter notebook with Apache Toree [Notebook ../notebooks/html/ApacheSparkThroughEmail1.html](https://medale.github.io/spark-mail/notebooks/html/ApacheSparkThroughEmail1.html)
 
 # Cluster Manager, Driver, Executors, Tasks
 
@@ -82,13 +96,13 @@ val spark = SparkSession.builder().
      * json
      * parquet
      * text...
-     * Also: https://spark-packages.org - Avro, Redshift, MongoDB...
+     * Also: https://spark-packages.org - Redshift, MongoDB...
 
 # Transformations vs. Actions
 * Transformation: returns a new RDD (nothing gets executed)
      * `read`, `cache`, `filter`...
 * Actions: trigger execution, catalyst query optimizer, Tungsten code generation
-     * `count`, `write`, `
+     * `count`, `write`, `take`, `collect` (what OOM!)
 * 
 # Scaling Behind the Scenes
 
@@ -122,10 +136,21 @@ val spark = SparkSession.builder().
 *  See [Notebook ../notebooks/html/ApacheSparkThroughEmail3.html](https://medale.github.io/spark-mail/notebooks/html/ApacheSparkThroughEmail3.html)
 
 
+# Pandas on Spark
+* See https://spark.apache.org/pandas-on-spark/
+
+
 # Apache Parquet/Apache Arrow
 * Avro - record-oriented data format
 * Parquet - column-oriented data format by page
 * Arrow - share memory for Python (https://spark.apache.org/docs/latest/api/python/user_guide/sql/arrow_pandas.html)
+
+
+# Resources
+* https://spark.apache.org/
+* https://spark-packages.org/ - Community 3rd party packages (e.g. data sources)
+* https://sparkbyexamples.com/
+
 
 # And now for something completely different: Colon Cancer
 * Screening saves lives! ![](graphics/Chemo.png){width=100px}

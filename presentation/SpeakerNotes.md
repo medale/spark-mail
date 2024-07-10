@@ -17,12 +17,13 @@
 * Scalable data processing (batch processing)
 * Spark structured processing
 * Spark concepts - RDD, Dataset/DataFrame, partitions
-* Notebooks, Spark UI
 
 
-# Data Science for Small Dataset
+# Data Science for Small Dataset/Exploratory Data Analysis (EDA)
 * Laptop
 * Explore subset, develop approaches/algorithms, find *features*
+* Outliers, distribution
+* Data cleaning - missing values
 
 
 # Data Science for Larger Dataset (Vertical Scaling)
@@ -41,9 +42,22 @@
 
 
 # Hadoop Ecosystem
-* HDFS, YARN, MapReduce (Spark replaces MR)
+* HDFS, YARN (Yet Another Resource Negotiator), MapReduce (Spark replaces MR)
 * HBase (Google BigTable), Cassandra, Accumulo
 * Pig, Hive - MR scripting DSL/SQL
+
+# Running Spark
+* Local
+  * Download from https://spark.apache.org, untar, add to PATH
+  * SDKMAN - `curl -s "https://get.sdkman.io" | bash`
+    * `sdk install spark`
+  * `spark-shell` or `pyspark`
+* Standalone cluster, Hadoop YARN
+  * Need shared file system or common datastore (e.g. AWS S3)
+* Cloud-based managed:
+  * AWS EMR
+  * GCP Dataproc
+  * Databricks on Azure, GCP or AWS
 
 
 # Apache Spark Components
