@@ -48,13 +48,34 @@
 ![](graphics/SparkComponents.png)
 \tiny Source: Spark: The Definitive Guide
 
+# Local Installation
+* Can use SDKMAN (https://sdkman.io/)
+     * `sdk install spark` 
+* Homebrew (Mac): `brew install apache-spark`
+* Download tar.gz and then add to $PATH
+     * https://spark.apache.org/downloads.html (Scala 2.12 vs. 2.13)
+
+# Local exploration - Spark Shell
+```
+// Scala Shell
+spark-shell
+
+// PySpark
+pyspark
+```
+
+# Execute batch job
+* `spark-submit`
+* `Usage: spark-submit [options] <app jar | python file | R file> [app arguments]`
+
 
 # Hello, Spark Email World!
 * Jupyter Notebook with Apache Toree
+* `jupyter notebook`
 * See [Notebook ../notebooks/html/ApacheSparkThroughEmail1.html](https://medale.github.io/spark-mail/notebooks/html/ApacheSparkThroughEmail1.html)
 
 
-# Cluster Manager, Driver, Executors, Tasks
+# Cluster Manager, Driver, Executors, (Jobs -> Tasks)
 
 ![](graphics/SparkApplication.png)
 \tiny Source: Apache Spark website

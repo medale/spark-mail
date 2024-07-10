@@ -63,7 +63,7 @@
 * See [ApacheSparkThroughEmail1](https://medale.github.io/spark-mail/notebooks/html/ApacheSparkThroughEmail1.html)
 
 
-# Cluster Manager, Driver, Executors, Tasks
+# Cluster Manager, Driver, Executors, (Jobs -> Tasks)
 
 * *Cluster manager*: Spark Standalone, Hadoop YARN, AWS EMR, Kubernetes, Mesos
 * *Driver* (start once)
