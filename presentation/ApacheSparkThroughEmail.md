@@ -42,19 +42,15 @@
      * SDKMAN - `curl -s "https://get.sdkman.io" | bash`
           * `sdk install spark`
      * `spark-shell` or `pyspark`
+     * Edit `$SPARK_HOME/conf/spark-defaults.conf` (from template)
+          * `spark.driver.memory              8g` 
 * Standalone cluster, Hadoop YARN
      * Need shared file system or common datastore (e.g. AWS S3) 
 * Cloud-based managed:
      * AWS EMR
      * GCP Dataproc
      * Databricks on Azure, GCP or AWS
-
-# Apache Spark API
-* Scala
-* Java
-* Python
-* R
-* => Project Tungsten code generation
+  
 
 # Apache Spark Components
 
@@ -68,7 +64,7 @@ spark-shell --master "local[4]" --driver-memory 8G
 ```
 * Jupyter notebook with Apache Toree [Notebook ../notebooks/html/ApacheSparkThroughEmail1.html](https://medale.github.io/spark-mail/notebooks/html/ApacheSparkThroughEmail1.html)
 
-# Cluster Manager, Driver, Executors, Tasks
+# Cluster Manager, Driver, Executors, (Jobs -> Tasks)
 
 ![](graphics/SparkApplication.png)
 \tiny Source: Apache Spark website
@@ -90,20 +86,44 @@ val spark = SparkSession.builder().
    master("local[2]").getOrCreate()
 ```
 
-# DataFrameReader: Input for structured data
-* `spark.read`: [spark.sql.DataFrameReader](https://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.sql.DataFrameReader)
+# DataFrameReader/Writer: Input/Output for structured data
+* `spark.read/write`: [spark.sql.DataFrameReader/Writer](https://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.sql.DataFrameReader)
      * jdbc
      * json
      * parquet
      * text...
      * Also: https://spark-packages.org - Redshift, MongoDB...
 
+# Convert Dataset Format
+\scriptsize
+```scala
+import org.apache.spark.sql.functions._
+val homeDir = sys.props("user.home")
+val records = spark.read.parquet(s"$homeDir/datasets/enron/enron-small.parquet")
+
+// write block-size file(s)
+records.write.json(s"$homeDir/datasets/enron/json-parts")
+records.repartition(1).write.json(s"$homeDir/datasets/enron/json-single")
+
+// Dataset has mailfields/RE: and mailfields/re: fields
+spark.conf.set('spark.sql.caseSensitive', true)
+val jsonIn = spark.read.json(s"$homeDir/datasets/enron/json-parts")
+```
+
 # Transformations vs. Actions
 * Transformation: returns a new RDD (nothing gets executed)
-     * `read`, `cache`, `filter`...
+     * `read`, `cache`, `select`, `where`...
 * Actions: trigger execution, catalyst query optimizer, Tungsten code generation
-     * `count`, `write`, `take`, `collect` (what OOM!)
-* 
+     * `count`
+     * Bring rows back to driver: `take`, `collect` (watch OOM!)
+     * `write`
+
+# Unified Language Interface via Catalyst
+![](graphics/CatalystUnifiedInterface.png)
+
+# Phases of Catalyst Query Planning
+![](graphics/QueryPlanningPhases.png)
+
 # Scaling Behind the Scenes
 
 ![Jobs and Tasks](graphics/SparkJobsNotebook1.png)
@@ -128,7 +148,9 @@ val spark = SparkSession.builder().
 # Parallelism and Partitioning
 * Goldilocks - not too many, not too few
 * Initial parallelism - number of input "blocks"
-* Shuffle - `spark.sql.shuffle.partitions` configuration
+* Splittable file formats (e.g. parquet, avro, bzip2)
+     * Not zip, gzip! 
+* Shuffle - Adaptive Query Execution (dynamic partitioning)
 
 
 # Explode, Shuffle Partitions, UDF, Parquet partition
@@ -143,13 +165,18 @@ val spark = SparkSession.builder().
 # Apache Parquet/Apache Arrow
 * Avro - record-oriented data format
 * Parquet - column-oriented data format by page
-* Arrow - share memory for Python (https://spark.apache.org/docs/latest/api/python/user_guide/sql/arrow_pandas.html)
+* Arrow - share memory for Python
+* https://spark.apache.org/docs/latest/api/python/user_guide/sql/arrow_pandas.html
 
 
 # Resources
 * https://spark.apache.org/
 * https://spark-packages.org/ - Community 3rd party packages (e.g. data sources)
 * https://sparkbyexamples.com/
+* RDD - https://www.usenix.org/system/files/conference/nsdi12/nsdi12-final138.pdf
+* Spark SQL - https://people.csail.mit.edu/matei/papers/2015/sigmod_spark_sql.pdf
+* Adaptive query execution - https://www.databricks.com/blog/2020/05/29/adaptive-query-execution-speeding-up-spark-sql-at-runtime.html
+
 
 
 # And now for something completely different: Colon Cancer

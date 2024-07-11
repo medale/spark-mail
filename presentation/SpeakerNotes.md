@@ -36,7 +36,7 @@
 
 
 # Big Data Framework - Apache Hadoop
-* Google GFS (2003), Google MapReduce (2004)
+* Google GFS (Ghemawat, 2003), Google MapReduce (Dean, 2004)
 * Hadoop (Nutch - open source web crawler/Lucene) - Doug Cutting, Mike Cafarella
      * Yahoo, Cloudera, Hortonworks, MapR
 
@@ -45,6 +45,7 @@
 * HDFS, YARN (Yet Another Resource Negotiator), MapReduce (Spark replaces MR)
 * HBase (Google BigTable), Cassandra, Accumulo
 * Pig, Hive - MR scripting DSL/SQL
+
 
 # Running Spark
 * Local
@@ -77,7 +78,7 @@
 * See [ApacheSparkThroughEmail1](https://medale.github.io/spark-mail/notebooks/html/ApacheSparkThroughEmail1.html)
 
 
-# Cluster Manager, Driver, Executors, Tasks
+# Cluster Manager, Driver, Executors, (Jobs -> Tasks)
 
 * *Cluster manager*: Spark Standalone, Hadoop YARN, AWS EMR, Kubernetes, Mesos
 * *Driver* (start once)
@@ -144,9 +145,16 @@
      * Too many tasks - scheduling overhead, little work
      * Too few - tasks take very long
 * Initial parallelism - number of input "blocks"
-* Shuffle - `spark.sql.shuffle.partitions` configuration
+* Shuffle - Adaptive Query Execution (dynamic partitioning)
 * repartition (shuffle)/coalesce (combine on same executor)
      * e.g. write out 1 partition
+
+# Explode, Shuffle Partitions, UDF, Parquet partition
+* UDF
+
+# Resources
+* RDD - Matei Zaharia
+* SQL - Michael Armbrust
 
 
 # And now for something completely different: Colon Cancer
@@ -154,8 +162,6 @@
 
 
 # Questions?
-* medale@asymmetrik.com
-* Ping Pong
-* Baltimore Scala meetup - January 10
+* markus.dale@bluehalo.com
 * Spark mail repo for getting/parsing Enron data, 
 presentations, code, notebooks
