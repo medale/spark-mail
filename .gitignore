@@ -21,3 +21,10 @@ target
 
 # jupyter
 .ipynb_checkpoints
+
+.bloop
+.metals
+.vscode
+
+project/project
+project/metals.sbt

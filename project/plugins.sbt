@@ -8,7 +8,7 @@ addDependencyTreePlugin
 addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "2.2.0")
 
 // invoke via: sbt scalafix
-addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % "0.12.1")
+addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % "0.14.3")
 
 // invoke via: sbt scalafmtAll
 addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.5.2")

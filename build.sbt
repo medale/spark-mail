@@ -7,15 +7,15 @@ name := "spark-mail"
 // https://scalacenter.github.io/scalafix/docs/users/installation.html
 inThisBuild(
   List(
-    scalaVersion := "2.13.14", 
+    scalaVersion := "2.13.18", 
     semanticdbEnabled := true, // enable SemanticDB
-    semanticdbVersion := scalafixSemanticdb.revision // only required for Scala 2.x
+    semanticdbVersion := "4.15.2" // only required for Scala 2.x
   )
  )
 
 // http://docs.oracle.com/javase/17/docs/technotes/tools/windows/javac.html
 // -Xlint enable all recommended warnings
-ThisBuild / javacOptions ++= Seq("-source", "17", "-target", "17", "-Xlint", "-encoding", "UTF-8")
+ThisBuild / javacOptions ++= Seq("-source", "25", "-target", "25", "-Xlint", "-encoding", "UTF-8")
 // https://github.com/ThoughtWorksInc/sbt-best-practice/blob/master/scalac-options/src/main/scala/com/thoughtworks/sbtBestPractice/scalacOptions/ScalacWarnings.scala
 // scalac -help
 // -unchecked Enable detailed unchecked (erasure) warnings
