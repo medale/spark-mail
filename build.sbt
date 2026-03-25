@@ -29,8 +29,8 @@ ThisBuild / Test / parallelExecution := false
 
 ThisBuild / initialize := {
   val _ = initialize.value
-  if (sys.props("java.specification.version") != "17") {
-    sys.error("Java 17 is required for this project.")
+  if (sys.props("java.specification.version") != "25") {
+    sys.error("Java 25 is required for this project.")
   }
 }
 
